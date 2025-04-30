@@ -1,0 +1,88 @@
+@extends('layouts.auth')
+
+@section('content')
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Welcome Back</h2>
+    <p class="text-center text-gray-500 mb-6">Enter your credentials to access your account</p>
+
+    <form method="POST" action="">
+        @csrf
+
+        <div class="form-control">
+            <label for="email" class="label">
+                <span class="label-text font-medium text-gray-700">Email Address</span>
+            </label>
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207">
+                        </path>
+                    </svg>
+                </span>
+                <input id="email" class="input input-bordered w-full pl-10" type="email" name="email"
+                    value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="name@example.com" />
+            </div>
+            @error('email')
+                <div class="label">
+                    <span class="label-text-alt text-error">{{ $message }}</span>
+                </div>
+            @enderror
+        </div>
+
+        <div class="form-control mt-4">
+            <label for="password" class="label">
+                <span class="label-text font-medium text-gray-700">Password</span>
+            </label>
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                        </path>
+                    </svg>
+                </span>
+                <input id="password" class="input input-bordered w-full pl-10" type="password" name="password" required
+                    autocomplete="current-password" placeholder="••••••••" />
+            </div>
+            @error('password')
+                <div class="label">
+                    <span class="label-text-alt text-error">{{ $message }}</span>
+                </div>
+            @enderror
+        </div>
+
+        <div class="form-control mt-4">
+            <label class="cursor-pointer label justify-start">
+                <input id="remember_me" type="checkbox" name="remember"
+                    class="checkbox checkbox-sm checkbox-primary mr-2" />
+                <span class="label-text text-gray-600">{{ __('Remember me') }}</span>
+            </label>
+        </div>
+
+        <div class="mt-6">
+            <button type="submit" class="btn btn-primary w-full">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
+                    </path>
+                </svg>
+                Sign in
+            </button>
+        </div>
+
+        <div class="flex items-center justify-between mt-6">
+            <a class="text-sm text-brand-light hover:underline" href="">
+                {{ __('Forgot your password?') }}
+            </a>
+
+            @if (Route::has('register'))
+                <span class="text-sm text-gray-500">
+                    Need an account?
+                    <a href="" class="text-brand-light hover:underline font-medium">
+                        Sign up
+                    </a>
+                </span>
+            @endif
+        </div>
+    </form>
+@endsection
