@@ -119,7 +119,7 @@
         <div class="text-center mt-6">
             <span class="text-sm text-gray-500">
                 Already have an account?
-                <a href="" class="text-brand-light hover:underline font-medium">
+                <a href="{{route('login')}}" class="text-brand-light hover:underline font-medium">
                     Sign in
                 </a>
             </span>

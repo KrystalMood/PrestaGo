@@ -78,11 +78,13 @@
             @if (Route::has('register'))
                 <span class="text-sm text-gray-500">
                     Need an account?
-                    <a href="" class="text-brand-light hover:underline font-medium">
+                    <a href="{{ route('register') }}" class="text-brand-light hover:underline font-medium">
                         Sign up
                     </a>
                 </span>
             @endif
         </div>
     </form>
+
+
 @endsection
