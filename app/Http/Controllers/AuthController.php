@@ -32,13 +32,13 @@ class AuthController extends Controller
     {
         if ($this->loginAction->execute($request)) {
             return redirect()->intended('/dashboard')
-                ->with('success', 'Login successful! Welcome back.');
+                ->with('success', 'Login berhasil! Selamat datang kembali.');
         }
 
         return back()
-            ->withErrors(['email' => 'The provided credentials do not match our records.'])
+            ->withErrors(['email' => 'Kredensial yang diberikan tidak cocok dengan catatan kami.'])
             ->withInput($request->except('password'))
-            ->with('error', 'Login failed! Please check your email and password again.');
+            ->with('error', 'Login gagal! Silakan periksa kembali email dan kata sandi Anda.');
     }
 
     public function register()
@@ -52,13 +52,13 @@ class AuthController extends Controller
 
         if ($result['success']) {
             return redirect()->route('login')
-                ->with('success', 'Registration successful! Please log in.');
+                ->with('success', 'Registrasi berhasil! Silakan masuk.');
         }
 
         return back()
-            ->withErrors($result['errors'] ?? ['email' => 'Registration failed.'])
+            ->withErrors($result['errors'] ?? ['email' => 'Registrasi gagal.'])
             ->withInput($request->except('password'))
-            ->with('error', 'Registration Failed');
+            ->with('error', 'Registrasi Gagal');
     }
 
     public function dashboard()
@@ -71,6 +71,6 @@ class AuthController extends Controller
         $this->authService->logout();
 
         return redirect()->route('login')
-            ->with('info', 'You have been logged out successfully.');
+            ->with('info', 'Anda telah berhasil keluar.');
     }
 }

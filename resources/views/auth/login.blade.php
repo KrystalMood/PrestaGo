@@ -39,9 +39,9 @@
 
         <div class="form-control mt-3">
             <label class="cursor-pointer label justify-start py-1">
-                <input id="remember_me" type="checkbox" name="remember"
-                    class="checkbox checkbox-xs checkbox-primary mr-2" />
-                <span class="label-text text-sm text-gray-600">{{ __('Ingat Saya') }}</span>
+            <input id="remember_me" type="checkbox" name="remember"
+                class="checkbox checkbox-xs checkbox-primary mr-2 rounded-md" />
+            <span class="label-text text-sm text-gray-600">{{ __('Ingat Saya') }}</span>
             </label>
         </div>
 

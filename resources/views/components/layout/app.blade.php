@@ -40,7 +40,7 @@
     @stack('styles')
 </head>
 <body class="font-sans antialiased {{ $bodyClass ?? 'bg-gray-100' }}">
-    <x-ui.flash-messages />
+    <x-ui.toast />
     
     {{ $slot }}
     
