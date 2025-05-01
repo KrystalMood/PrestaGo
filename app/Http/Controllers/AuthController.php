@@ -2,50 +2,75 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserModel;
+use App\Actions\Auth\LoginUserAction;
+use App\Actions\Auth\RegisterUserAction;
+use App\Services\AuthService;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    protected $authService;
+    protected $loginAction;
+    protected $registerAction;
+
+    public function __construct(
+        AuthService $authService,
+        LoginUserAction $loginAction,
+        RegisterUserAction $registerAction
+    ) {
+        $this->authService = $authService;
+        $this->loginAction = $loginAction;
+        $this->registerAction = $registerAction;
+    }
+
     public function login()
     {
         return view('auth.login');
     }
+
     public function postlogin(Request $request)
     {
-        if($request->ajax() || $request->wantsJson()){
-            $credentials = $request->only('email', 'password');
-            if (auth()->attempt($credentials)) {
-                return response()->json(['success' => true]);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Login Gagal Cek Kembali Email dan Password']);
-            }
+        if ($this->loginAction->execute($request)) {
+            return redirect()->intended('/dashboard')
+                ->with('success', 'Login successful! Welcome back.');
         }
+
+        return back()
+            ->withErrors(['email' => 'The provided credentials do not match our records.'])
+            ->withInput($request->except('password'))
+            ->with('error', 'Login failed! Please check your email and password again.');
     }
+
     public function register()
     {
         return view('auth.register');
     }
+
     public function postregister(Request $request)
     {
-        if($request->ajax() || $request->wantsJson()){
-            $validate = $request->validate([
-                'name' => 'required',
-                'email' => 'required|email|unique:users,email',
-                'password' => 'required|min:6|confirmed',
-            ]);
+        $result = $this->registerAction->execute($request);
 
-            if($validate){
-                UserModel::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => bcrypt($request->password),
-                ]);
-                return response()->json(['success' => true, 'message' => 'Register Berhasil']);
-            }else{
-                return response()->json(['success' => false, 'message' => 'Register Gagal']);
-            }
+        if ($result['success']) {
+            return redirect()->route('login')
+                ->with('success', 'Registration successful! Please log in.');
         }
-        return response()->json(['success' => false, 'message' => 'Terjadi kesalahan pada sistem']);
+
+        return back()
+            ->withErrors($result['errors'] ?? ['email' => 'Registration failed.'])
+            ->withInput($request->except('password'))
+            ->with('error', 'Registration Failed');
+    }
+
+    public function dashboard()
+    {
+        return view('dashboard.main');
+    }
+
+    public function logout(Request $request)
+    {
+        $this->authService->logout();
+
+        return redirect()->route('login')
+            ->with('info', 'You have been logged out successfully.');
     }
 }
