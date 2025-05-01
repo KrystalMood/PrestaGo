@@ -1,59 +1,62 @@
-<x-layout.app :title="$title ?? 'Authentication'" bodyClass="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-b from-gray-50 to-gray-100">
-    <div class="w-full sm:max-w-4xl mt-6 mb-6 bg-white shadow-custom overflow-hidden sm:rounded-lg grid grid-cols-1 md:grid-cols-2">
-        <div class="p-6 md:p-10 bg-gray-100 flex flex-col justify-center border-r border-gray-200">
-            <div class="flex items-center mb-8">
-                <svg class="w-12 h-12 mr-3 text-brand" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path>
-                </svg>
-                <span class="text-2xl font-bold text-gray-800">DashWind</span>
+<x-layout.app :title="$title ?? 'Authentication'" bodyClass="h-[100dvh] flex flex-col justify-center items-center bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
+    <div class="w-full sm:max-w-4xl bg-white shadow-custom overflow-hidden sm:rounded-lg grid grid-cols-1 md:grid-cols-2 max-h-[90dvh]">
+        <div class="p-4 md:p-6 bg-gray-100 flex flex-col justify-start border-r border-gray-200 overflow-y-auto">
+            <div class="flex items-center mb-4">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo Polinema" class="w-10 h-10 mr-3">
+                <span class="text-xl font-bold text-gray-800">{{ config('app.name') }}</span>
             </div>
-            <div class="mb-8 text-center">
-                <img src="/images/auth-illustration.svg" alt="Admin Dashboard Illustration" class="inline-block max-w-xs mx-auto rounded-lg shadow-sm">
+            <div class="mb-4 text-center">
+                <img src="{{ asset('images/auth-illustration.png') }}" alt="Ilustrasi PrestaGo" class="inline-block max-w-xs mx-auto rounded-lg shadow-sm">
             </div>
-            <h2 class="text-xl font-bold text-gray-800 mb-4">Admin Dashboard Starter Kit</h2>
-            <ul class="text-sm text-gray-600 space-y-3">
+            <h2 class="text-lg font-bold text-gray-800 mb-2">Portal Prestasi Mahasiswa Polinema</h2>
+            <p class="text-gray-600 mb-4 text-sm">Masuk untuk mendapatkan akses ke berbagai layanan PrestaGo:</p>
+            <ul class="text-xs text-gray-600 space-y-2">
                 <li class="flex items-center">
-                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 mr-3">
-                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 mr-2">
+                        <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </span>
-                    Light/dark mode toggle
+                    Kelola data prestasi pribadi Anda dengan mudah
                 </li>
                 <li class="flex items-center">
-                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 mr-3">
-                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 mr-2">
+                        <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </span>
-                    Redux toolkit and other utility libraries configured
+                    Ajukan verifikasi prestasi secara online
                 </li>
                 <li class="flex items-center">
-                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 mr-3">
-                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 mr-2">
+                        <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </span>
-                    User-friendly documentation
+                    Akses grafik & laporan prestasi Anda
                 </li>
                 <li class="flex items-center">
-                    <span class="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 mr-3">
-                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 mr-2">
+                        <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </span>
-                    Daisy UI components, Tailwind CSS support
+                    Dapatkan notifikasi status pengajuan prestasi
                 </li>
             </ul>
+            
+            <div class="mt-4 pt-3 border-t border-gray-200">
+                <p class="text-xs text-gray-500">Anda memerlukan akun untuk mengakses sistem PrestaGo. Jika mengalami kendala, hubungi administrator Polinema.</p>
+            </div>
         </div>
 
-        <div class="p-6 md:p-10 bg-white flex items-center justify-center">
+        <div class="p-4 md:p-6 bg-white flex items-center justify-center overflow-y-auto">
             <div class="w-full">
                 {{ $slot }}
             </div>
         </div>
     </div>
-    <div class="mt-2 text-center text-sm text-gray-500">
-        &copy; {{ date('Y') }} DashWind. All rights reserved.
+    <div class="mt-2 text-center text-xs text-gray-500">
+        &copy; {{ date('Y') }} Politeknik Negeri Malang. Hak Cipta Dilindungi.
     </div>
 </x-layout.app>

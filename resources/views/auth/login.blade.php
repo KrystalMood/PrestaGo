@@ -1,6 +1,6 @@
-<x-layout.auth title="Login">
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Welcome Back</h2>
-    <p class="text-center text-gray-500 mb-6">Enter your credentials to access your account</p>
+<x-layout.auth title="Login PrestaGo">
+    <h2 class="text-xl font-bold text-center text-gray-800 mb-3">Selamat Datang di PrestaGo</h2>
+    <p class="text-center text-gray-500 mb-4 text-sm">Masukkan kredensial Anda untuk mengakses portal prestasi mahasiswa Polinema</p>
 
     <form method="POST" action="{{ url('/login') }}">
         @csrf
@@ -9,8 +9,8 @@
             type="email" 
             name="email" 
             :value="old('email')" 
-            label="Email Address"
-            placeholder="name@example.com"
+            label="Email Institusi"
+            placeholder="nama@polinema.ac.id"
             required
             autofocus
             autocomplete="username"
@@ -21,11 +21,11 @@
             </svg>'"
         />
 
-        <div class="mt-4">
+        <div class="mt-3">
             <x-ui.input 
                 type="password" 
                 name="password" 
-                label="Password"
+                label="Kata Sandi"
                 placeholder="••••••••"
                 required
                 autocomplete="current-password"
@@ -37,35 +37,35 @@
             />
         </div>
 
-        <div class="form-control mt-4">
-            <label class="cursor-pointer label justify-start">
+        <div class="form-control mt-3">
+            <label class="cursor-pointer label justify-start py-1">
                 <input id="remember_me" type="checkbox" name="remember"
-                    class="checkbox checkbox-sm checkbox-primary mr-2" />
-                <span class="label-text text-gray-600">{{ __('Remember me') }}</span>
+                    class="checkbox checkbox-xs checkbox-primary mr-2" />
+                <span class="label-text text-sm text-gray-600">{{ __('Ingat Saya') }}</span>
             </label>
         </div>
 
-        <div class="mt-6">
+        <div class="mt-4">
             <x-ui.button type="submit" class="w-full">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
                     </path>
                 </svg>
-                Sign in
+                Masuk
             </x-ui.button>
         </div>
 
-        <div class="flex items-center justify-between mt-6">
-            <a class="text-sm text-brand-light hover:underline" href="">
-                {{ __('Forgot your password?') }}
+        <div class="flex items-center justify-between mt-4">
+            <a class="text-xs text-brand-light hover:underline" href="">
+                {{ __('Lupa Kata Sandi?') }}
             </a>
 
             @if (Route::has('register'))
-                <span class="text-sm text-gray-500">
-                    Need an account?
+                <span class="text-xs text-gray-500">
+                    Belum punya akun?
                     <a href="{{ route('register') }}" class="text-brand-light hover:underline font-medium">
-                        Sign up
+                        Daftar
                     </a>
                 </span>
             @endif
