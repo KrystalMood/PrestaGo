@@ -1,4 +1,4 @@
-<x-layout.dashboard title="Dashboard">
+@component('layouts.dashboard', ['title' => 'Dashboard'])
     <div class="card bg-white shadow-xl">
         <div class="card-body">
             <h2 class="card-title">Welcome to your Dashboard!</h2>
@@ -8,4 +8,4 @@
             </div>
         </div>
     </div>
-</x-layout.dashboard>
+@endcomponent
