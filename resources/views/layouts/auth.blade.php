@@ -1,4 +1,4 @@
-<x-layout.app :title="$title ?? 'Authentication'" bodyClass="h-[100dvh] flex flex-col justify-center items-center bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
+@component('layouts.app', ['title' => $title ?? 'Authentication', 'bodyClass' => 'h-[100dvh] flex flex-col justify-center items-center bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden'])
     <div class="w-full sm:max-w-4xl bg-white shadow-custom overflow-hidden sm:rounded-lg grid grid-cols-1 md:grid-cols-2 max-h-[90dvh]">
         <div class="p-4 md:p-6 bg-gray-100 flex flex-col justify-start border-r border-gray-200 overflow-y-auto">
             <div class="flex items-center mb-4">
@@ -52,11 +52,11 @@
 
         <div class="p-4 md:p-6 bg-white flex items-center justify-center overflow-y-auto">
             <div class="w-full">
-                {{ $slot }}
+                @yield('content')
             </div>
         </div>
     </div>
     <div class="mt-2 text-center text-xs text-gray-500">
         &copy; {{ date('Y') }} Politeknik Negeri Malang. Hak Cipta Dilindungi.
     </div>
-</x-layout.app>
+@endcomponent

@@ -1,4 +1,6 @@
-<x-layout.auth title="Login PrestaGo">
+@extends('layouts.auth')
+
+@section('content')
     <h2 class="text-xl font-bold text-center text-gray-800 mb-3">Selamat Datang di PrestaGo</h2>
     <p class="text-center text-gray-500 mb-4 text-sm">Masukkan kredensial Anda untuk mengakses portal prestasi mahasiswa Polinema</p>
 
@@ -71,4 +73,4 @@
             @endif
         </div>
     </form>
-</x-layout.auth>
+@endsection
