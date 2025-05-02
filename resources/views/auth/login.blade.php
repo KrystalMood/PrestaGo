@@ -4,7 +4,7 @@
     <h2 class="text-xl font-bold text-center text-gray-800 mb-3">Selamat Datang di PrestaGo</h2>
     <p class="text-center text-gray-500 mb-4 text-sm">Masukkan kredensial Anda untuk mengakses portal prestasi mahasiswa Polinema</p>
 
-    <form method="POST" action="{{ url('/login') }}">
+    <form method="POST" action="{{ url('/login') }}" class="w-full max-w-sm mx-auto">
         @csrf
 
         <x-ui.input 
@@ -58,7 +58,7 @@
             </x-ui.button>
         </div>
 
-        <div class="flex items-center justify-between mt-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between mt-4 space-y-2 sm:space-y-0">
             <a class="text-xs text-brand-light hover:underline" href="">
                 {{ __('Lupa Kata Sandi?') }}
             </a>
