@@ -13,11 +13,16 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id('users_id');
+            $table->unsignedBigInteger('level_id')->index();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('photo')->nullable();
             $table->string('password');
+            $table->string('remember_token')->nullable();
             $table->timestamps();
+            $table->foreign('level_id')->references('level_id')->on('level');
         });
+
     }
 
     /**
