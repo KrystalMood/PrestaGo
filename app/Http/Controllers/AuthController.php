@@ -27,7 +27,7 @@ class AuthController extends Controller
     public function login()
     {
         if(Auth::check()) {
-            return redirect('/');
+            return $this->redirectBasedOnRole(Auth::user());
         }
         return view('auth.login');
     }
@@ -35,7 +35,7 @@ class AuthController extends Controller
     public function postlogin(Request $request)
     {
         if ($this->loginAction->execute($request)) {
-            return redirect()->intended('/dashboard')
+            return $this->redirectBasedOnRole(Auth::user())
                 ->with('success', 'Login berhasil! Selamat datang kembali.');
         }
 
@@ -65,9 +65,32 @@ class AuthController extends Controller
             ->with('error', 'Registrasi Gagal');
     }
 
-    public function dashboard()
+    /**
+     * Redirect user based on their role
+     *
+     * @param \App\Models\UserModel $user
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    protected function redirectBasedOnRole($user)
+    {
+
+                return redirect()->route('admin.dashboard');
+
+    }
+
+    public function adminDashboard()
     {
         return view('admin.dashboard');
+    }
+
+    public function studentDashboard()
+    {
+        return view('student.dashboard');
+    }
+
+    public function lecturerDashboard()
+    {
+        return view('lecturer.dashboard');
     }
 
     public function logout(Request $request)
@@ -76,5 +99,10 @@ class AuthController extends Controller
 
         return redirect()->route('login')
             ->with('info', 'Anda telah berhasil keluar.');
+    }
+
+    public function forgotPassword()
+    {
+        return view('auth.forgot-password');
     }
 }

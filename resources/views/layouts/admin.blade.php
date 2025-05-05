@@ -8,15 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ? "$title | Admin" . config('app.name', 'SIM Prestasi') : "Admin | " . config('app.name', 'SIM Prestasi') }}</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}?v={{ time() }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}?v={{ time() }}" type="image/x-icon">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    
+
     <!-- DaisyUI and Tailwind -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,25 +42,25 @@
             }
         }
     </script>
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
 
 <body class="font-sans antialiased min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
     <x-ui.toast />
-    
+
     <div class="flex min-h-screen">
-        <aside class="w-64 shadow-custom bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden hidden lg:block">
+        <aside class="w-64 shadow-custom bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden hidden lg:block h-screen sticky top-0">
             <div class="p-4 flex items-center border-b border-gray-200">
                 <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} Logo" class="w-10 h-10 mr-2">
                 <span class="text-lg font-bold text-gray-800">{{ config('app.name') }}</span>
             </div>
-            
-            <div class="p-4">
+
+            <div class="p-4 overflow-y-auto max-h-[calc(100vh-4rem)]">
                 <ul class="space-y-1">
                     <li>
                         <a href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
@@ -70,11 +70,11 @@
                             <span class="font-medium">Dashboard</span>
                         </a>
                     </li>
-                    
+
                     <div class="py-2 mt-2 border-t border-gray-100">
                         <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Manajemen</span>
                     </div>
-                    
+
                     <li>
                         <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.users.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,7 +83,7 @@
                             <span class="font-medium">Pengguna</span>
                         </a>
                     </li>
-                    
+
                     <li>
                         <a href="{{ route('admin.achievements.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.achievements.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +92,7 @@
                             <span class="font-medium">Verifikasi Prestasi</span>
                         </a>
                     </li>
-                    
+
                     <li>
                         <a href="{{ route('admin.competitions.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.competitions.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +101,7 @@
                             <span class="font-medium">Manajemen Lomba</span>
                         </a>
                     </li>
-                    
+
                     <li>
                         <a href="{{ route('admin.periods.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.periods.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,7 +110,7 @@
                             <span class="font-medium">Periode Semester</span>
                         </a>
                     </li>
-                    
+
                     <li>
                         <a href="{{ route('admin.programs.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.programs.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,11 +119,11 @@
                             <span class="font-medium">Program Studi</span>
                         </a>
                     </li>
-                    
+
                     <div class="py-2 mt-2 border-t border-gray-100">
                         <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Fitur Utama</span>
                     </div>
-                    
+
                     <li>
                         <a href="{{ route('admin.recommendations.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.recommendations.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,7 +132,7 @@
                             <span class="font-medium">Sistem Rekomendasi</span>
                         </a>
                     </li>
-                    
+
                     <li>
                         <a href="{{ route('admin.reports.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.reports.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -141,11 +141,11 @@
                             <span class="font-medium">Laporan & Analisis</span>
                         </a>
                     </li>
-                    
+
                     <div class="py-2 mt-2 border-t border-gray-100">
                         <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Sistem</span>
                     </div>
-                    
+
                     <li>
                         <a href="{{ route('admin.settings.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.settings.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,9 +158,9 @@
                 </ul>
             </div>
         </aside>
-        
+
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden"></div>
-        
+
         <aside id="mobile-sidebar" class="fixed inset-y-0 left-0 w-64 bg-white shadow-custom z-30 transform -translate-x-full transition-transform duration-300 ease-in-out lg:hidden">
             <div class="p-4 flex items-center justify-between border-b border-gray-200">
                 <div class="flex items-center">
@@ -173,7 +173,7 @@
                     </svg>
                 </button>
             </div>
-            
+
             <div class="p-4">
                 <ul class="space-y-1">
                     <li>
@@ -184,11 +184,11 @@
                             <span class="font-medium">Dashboard</span>
                         </a>
                     </li>
-                    
+
                     <div class="py-2 mt-2 border-t border-gray-100">
                         <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Manajemen</span>
                     </div>
-                    
+
                     <li>
                         <a href="{{ route('admin.users.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.users.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -197,11 +197,11 @@
                             <span class="font-medium">Pengguna</span>
                         </a>
                     </li>
-                    
+
                 </ul>
             </div>
         </aside>
-        
+
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <nav class="bg-white border-b border-gray-200 shadow-sm">
@@ -213,12 +213,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
                             </button>
-                            
+
                             <div class="hidden lg:block ml-2">
                                 <h1 class="text-xl font-semibold text-gray-800">{{ $title ?? 'Dashboard' }}</h1>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center">
                             <div class="relative ml-3">
                                 <button class="flex text-gray-500 hover:text-gray-700 focus:outline-none">
@@ -228,20 +228,20 @@
                                     <span class="bg-red-500 text-white rounded-full w-4 h-4 absolute -top-1 -right-1 text-xs flex items-center justify-center">2</span>
                                 </button>
                             </div>
-                            
+
                             <div class="relative ml-4">
                                 <div class="dropdown dropdown-end">
                                     <div tabindex="0" role="button" class="flex items-center cursor-pointer">
                                         <img class="h-8 w-8 rounded-full border-2 border-gray-200" src="https://ui-avatars.com/api/?name=Admin&background=4338ca&color=fff" alt="User avatar" />
-                                        <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">{{ $user ? $user->name : 'Admin User' }}</span>
+                                        <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">{{ auth() ? auth()->user()->name : 'Admin User' }}</span>
                                         <svg class="ml-1 h-4 w-4 text-gray-400 hidden sm:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                         </svg>
                                     </div>
                                     <ul tabindex="0" class="dropdown-content menu p-2 mt-1 bg-white border border-gray-200 rounded-lg shadow-custom w-48 z-10">
                                         <li class="p-2 text-sm font-medium border-b border-gray-100">
-                                            <span class="block">{{ $user ? $user->name : 'Admin User' }}</span>
-                                            <span class="block text-xs text-gray-500">{{ $user ? $user->email : 'admin@example.com' }}</span>
+                                            <span class="block">{{ auth() ? auth()->user()->name : 'Unknown User' }}</span>
+                                            <span class="block text-xs text-gray-500">{{ auth() ? auth()->user()->email : 'Unknown Email' }}</span>
                                         </li>
                                         <li><a class="text-sm p-2 hover:bg-gray-50 rounded-md">Profil</a></li>
                                         <li><a class="text-sm p-2 hover:bg-gray-50 rounded-md">Pengaturan</a></li>
@@ -258,44 +258,44 @@
                     </div>
                 </div>
             </nav>
-            
+
             <main class="flex-1 overflow-y-auto bg-gray-50">
                 <div class="py-6 px-4 sm:px-6 lg:px-8">
                     <div class="lg:hidden mb-6">
                         <h1 class="text-xl font-semibold text-gray-800">{{ $title ?? 'Dashboard' }}</h1>
                     </div>
-                    
+
                     {{ $slot }}
                 </div>
             </main>
         </div>
     </div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const toggleSidebar = document.getElementById('toggle-sidebar');
             const closeSidebar = document.getElementById('close-sidebar');
             const sidebar = document.getElementById('mobile-sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            
+
             if (toggleSidebar && closeSidebar && sidebar && overlay) {
                 toggleSidebar.addEventListener('click', function() {
                     sidebar.classList.remove('-translate-x-full');
                     overlay.classList.remove('hidden');
                 });
-                
+
                 function closeMobileSidebar() {
                     sidebar.classList.add('-translate-x-full');
                     overlay.classList.add('hidden');
                 }
-                
+
                 closeSidebar.addEventListener('click', closeMobileSidebar);
                 overlay.addEventListener('click', closeMobileSidebar);
             }
         });
     </script>
-    
+
     @stack('scripts')
 </body>
 
-</html> 
+</html>
