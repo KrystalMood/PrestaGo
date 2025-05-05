@@ -18,6 +18,7 @@ Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'postlogin']);
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/register', [AuthController::class, 'postregister']);
+Route::get('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.request');
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {

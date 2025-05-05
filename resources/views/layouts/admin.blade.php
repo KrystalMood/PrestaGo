@@ -54,13 +54,13 @@
     <x-ui.toast />
     
     <div class="flex min-h-screen">
-        <aside class="w-64 shadow-custom bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden hidden lg:block">
+        <aside class="w-64 shadow-custom bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden hidden lg:block h-screen sticky top-0">
             <div class="p-4 flex items-center border-b border-gray-200">
                 <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} Logo" class="w-10 h-10 mr-2">
                 <span class="text-lg font-bold text-gray-800">{{ config('app.name') }}</span>
             </div>
             
-            <div class="p-4">
+            <div class="p-4 overflow-y-auto max-h-[calc(100vh-4rem)]">
                 <ul class="space-y-1">
                     <li>
                         <a href="{{ route('admin.dashboard') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">

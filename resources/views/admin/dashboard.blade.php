@@ -30,33 +30,22 @@
         @endphp
         
         @foreach ($stats as $stat)
-            <div class="bg-white rounded-lg shadow-custom p-6 flex items-start">
-                <div class="flex-shrink-0 mr-4">
-                    {!! $stat['icon'] !!}
-                </div>
-                <div>
-                    <h3 class="text-gray-500 text-sm font-medium">{{ $stat['title'] }}</h3>
-                    <p class="text-2xl font-bold text-gray-800 mt-1">{{ $stat['value'] }}</p>
-                    <p class="text-sm text-gray-500 mt-1">{{ $stat['trend'] }}</p>
-                </div>
-            </div>
+            @include('admin.components.stats-card', [
+                'icon' => $stat['icon'],
+                'title' => $stat['title'],
+                'value' => $stat['value'],
+                'trend' => $stat['trend']
+            ])
         @endforeach
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Statistik Prestasi</h2>
-                <div class="h-64">
-                    <!-- Chart placeholder -->
-                    <div class="w-full h-full flex items-center justify-center bg-gray-50 rounded-lg">
-                        <p class="text-gray-500">Grafik statistik prestasi</p>
-                    </div>
-                </div>
-            </div>
+            @component('admin.components.chart-container', ['title' => 'Statistik Prestasi'])
+                <p class="text-gray-500">Grafik statistik prestasi</p>
+            @endcomponent
             
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h2>
+            @component('admin.components.card', ['title' => 'Aksi Cepat'])
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     @php
                     $actions = [
@@ -94,22 +83,20 @@
                     @endphp
                     
                     @foreach ($actions as $action)
-                        <a href="{{ $action['href'] }}" class="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 flex flex-col items-center justify-center transition-colors">
-                            <div class="mb-2">
-                                {!! $action['icon'] !!}
-                            </div>
-                            <p class="text-sm font-medium text-gray-700">{{ $action['title'] }}</p>
-                        </a>
+                        @include('admin.components.quick-action', [
+                            'title' => $action['title'],
+                            'icon' => $action['icon'],
+                            'href' => $action['href']
+                        ])
                     @endforeach
                 </div>
-            </div>
+            @endcomponent
             
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-semibold text-gray-800">Pengajuan Prestasi Terbaru</h2>
-                    <a href="{{ route('admin.achievements.index') }}" class="text-sm text-brand-light hover:underline">Lihat Semua</a>
-                </div>
-                
+            @component('admin.components.card', [
+                'title' => 'Pengajuan Prestasi Terbaru',
+                'linkText' => 'Lihat Semua',
+                'linkUrl' => route('admin.achievements.index')
+            ])
                 @php
                 $submissions = [
                     [
@@ -118,8 +105,7 @@
                         'avatar' => 'https://ui-avatars.com/api/?name=Budi+Santoso&background=4338ca&color=fff',
                         'achievement' => 'Juara 1 Hackathon Nasional',
                         'date' => '1 Mei 2025',
-                        'status' => 'Menunggu',
-                        'status_color' => 'warning'
+                        'status' => 'Menunggu'
                     ],
                     [
                         'name' => 'Dewi Lestari',
@@ -127,8 +113,7 @@
                         'avatar' => 'https://ui-avatars.com/api/?name=Dewi+Lestari&background=4338ca&color=fff',
                         'achievement' => 'Best Paper Award IEEE Conference',
                         'date' => '30 Apr 2025',
-                        'status' => 'Menunggu',
-                        'status_color' => 'warning'
+                        'status' => 'Menunggu'
                     ],
                     [
                         'name' => 'Ahmad Fauzi',
@@ -136,51 +121,28 @@
                         'avatar' => 'https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=4338ca&color=fff',
                         'achievement' => 'Juara 2 UI/UX Design Competition',
                         'date' => '28 Apr 2025',
-                        'status' => 'Disetujui',
-                        'status_color' => 'success'
+                        'status' => 'Disetujui'
                     ]
                 ];
                 @endphp
                 
                 <div class="space-y-4">
                     @foreach ($submissions as $submission)
-                        <div class="border border-gray-100 rounded-lg p-4 hover:bg-gray-50">
-                            <div class="flex items-center">
-                                <img src="{{ $submission['avatar'] }}" alt="{{ $submission['name'] }}" class="w-10 h-10 rounded-full mr-3">
-                                <div class="flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <h3 class="text-sm font-medium text-gray-800">{{ $submission['name'] }}</h3>
-                                        <span class="text-xs text-gray-500">{{ $submission['date'] }}</span>
-                                    </div>
-                                    <p class="text-xs text-gray-500">{{ $submission['class'] }}</p>
-                                    <p class="text-sm mt-1">{{ $submission['achievement'] }}</p>
-                                    <div class="mt-2">
-                                        @if ($submission['status'] === 'Menunggu')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                {{ $submission['status'] }}
-                                            </span>
-                                        @elseif ($submission['status'] === 'Disetujui')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ $submission['status'] }}
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                {{ $submission['status'] }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        @include('admin.components.achievement-submission', [
+                            'name' => $submission['name'],
+                            'class' => $submission['class'],
+                            'avatar' => $submission['avatar'],
+                            'achievement' => $submission['achievement'],
+                            'date' => $submission['date'],
+                            'status' => $submission['status']
+                        ])
                     @endforeach
                 </div>
-            </div>
+            @endcomponent
         </div>
         
         <div class="space-y-6">
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Terbaru</h2>
-                
+            @component('admin.components.card', ['title' => 'Aktivitas Terbaru'])
                 @php
                 $activities = [
                     [
@@ -208,24 +170,16 @@
                 
                 <div class="space-y-4">
                     @foreach ($activities as $activity)
-                        <div class="flex space-x-3">
-                            <div class="flex-shrink-0">
-                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-gray-50">
-                                    {!! $activity['icon'] !!}
-                                </div>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-700">{!! $activity['message'] !!}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ $activity['time'] }}</p>
-                            </div>
-                        </div>
+                        @include('admin.components.activity-item', [
+                            'icon' => $activity['icon'],
+                            'message' => $activity['message'],
+                            'time' => $activity['time']
+                        ])
                     @endforeach
                 </div>
-            </div>
+            @endcomponent
             
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Deadline Mendatang</h2>
-                
+            @component('admin.components.card', ['title' => 'Deadline Mendatang'])
                 @php
                 $deadlines = [
                     [
@@ -254,25 +208,18 @@
                 
                 <div class="space-y-4">
                     @foreach ($deadlines as $deadline)
-                        <div class="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50">
-                            <div class="flex-shrink-0">
-                                <div class="flex flex-col items-center justify-center h-12 w-12 rounded-lg {{ $deadline['color'] === 'red' ? 'bg-red-100 text-red-800' : ($deadline['color'] === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800') }}">
-                                    <span class="text-lg font-bold leading-none">{{ $deadline['date_day'] }}</span>
-                                    <span class="text-xs">{{ $deadline['date_month'] }}</span>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 class="font-medium text-gray-800">{{ $deadline['title'] }}</h3>
-                                <p class="text-xs text-gray-500">{{ $deadline['description'] }}</p>
-                            </div>
-                        </div>
+                        @include('admin.components.deadline-item', [
+                            'date_day' => $deadline['date_day'],
+                            'date_month' => $deadline['date_month'],
+                            'title' => $deadline['title'],
+                            'description' => $deadline['description'],
+                            'color' => $deadline['color']
+                        ])
                     @endforeach
                 </div>
-            </div>
+            @endcomponent
             
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Status Sistem</h2>
-                
+            @component('admin.components.card', ['title' => 'Status Sistem'])
                 @php
                 $metrics = [
                     ['name' => 'Penggunaan Penyimpanan', 'value' => 65, 'color' => 'indigo'],
@@ -283,58 +230,25 @@
                 
                 <div class="space-y-4">
                     @foreach ($metrics as $metric)
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm font-medium text-gray-700">{{ $metric['name'] }}</span>
-                                <span class="text-sm font-medium text-gray-700">{{ $metric['value'] }}%</span>
-                            </div>
-                            <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-100">
-                                <div style="width: {{ $metric['value'] }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center {{ $metric['color'] === 'indigo' ? 'bg-indigo-500' : ($metric['color'] === 'green' ? 'bg-green-500' : 'bg-amber-500') }}">
-                                </div>
-                            </div>
-                        </div>
+                        @include('admin.components.system-metric', [
+                            'name' => $metric['name'],
+                            'value' => $metric['value'],
+                            'color' => $metric['color']
+                        ])
                     @endforeach
                     
                     <div class="border-t border-gray-100 pt-4 mt-4">
                         <table class="min-w-full">
                             <tbody>
-                                <tr>
-                                    <td class="py-1 text-sm">Basis Data</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Online
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1 text-sm">API</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Operasional
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1 text-sm">CDN</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Aktif
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1 text-sm">Server</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Sehat
-                                        </span>
-                                    </td>
-                                </tr>
+                                @include('admin.components.system-service', ['name' => 'Basis Data', 'status' => 'Online'])
+                                @include('admin.components.system-service', ['name' => 'API', 'status' => 'Operasional'])
+                                @include('admin.components.system-service', ['name' => 'CDN', 'status' => 'Aktif'])
+                                @include('admin.components.system-service', ['name' => 'Server', 'status' => 'Sehat'])
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
+            @endcomponent
         </div>
     </div>
 @endcomponent
