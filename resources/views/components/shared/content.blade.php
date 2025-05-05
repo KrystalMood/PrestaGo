@@ -1,4 +1,3 @@
-
 @props(['title' => null, 'user' => null])
 
 <!DOCTYPE html>
@@ -55,11 +54,11 @@
 <body class="font-sans antialiased min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
     <x-ui.toast />
     <div class="flex min-h-screen">
-    @include('components.shared.sidebar')
+    <x-shared.sidebar :user="$user" />
 
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            @include('components.shared.navbar')
+            <x-shared.navbar :title="$title" :user="$user" />
 
             <main class="flex-1 overflow-y-auto bg-gray-50">
                 <div class="py-6 px-4 sm:px-6 lg:px-8">
