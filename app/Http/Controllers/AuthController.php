@@ -90,7 +90,14 @@ class AuthController extends Controller
 
     public function adminDashboard()
     {
-        return view('admin.dashboard');
+        $user = auth()->user();
+        if (auth()->user()->level_id == 1) {
+            return view('admin.dashboard', compact('user'));
+        } elseif (auth()->user()->level_id == 2) {
+            return view('dosen.dashboard', compact('user'));
+        } elseif (auth()->user()->level_id == 3) {
+            return view('mahasiswa.dashboard', compact('user'));
+        }
     }
 
     public function studentDashboard()
