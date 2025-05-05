@@ -23,22 +23,6 @@ Route::post('/register', [AuthController::class, 'postregister']);
 Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/', function () {
-        $user = auth()->user();
-        $role = $user->getRole();
-
-        switch ($role) {
-            case 'ADM':
-                return redirect()->route('admin.dashboard');
-            case 'MHS':
-                return redirect()->route('student.dashboard');
-            case 'DSN':
-                return redirect()->route('lecturer.dashboard');
-            default:
-                return redirect()->route('login')
-                    ->with('error', 'Tidak dapat menentukan hak akses Anda. Silakan hubungi administrator.');
-        }
-    })->name('home');
 
     Route::prefix('admin')->name('admin.')->middleware(['auth.user:ADM'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
