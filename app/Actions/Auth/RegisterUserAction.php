@@ -27,6 +27,7 @@ class RegisterUserAction
             'name' => 'required',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6|confirmed',
+            'role' => 'sometimes|in:MHS,DSN',
         ]);
 
         if ($validator->fails()) {
@@ -37,17 +38,25 @@ class RegisterUserAction
         }
 
         try {
-            $user = $this->authService->registerUser($validator->validated());
+            $role = $request->input('role', 'MHS');
+            
+            $result = $this->authService->registerUser(
+                $validator->validated(),
+                $role
+            );
+            
+            if (!$result['success']) {
+                return $result;
+            }
             
             return [
                 'success' => true,
-                'user' => $user,
+                'user' => $result['user'],
             ];
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'Registration failed.',
-                'error' => $e->getMessage(),
+                'errors' => ['email' => 'Registrasi gagal: ' . $e->getMessage()],
             ];
         }
     }

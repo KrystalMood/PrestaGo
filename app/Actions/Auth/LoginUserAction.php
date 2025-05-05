@@ -5,6 +5,7 @@ namespace App\Actions\Auth;
 use App\Events\UserLoggedIn;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class LoginUserAction
 {
@@ -23,22 +24,36 @@ class LoginUserAction
      */
     public function execute(Request $request): bool
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-        
-        if ($this->authService->attemptLogin($credentials, $request->filled('remember'))) {
-            $request->session()->regenerate();
+        try {
+            $credentials = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
             
-            $this->logLoginActivity($request);
+            if ($this->authService->attemptLogin($credentials, $request->filled('remember'))) {
+                $request->session()->regenerate();
+                
+                $user = $request->user();
+                if (!$user->level || !in_array($user->getRole(), ['ADM', 'MHS', 'DSN'])) {
+                    $this->authService->logout();
+                    throw ValidationException::withMessages([
+                        'email' => 'Akun tidak memiliki hak akses yang valid.',
+                    ]);
+                }
+                
+                $this->logLoginActivity($request);
+                
+                event(new UserLoggedIn($user));
+                
+                return true;
+            }
             
-            event(new UserLoggedIn($request->user()));
-            
-            return true;
+            return false;
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            return false;
         }
-        
-        return false;
     }
     
     /**
@@ -56,6 +71,7 @@ class LoginUserAction
         //     'user_id' => $request->user()->id,
         //     'ip_address' => $request->ip(),
         //     'user_agent' => $request->userAgent(),
+        //     'login_time' => now(),
         // ]);
     }
 }

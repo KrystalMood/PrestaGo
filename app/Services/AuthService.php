@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\User;
+use App\Models\LevelModel;
+use App\Models\UserModel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -24,15 +25,62 @@ class AuthService
      * Register a new user.
      *
      * @param array $userData
-     * @return User
+     * @param string $role
+     * @return array
      */
-    public function registerUser(array $userData): User
+    public function registerUser(array $userData, string $role = 'MHS'): array
     {
-        return User::create([
-            'name' => $userData['name'],
-            'email' => $userData['email'],
-            'password' => Hash::make($userData['password']),
-        ]);
+        try {
+            $level = LevelModel::where('level_kode', $role)->first();
+            
+            if (!$level) {
+                return [
+                    'success' => false,
+                    'errors' => ['level' => 'Tipe akun tidak valid.'],
+                    'user' => null
+                ];
+            }
+            
+            $user = UserModel::create([
+                'name' => $userData['name'],
+                'email' => $userData['email'],
+                'level_id' => $level->level_id,
+                'password' => Hash::make($userData['password']),
+            ]);
+            
+            return [
+                'success' => true,
+                'user' => $user
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'errors' => ['email' => 'Gagal membuat pengguna.'],
+                'user' => null
+            ];
+        }
+    }
+    
+    /**
+     * Check if a user has a specific role
+     *
+     * @param UserModel $user
+     * @param string|array $roles
+     * @return bool
+     */
+    public function hasRole(UserModel $user, $roles): bool
+    {
+        if (is_string($roles)) {
+            return $user->hasRole($roles);
+        }
+        
+        foreach ($roles as $role) {
+            if ($user->hasRole($role)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**

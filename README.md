@@ -1,55 +1,150 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏆 PrestaGo - Sistem Informasi Pencatatan Prestasi
+
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/images/full-text-logo.png" width="400" alt="PrestaGo Logo">
 </p>
 
-# Sistem Informasi Pencatatan Prestasi (SIPP)
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-10-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel Version">
+  <img src="https://img.shields.io/badge/PHP-8.1+-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP Version">
+  <img src="https://img.shields.io/badge/TailwindCSS-4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License">
+</p>
 
-## Deskripsi
+## 📋 Deskripsi
 
-SIPP adalah sebuah sistem informasi yang dirancang untuk mencatat dan mengelola data prestasi. Sistem ini bertujuan untuk mempermudah proses pendataan, pemantauan, dan pelaporan prestasi dalam suatu institusi atau organisasi.
+**PrestaGo** adalah aplikasi web modern berbasis Laravel yang dirancang untuk mempermudah pengelolaan dan pencatatan prestasi mahasiswa. Sistem ini memungkinkan mahasiswa, dosen, dan administrator untuk berinteraksi dalam ekosistem yang terintegrasi untuk mengelola berbagai pencapaian akademik dan non-akademik.
 
-## Fitur Utama
+## ✨ Fitur Utama
 
-*   Pencatatan data prestasi individu atau kelompok.
-*   Kategorisasi prestasi berdasarkan bidang (akademik, non-akademik, dll.).
-*   Pencarian dan filter data prestasi.
-*   Pembuatan laporan rekapitulasi prestasi.
-*   Manajemen pengguna dan hak akses.
+- 🔐 **Multi-role Authentication**
+  - Admin (Pengelola sistem)
+  - Mahasiswa (Pengguna utama)
+  - Dosen (Pembimbing/pengajar)
 
-## Instalasi
+- 🏅 **Pengelolaan Prestasi**
+  - Pencatatan prestasi akademik dan non-akademik
+  - Upload bukti prestasi (sertifikat, dokumentasi)
+  - Validasi dan verifikasi prestasi oleh admin
 
-1.  Clone repositori ini: `git clone [URL repositori]`
-2.  Masuk ke direktori proyek: `cd PWL_POS` (Sesuaikan jika nama direktori berbeda)
-3.  Install dependensi: `[perintah instalasi, contoh: composer install atau npm install]`
-4.  Konfigurasi environment: Salin `.env.example` menjadi `.env` dan sesuaikan pengaturannya.
-5.  Jalankan migrasi database: `[perintah migrasi, contoh: php artisan migrate]`
-6.  Jalankan aplikasi: `[perintah menjalankan aplikasi, contoh: php artisan serve atau npm run dev]`
+- 🥇 **Manajemen Kompetisi**
+  - Informasi lomba dan kompetisi
+  - Pendaftaran dan tracking keikutsertaan
+  - Hasil dan pencapaian
 
-## Penggunaan
+- 📊 **Dashboard & Reporting**
+  - Statistik dan visualisasi data prestasi
+  - Laporan periodik berbasis periode/semester
+  - Export data dalam berbagai format
 
-*   Akses aplikasi melalui browser di `http://localhost:[port]`.
-*   Login menggunakan akun yang telah terdaftar.
-*   Gunakan menu navigasi untuk mengakses fitur-fitur yang tersedia.
+- 🧑‍🏫 **Sistem Rekomendasi**
+  - Pemberian rekomendasi oleh dosen
+  - Review dan approval terhadap prestasi
 
-## Kontribusi
+## 🚀 Instalasi
 
-Kontribusi sangat diterima! Silakan buat *pull request* atau laporkan isu jika Anda menemukan masalah atau memiliki saran pengembangan.
+### Prasyarat
+- PHP 8.1 atau lebih tinggi
+- Composer
+- Node.js & NPM
+- Database MySQL/MariaDB
 
-## About Laravel
+### Langkah Instalasi
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/username/sipp.git
+   cd sipp
+   ```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+2. **Instalasi Dependensi**
+   ```bash
+   composer install
+   npm install
+   ```
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+3. **Konfigurasi Environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   
+   Konfigurasikan database dan setting lainnya di file `.env`
+
+4. **Migrasi Database**
+   ```bash
+   php artisan migrate --seed
+   ```
+
+5. **Kompilasi Asset**
+   ```bash
+   npm run dev
+   ```
+
+6. **Jalankan Aplikasi**
+   ```bash
+   php artisan serve
+   ```
+   
+   Akses aplikasi melalui browser: `http://localhost:8000`
+
+## 👥 User Roles & Credentials
+
+### Default Login
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@example.com | password |
+| Dosen | dosen@example.com | password |
+| Mahasiswa | mahasiswa@example.com | password |
+
+## 📝 Panduan Penggunaan
+
+### Mahasiswa
+- Mendaftarkan prestasi baru
+- Mengupload bukti prestasi
+- Melihat status verifikasi
+- Melihat riwayat prestasi
+
+### Dosen
+- Melihat prestasi mahasiswa
+- Memberikan rekomendasi
+- Validasi prestasi mahasiswa
+
+### Admin
+- Mengelola data master (program studi, periode, jenis kompetisi)
+- Verifikasi prestasi mahasiswa
+- Mengelola pengguna sistem
+- Membuat laporan
+
+## 🔧 Tech Stack
+
+- **Backend**: Laravel 10.x
+- **Frontend**: Tailwind CSS 4.x
+- **Database**: MySQL/MariaDB
+- **Authentication**: Laravel Sanctum
+
+## 🤝 Kontribusi
+
+Kontribusi sangat diterima! Silakan ikuti langkah berikut:
+
+1. Fork repository ini
+2. Buat branch baru (`git checkout -b feature/amazing-feature`)
+3. Commit perubahan Anda (`git commit -m 'Add some amazing feature'`)
+4. Push ke branch (`git push origin feature/amazing-feature`)
+5. Buat Pull Request
+
+## 📄 Lisensi
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+
+## 📞 Kontak
+
+Jika Anda memiliki pertanyaan atau masukan, silakan hubungi kami di [prasuatra@gmail.com](mailto:prasuatra@gmail.com)
+
+---
+
+<p align="center">
+  Made with ❤️ by our team :3
+</p>
