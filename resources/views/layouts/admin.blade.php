@@ -233,15 +233,15 @@
                                 <div class="dropdown dropdown-end">
                                     <div tabindex="0" role="button" class="flex items-center cursor-pointer">
                                         <img class="h-8 w-8 rounded-full border-2 border-gray-200" src="https://ui-avatars.com/api/?name=Admin&background=4338ca&color=fff" alt="User avatar" />
-                                        <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">{{ $user ? $user->name : 'Admin User' }}</span>
+                                        <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">{{ auth() ? auth()->user()->name : 'Admin User' }}</span>
                                         <svg class="ml-1 h-4 w-4 text-gray-400 hidden sm:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                         </svg>
                                     </div>
                                     <ul tabindex="0" class="dropdown-content menu p-2 mt-1 bg-white border border-gray-200 rounded-lg shadow-custom w-48 z-10">
                                         <li class="p-2 text-sm font-medium border-b border-gray-100">
-                                            <span class="block">{{ $user ? $user->name : 'Admin User' }}</span>
-                                            <span class="block text-xs text-gray-500">{{ $user ? $user->email : 'admin@example.com' }}</span>
+                                            <span class="block">{{ auth() ? auth()->user()->name : 'Unknown User' }}</span>
+                                            <span class="block text-xs text-gray-500">{{ auth() ? auth()->user()->email : 'Unknown Email' }}</span>
                                         </li>
                                         <li><a class="text-sm p-2 hover:bg-gray-50 rounded-md">Profil</a></li>
                                         <li><a class="text-sm p-2 hover:bg-gray-50 rounded-md">Pengaturan</a></li>

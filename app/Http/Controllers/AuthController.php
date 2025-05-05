@@ -67,14 +67,14 @@ class AuthController extends Controller
 
     /**
      * Redirect user based on their role
-     * 
+     *
      * @param \App\Models\UserModel $user
      * @return \Illuminate\Http\RedirectResponse
      */
     protected function redirectBasedOnRole($user)
     {
         $role = $user->getRole();
-        
+
         switch ($role) {
             case 'ADM':
                 return redirect()->route('admin.dashboard');
@@ -90,7 +90,7 @@ class AuthController extends Controller
 
     public function adminDashboard()
     {
-        return view('admin.dashboard');
+            return view('admin.dashboard', compact('user'));
     }
 
     public function studentDashboard()
