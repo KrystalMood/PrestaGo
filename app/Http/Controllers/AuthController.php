@@ -73,24 +73,14 @@ class AuthController extends Controller
      */
     protected function redirectBasedOnRole($user)
     {
-        $role = $user->getRole();
 
-        switch ($role) {
-            case 'ADM':
                 return redirect()->route('admin.dashboard');
-            case 'MHS':
-                return redirect()->route('student.dashboard');
-            case 'DSN':
-                return redirect()->route('lecturer.dashboard');
-            default:
-                return redirect()->route('login')
-                    ->with('error', 'Tidak dapat menentukan hak akses Anda. Silakan hubungi administrator.');
-        }
+
     }
 
     public function adminDashboard()
     {
-            return view('admin.dashboard', compact('user'));
+        return view('admin.dashboard');
     }
 
     public function studentDashboard()
