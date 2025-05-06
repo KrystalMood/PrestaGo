@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\UserController;
 */
 
 // Public routes
+Route::get('/', [AuthController::class, 'login']);
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'postlogin']);
 Route::get('/register', [AuthController::class, 'register'])->name('register');
@@ -88,23 +89,23 @@ Route::middleware(['auth'])->group(function () {
 
     // Student routes
     Route::prefix('student')->name('student.')->middleware(['auth.user:MHS'])->group(function () {
-        Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('dashboard');
+        Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('Mahasiswa.dashboard');
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
             Route::get('/', function () {
-                return view('student.achievements.index');
+                return view('Mahasiswa.achievements.index');
             })->name('index');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', function () {
-                return view('student.competitions.index');
+                return view('Mahasiswa.competitions.index');
             })->name('index');
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', function () {
-                return view('student.profile.index');
+                return view('Mahasiswa.profile.index');
             })->name('index');
         });
     });
@@ -115,19 +116,19 @@ Route::middleware(['auth'])->group(function () {
 
         Route::prefix('students')->name('students.')->group(function () {
             Route::get('/', function () {
-                return view('lecturer.students.index');
+                return view('Dosen.students.index');
             })->name('index');
         });
 
         Route::prefix('recommendations')->name('recommendations.')->group(function () {
             Route::get('/', function () {
-                return view('lecturer.recommendations.index');
+                return view('Dosen.recommendations.index');
             })->name('index');
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', function () {
-                return view('lecturer.profile.index');
+                return view('Dosen.profile.index');
             })->name('index');
         });
     });
