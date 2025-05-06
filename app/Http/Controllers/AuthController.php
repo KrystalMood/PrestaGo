@@ -85,12 +85,12 @@ class AuthController extends Controller
 
     public function studentDashboard()
     {
-        return view('student.dashboard');
+        return view('Mahasiswa.dashboard');
     }
 
     public function lecturerDashboard()
     {
-        return view('lecturer.dashboard');
+        return view('Dosen.dashboard');
     }
 
     public function logout(Request $request)

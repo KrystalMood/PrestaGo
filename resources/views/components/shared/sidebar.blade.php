@@ -1,7 +1,7 @@
 @props(['user' => null])
 
 @php
-    $userRole = $user ? $user->role : (auth()->user() ? auth()->user()->role : 'admin');
+    $userRole = auth()->user()->level->level_nama;
 @endphp
 
 <aside class="w-64 shadow-custom bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden hidden lg:block h-screen sticky top-0">
@@ -82,7 +82,7 @@
             <div class="py-2 mt-2 border-t border-gray-100">
                 <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Akun</span>
             </div>
-            
+
             <li>
                 <a href="{{ route($userRole . '.profile.edit') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
