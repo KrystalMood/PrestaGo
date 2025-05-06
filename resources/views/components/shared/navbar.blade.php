@@ -44,7 +44,7 @@
                                 <span class="block text-xs text-gray-500">{{ $user ? $user->email : (auth()->user() ? auth()->user()->email : 'Unknown Email') }}</span>
                                 <span class="block text-xs text-gray-500 capitalize">{{ $userRole }}</span>
                             </li>
-                            <li><a href="{{ route($userRole . '.profile.edit') }}" class="text-sm p-2 hover:bg-gray-50 rounded-md">Profil</a></li>
+                            <li><a href="#" class="text-sm p-2 hover:bg-gray-50 rounded-md">Profil</a></li>
                             @if($userRole == 'admin')
                                 <li><a href="{{ route('admin.settings.index') }}" class="text-sm p-2 hover:bg-gray-50 rounded-md">Pengaturan</a></li>
                             @endif
