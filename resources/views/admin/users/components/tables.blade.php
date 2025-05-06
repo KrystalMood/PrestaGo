@@ -35,9 +35,9 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 @if($user->photo)
-                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $user->photo) }}" alt="{{ $user->name }}">
+                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $user->photo) }}" alt="{{ $user->name }}" loading="lazy">
                                 @else
-                                    <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4338ca&color=fff" alt="{{ $user->name }}">
+                                    <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4338ca&color=fff" alt="{{ $user->name }}" loading="lazy">
                                 @endif
                             </div>
                             <div class="ml-4">
@@ -67,13 +67,13 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end gap-2">
-                            <a href="{{ route('admin.users.edit', $user->users_id) }}" class="text-brand hover:text-brand-dark">
+                            <a href="{{ route('admin.users.edit', $user->users_id) }}" class="btn btn-sm btn-ghost text-brand hover:bg-brand-light hover:bg-opacity-10">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </a>
                             
-                            <button type="button" class="text-red-600 hover:text-red-800 delete-user" data-user-id="{{ $user->users_id }}" data-user-name="{{ $user->name }}">
+                            <button type="button" class="btn btn-sm btn-ghost text-red-600 hover:bg-red-50 delete-user" data-user-id="{{ $user->users_id }}" data-user-name="{{ $user->name }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -89,7 +89,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                             </svg>
                             <p class="text-gray-600 font-medium">Tidak ada data pengguna yang ditemukan</p>
-                            <p class="text-gray-500 mt-1">Silakan tambahkan pengguna baru atau ubah filter pencarian</p>
+                            <p class="text-gray-500 mt-1 text-sm">Silakan tambahkan pengguna baru atau ubah filter pencarian</p>
                         </div>
                     </td>
                 </tr>
@@ -101,7 +101,7 @@
 
 <!-- Delete Confirmation Modal -->
 <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
+    <div class="bg-white rounded-lg shadow-custom max-w-md w-full mx-4">
         <div class="p-6">
             <div class="flex items-center justify-center mb-4">
                 <div class="bg-red-100 rounded-full p-3">
@@ -110,18 +110,18 @@
                     </svg>
                 </div>
             </div>
-            <h3 class="text-xl font-bold text-center text-gray-900 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menghapus pengguna <span id="user-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
+            <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Konfirmasi Hapus</h3>
+            <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus pengguna <span id="user-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
             
             <div class="flex justify-center gap-4">
-                <button id="cancel-delete" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg">
+                <button id="cancel-delete" class="btn btn-sm btn-ghost">
                     Batal
                 </button>
                 
                 <form id="delete-form" method="POST" action="">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg">
+                    <button type="submit" class="btn btn-sm btn-error text-white">
                         Ya, Hapus
                     </button>
                 </form>
@@ -131,7 +131,6 @@
 </div>
 
 <script>
-    // Delete modal functionality
     const deleteModal = document.getElementById('delete-modal');
     const deleteForm = document.getElementById('delete-form');
     const userNameToDelete = document.getElementById('user-name-to-delete');
@@ -152,7 +151,6 @@
         deleteModal.classList.add('hidden');
     });
     
-    // Close modal when clicking outside
     deleteModal.addEventListener('click', (e) => {
         if (e.target === deleteModal) {
             deleteModal.classList.add('hidden');
