@@ -1,5 +1,7 @@
+@props(['modalId' => 'delete-modal', 'route' => '', 'itemType' => 'item'])
+
 <!-- Delete Confirmation Modal -->
-<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+<div id="{{ $modalId }}" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
         <div class="p-6">
             <div class="flex items-center justify-center mb-4">
@@ -10,14 +12,14 @@
                 </div>
             </div>
             <h3 class="text-xl font-bold text-center text-gray-900 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menghapus pengguna <span id="user-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
+            <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menghapus {{ $itemType }} <span id="item-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
             
             <div class="flex justify-center gap-4">
-                <button id="cancel-delete" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg">
+                <button id="cancel-delete-{{ $modalId }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg">
                     Batal
                 </button>
                 
-                <form id="delete-form" method="POST" action="">
+                <form id="delete-form-{{ $modalId }}" method="POST" action="">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg">
@@ -32,18 +34,18 @@
 <script>
     // Delete modal functionality
     document.addEventListener('DOMContentLoaded', function() {
-        const deleteModal = document.getElementById('delete-modal');
-        const deleteForm = document.getElementById('delete-form');
-        const userNameToDelete = document.getElementById('user-name-to-delete');
-        const cancelDelete = document.getElementById('cancel-delete');
+        const deleteModal = document.getElementById('{{ $modalId }}');
+        const deleteForm = document.getElementById('delete-form-{{ $modalId }}');
+        const itemNameToDelete = document.getElementById('item-name-to-delete');
+        const cancelDelete = document.getElementById('cancel-delete-{{ $modalId }}');
         
-        document.querySelectorAll('.delete-user').forEach(button => {
+        document.querySelectorAll('.delete-item').forEach(button => {
             button.addEventListener('click', () => {
-                const userId = button.getAttribute('data-user-id');
-                const userName = button.getAttribute('data-user-name');
+                const itemId = button.getAttribute('data-item-id');
+                const itemName = button.getAttribute('data-item-name');
                 
-                deleteForm.action = `{{ route('admin.users.index') }}/${userId}`;
-                userNameToDelete.textContent = userName;
+                deleteForm.action = `{{ $route }}/${itemId}`;
+                itemNameToDelete.textContent = itemName;
                 deleteModal.classList.remove('hidden');
             });
         });

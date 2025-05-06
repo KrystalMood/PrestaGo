@@ -40,10 +40,16 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
         });
 
-        Route::prefix('achievements')->name('achievements.')->group(function () {
+        Route::prefix('verification')->name('verification.')->group(function () {
             Route::get('/', function () {
-                return view('admin.achievements.index');
+                return view('admin.verification.index');
             })->name('index');
+            Route::patch('/{id}/approve', function ($id) {
+                return redirect()->back()->with('success', 'Prestasi berhasil disetujui');
+            })->name('approve');
+            Route::patch('/{id}/reject', function ($id) {
+                return redirect()->back()->with('success', 'Prestasi berhasil ditolak');
+            })->name('reject');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {

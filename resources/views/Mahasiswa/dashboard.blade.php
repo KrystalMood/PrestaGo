@@ -63,7 +63,7 @@
                         [
                             'title' => 'Verifikasi Prestasi',
                             'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-                            'href' => route('admin.achievements.index')
+                            'href' => route('admin.verification.index')
                         ],
                         [
                             'title' => 'Tambah Kompetisi',
@@ -107,7 +107,7 @@
             <div class="bg-white rounded-lg shadow-custom p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-gray-800">Pengajuan Prestasi Terbaru</h2>
-                    <a href="{{ route('admin.achievements.index') }}" class="text-sm text-brand-light hover:underline">Lihat Semua</a>
+                    <a href="{{ route('admin.verification.index') }}" class="text-sm text-brand-light hover:underline">Lihat Semua</a>
                 </div>
 
                 @php

@@ -1,8 +1,12 @@
 @component('layouts.admin', ['title' => 'Manajemen Pengguna'])
 <div class="bg-white rounded-lg shadow-custom p-6">
-    <p class="text-start text-gray-500 mb-6 text-sm">Halaman ini menampilkan daftar semua pengguna sistem dan memungkinkan Anda untuk
-        menambah, mengubah, atau menghapus data pengguna.</p>
-    @component('admin.users.components.stats-cards')
+    <div class="mb-6">
+        @include('admin.components.ui.page-header', [
+            'subtitle' => 'Halaman ini menampilkan daftar semua pengguna sistem dan memungkinkan Anda untuk menambah, mengubah, atau menghapus data pengguna.',
+            'actionText' => 'Tambah Pengguna',
+        ])
+    </div>
+    
     @php
         $stats = [
             [
@@ -22,8 +26,24 @@
             ],
         ];
     @endphp
-    @slot('stats', $stats)
+    @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
     @endcomponent
+
+    <div class="mt-4 mb-6 flex justify-end space-x-3">
+        <x-admin.buttons.add-button 
+            route="{{ route('admin.users.create') }}" 
+            text="Tambah Pengguna" 
+            icon="user-plus"
+            color="blue"
+        />
+        
+        <x-admin.buttons.action-button
+            route="#"
+            text="Ekspor Data"
+            icon="download"
+            color="green"
+        />
+    </div>
 
     @component('admin.users.components.search-and-filter')
     @slot('roles', $roles ?? [])
@@ -33,8 +53,7 @@
     @slot('users', $users ?? collect())
     @endcomponent
 
-    @component('admin.users.components.pagination')
-    @slot('users', $users ?? collect())
+    @component('admin.components.tables.pagination', ['data' => $users ?? collect()])
     @endcomponent
 </div>
 @endcomponent
