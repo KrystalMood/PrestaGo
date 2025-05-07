@@ -3,7 +3,7 @@
 <div class="dropdown dropdown-end">
     <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
         <div class="w-10 rounded-full">
-            <img alt="Avatar" src="https://ui-avatars.com/api/?name={{ $user->name }}&background=4f46e5&color=fff" />
+            <img alt="Avatar" src="https://ui-avatars.com/api/?name={{ $user->name }}&background=4f46e5&color=fff" loading="lazy" />
         </div>
     </div>
     <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-white rounded-box w-52">

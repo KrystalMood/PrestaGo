@@ -1,15 +1,68 @@
 @component('layouts.admin', ['title' => 'Manajemen Kompetisi'])
     <div class="bg-white rounded-lg shadow-custom p-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-2">Manajemen Kompetisi</h2>
-        <p class="text-gray-600 mb-6">Halaman ini menampilkan daftar kompetisi yang tersedia dan memungkinkan Anda untuk menambah, mengubah, atau menghapus informasi kompetisi.</p>
-        
-        <div class="flex p-4 mb-4 text-yellow-800 bg-yellow-50 rounded-lg" role="alert">
-            <svg class="flex-shrink-0 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-            </svg>
-            <div class="ml-3 text-sm font-medium">
-                Halaman ini masih dalam tahap pengembangan. Fitur manajemen kompetisi akan segera tersedia.
-            </div>
+        <div class="mb-6">
+            @include('admin.components.ui.page-header', [
+                'title' => 'Manajemen Kompetisi',
+                'subtitle' => 'Halaman ini menampilkan daftar kompetisi yang tersedia dan memungkinkan Anda untuk menambah, mengubah, atau menghapus informasi kompetisi.',
+            ])
         </div>
+        
+        @php
+            $stats = [
+                [
+                    'title' => 'Total Kompetisi',
+                    'value' => $totalCompetitions ?? 0,
+                    'icon' => 'trophy'
+                ],
+                [
+                    'title' => 'Kompetisi Aktif',
+                    'value' => $activeCompetitions ?? 0,
+                    'icon' => 'calendar'
+                ],
+                [
+                    'title' => 'Kompetisi Selesai',
+                    'value' => $completedCompetitions ?? 0,
+                    'icon' => 'check-circle'
+                ],
+                [
+                    'title' => 'Peserta Terdaftar',
+                    'value' => $registeredParticipants ?? 0,
+                    'icon' => 'users'
+                ],
+            ];
+        @endphp
+        
+        <div class="mb-4">
+            @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 4])
+            @endcomponent
+        </div>
+
+        <div class="mt-4 mb-6 flex justify-end space-x-3">
+            <x-admin.buttons.add-button 
+                route="{{ route('admin.competitions.create') }}" 
+                text="Tambah Kompetisi" 
+                icon="plus"
+                color="blue"
+            />
+            
+            <x-admin.buttons.action-button
+                route="#"
+                text="Ekspor Data"
+                icon="download"
+                color="green"
+            />
+        </div>
+
+        @component('admin.competitions.components.search-and-filter')
+            @slot('categories', $categories ?? collect())
+            @slot('statuses', $statuses ?? collect())
+        @endcomponent
+
+        @component('admin.competitions.components.tables')
+            @slot('competitions', $competitions ?? collect())
+        @endcomponent
+
+        @component('admin.components.tables.pagination', ['data' => $competitions ?? collect()])
+        @endcomponent
     </div>
 @endcomponent 

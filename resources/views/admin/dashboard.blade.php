@@ -1,36 +1,7 @@
 @component('layouts.admin', ['title' => 'Dasbor Admin'])
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        @php
-        $stats = [
-            [
-                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>',
-                'title' => 'Total Pengguna',
-                'value' => '254',
-                'trend' => '↗︎ 12% (30 hari)'
-            ],
-            [
-                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-                'title' => 'Prestasi Terverifikasi',
-                'value' => '85%',
-                'trend' => '↗︎ 14% (30 hari)'
-            ],
-            [
-                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-                'title' => 'Verifikasi Tertunda',
-                'value' => '24',
-                'trend' => 'Perlu perhatian'
-            ],
-            [
-                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>',
-                'title' => 'Kompetisi Aktif',
-                'value' => '12',
-                'trend' => '↗︎ 5 ditambahkan bulan ini'
-            ]
-        ];
-        @endphp
-        
         @foreach ($stats as $stat)
-            @include('admin.components.stats-card', [
+            @include('admin.components.cards.stats-card', [
                 'icon' => $stat['icon'],
                 'title' => $stat['title'],
                 'value' => $stat['value'],
@@ -41,18 +12,18 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2 space-y-6">
-            @component('admin.components.chart-container', ['title' => 'Statistik Prestasi'])
+            @component('admin.components.cards.chart-container', ['title' => 'Statistik Prestasi'])
                 <p class="text-gray-500">Grafik statistik prestasi</p>
             @endcomponent
             
-            @component('admin.components.card', ['title' => 'Aksi Cepat'])
+            @component('admin.components.cards.card', ['title' => 'Aksi Cepat'])
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     @php
                     $actions = [
                         [
                             'title' => 'Verifikasi Prestasi',
                             'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-                            'href' => route('admin.achievements.index')
+                            'href' => route('admin.verification.index')
                         ],
                         [
                             'title' => 'Tambah Kompetisi',
@@ -83,7 +54,7 @@
                     @endphp
                     
                     @foreach ($actions as $action)
-                        @include('admin.components.quick-action', [
+                        @include('admin.components.ui.quick-action', [
                             'title' => $action['title'],
                             'icon' => $action['icon'],
                             'href' => $action['href']
@@ -92,10 +63,10 @@
                 </div>
             @endcomponent
             
-            @component('admin.components.card', [
+            @component('admin.components.cards.card', [
                 'title' => 'Pengajuan Prestasi Terbaru',
                 'linkText' => 'Lihat Semua',
-                'linkUrl' => route('admin.achievements.index')
+                'linkUrl' => route('admin.verification.index')
             ])
                 @php
                 $submissions = [
@@ -128,7 +99,7 @@
                 
                 <div class="space-y-4">
                     @foreach ($submissions as $submission)
-                        @include('admin.components.achievement-submission', [
+                        @include('admin.components.ui.achievement-submission', [
                             'name' => $submission['name'],
                             'class' => $submission['class'],
                             'avatar' => $submission['avatar'],
@@ -142,7 +113,7 @@
         </div>
         
         <div class="space-y-6">
-            @component('admin.components.card', ['title' => 'Aktivitas Terbaru'])
+            @component('admin.components.cards.card', ['title' => 'Aktivitas Terbaru'])
                 @php
                 $activities = [
                     [
@@ -170,7 +141,7 @@
                 
                 <div class="space-y-4">
                     @foreach ($activities as $activity)
-                        @include('admin.components.activity-item', [
+                        @include('admin.components.ui.activity-item', [
                             'icon' => $activity['icon'],
                             'message' => $activity['message'],
                             'time' => $activity['time']
@@ -179,7 +150,7 @@
                 </div>
             @endcomponent
             
-            @component('admin.components.card', ['title' => 'Deadline Mendatang'])
+            @component('admin.components.cards.card', ['title' => 'Deadline Mendatang'])
                 @php
                 $deadlines = [
                     [
@@ -208,7 +179,7 @@
                 
                 <div class="space-y-4">
                     @foreach ($deadlines as $deadline)
-                        @include('admin.components.deadline-item', [
+                        @include('admin.components.ui.deadline-item', [
                             'date_day' => $deadline['date_day'],
                             'date_month' => $deadline['date_month'],
                             'title' => $deadline['title'],
@@ -219,7 +190,7 @@
                 </div>
             @endcomponent
             
-            @component('admin.components.card', ['title' => 'Status Sistem'])
+            @component('admin.components.cards.card', ['title' => 'Status Sistem'])
                 @php
                 $metrics = [
                     ['name' => 'Penggunaan Penyimpanan', 'value' => 65, 'color' => 'indigo'],
@@ -230,7 +201,7 @@
                 
                 <div class="space-y-4">
                     @foreach ($metrics as $metric)
-                        @include('admin.components.system-metric', [
+                        @include('admin.components.metrics.system-metric', [
                             'name' => $metric['name'],
                             'value' => $metric['value'],
                             'color' => $metric['color']
@@ -240,10 +211,10 @@
                     <div class="border-t border-gray-100 pt-4 mt-4">
                         <table class="min-w-full">
                             <tbody>
-                                @include('admin.components.system-service', ['name' => 'Basis Data', 'status' => 'Online'])
-                                @include('admin.components.system-service', ['name' => 'API', 'status' => 'Operasional'])
-                                @include('admin.components.system-service', ['name' => 'CDN', 'status' => 'Aktif'])
-                                @include('admin.components.system-service', ['name' => 'Server', 'status' => 'Sehat'])
+                                @include('admin.components.metrics.system-service', ['name' => 'Basis Data', 'status' => 'Online'])
+                                @include('admin.components.metrics.system-service', ['name' => 'API', 'status' => 'Operasional'])
+                                @include('admin.components.metrics.system-service', ['name' => 'CDN', 'status' => 'Aktif'])
+                                @include('admin.components.metrics.system-service', ['name' => 'Server', 'status' => 'Sehat'])
                             </tbody>
                         </table>
                     </div>

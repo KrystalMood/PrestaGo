@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Admin\UserController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,6 +15,7 @@ use App\Http\Controllers\AuthController;
 */
 
 // Public routes
+Route::get('/', [AuthController::class, 'login']);
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'postlogin']);
 Route::get('/register', [AuthController::class, 'register'])->name('register');
@@ -30,15 +32,25 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
 
         Route::prefix('users')->name('users.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.users.index');
-            })->name('index');
+            Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::get('/create', [UserController::class, 'create'])->name('create');
+            Route::post('/', [UserController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [UserController::class, 'update'])->name('update');
+            Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}/show', [UserController::class, 'show'])->name('show');
         });
 
-        Route::prefix('achievements')->name('achievements.')->group(function () {
+        Route::prefix('verification')->name('verification.')->group(function () {
             Route::get('/', function () {
-                return view('admin.achievements.index');
+                return view('admin.verification.index');
             })->name('index');
+            Route::patch('/{id}/approve', function ($id) {
+                return redirect()->back()->with('success', 'Prestasi berhasil disetujui');
+            })->name('approve');
+            Route::patch('/{id}/reject', function ($id) {
+                return redirect()->back()->with('success', 'Prestasi berhasil ditolak');
+            })->name('reject');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
@@ -80,27 +92,37 @@ Route::middleware(['auth'])->group(function () {
                 return view('admin.settings.index');
             })->name('index');
         });
+
+        // Achievement Verification Routes
+        Route::prefix('verification')->name('verification.')->group(function () {
+            Route::get('/', 'App\Http\Controllers\Admin\AchievementVerificationController@index')->name('index');
+            Route::get('/{id}', 'App\Http\Controllers\Admin\AchievementVerificationController@show')->name('show');
+            Route::post('/{id}/approve', 'App\Http\Controllers\Admin\AchievementVerificationController@approve')->name('approve');
+            Route::post('/{id}/reject', 'App\Http\Controllers\Admin\AchievementVerificationController@reject')->name('reject');
+            Route::get('/attachment/{id}/download', 'App\Http\Controllers\Admin\AchievementVerificationController@downloadAttachment')->name('download');
+            Route::get('/export', 'App\Http\Controllers\Admin\AchievementVerificationController@export')->name('export');
+        });
     });
 
     // Student routes
     Route::prefix('student')->name('student.')->middleware(['auth.user:MHS'])->group(function () {
-        Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('dashboard');
+        Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('Mahasiswa.dashboard');
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
             Route::get('/', function () {
-                return view('student.achievements.index');
+                return view('Mahasiswa.achievements.index');
             })->name('index');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', function () {
-                return view('student.competitions.index');
+                return view('Mahasiswa.competitions.index');
             })->name('index');
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', function () {
-                return view('student.profile.index');
+                return view('Mahasiswa.profile.index');
             })->name('index');
         });
     });
@@ -111,19 +133,19 @@ Route::middleware(['auth'])->group(function () {
 
         Route::prefix('students')->name('students.')->group(function () {
             Route::get('/', function () {
-                return view('lecturer.students.index');
+                return view('Dosen.students.index');
             })->name('index');
         });
 
         Route::prefix('recommendations')->name('recommendations.')->group(function () {
             Route::get('/', function () {
-                return view('lecturer.recommendations.index');
+                return view('Dosen.recommendations.index');
             })->name('index');
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', function () {
-                return view('lecturer.profile.index');
+                return view('Dosen.profile.index');
             })->name('index');
         });
     });
