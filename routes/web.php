@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/edit', [UserController::class, 'edit'])->name('edit');
             Route::put('/{id}', [UserController::class, 'update'])->name('update');
             Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}/show', [UserController::class, 'show'])->name('show');
         });
 
         Route::prefix('verification')->name('verification.')->group(function () {
@@ -90,6 +91,16 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', function () {
                 return view('admin.settings.index');
             })->name('index');
+        });
+
+        // Achievement Verification Routes
+        Route::prefix('verification')->name('verification.')->group(function () {
+            Route::get('/', 'App\Http\Controllers\Admin\AchievementVerificationController@index')->name('index');
+            Route::get('/{id}', 'App\Http\Controllers\Admin\AchievementVerificationController@show')->name('show');
+            Route::post('/{id}/approve', 'App\Http\Controllers\Admin\AchievementVerificationController@approve')->name('approve');
+            Route::post('/{id}/reject', 'App\Http\Controllers\Admin\AchievementVerificationController@reject')->name('reject');
+            Route::get('/attachment/{id}/download', 'App\Http\Controllers\Admin\AchievementVerificationController@downloadAttachment')->name('download');
+            Route::get('/export', 'App\Http\Controllers\Admin\AchievementVerificationController@export')->name('export');
         });
     });
 

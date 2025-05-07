@@ -9,12 +9,12 @@
     
     @if($actionText && $actionUrl)
         <div class="mt-4 sm:mt-0">
-            <a href="{{ $actionUrl }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                {{ $actionText }}
-            </a>
+            <x-admin.buttons.add-button 
+                :route="$actionUrl" 
+                :text="$actionText" 
+                icon="plus"
+                color="indigo"
+            />
         </div>
     @endif
 </div> 

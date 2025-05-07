@@ -116,6 +116,29 @@ class UserController extends Controller
             ->with('success', 'Pengguna berhasil diperbarui!');
     }
 
+    public function show(string $id)
+    {
+        $user = UserModel::with('level')->findOrFail($id);
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->users_id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->getRoleName(),
+                    'role_code' => $user->getRole(),
+                    'created_at' => $user->created_at->format('d M Y, H:i'),
+                    'photo' => $user->photo ? asset('storage/' . $user->photo) : 
+                        'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=4338ca&color=fff',
+                ]
+            ]);
+        }
+        
+        return abort(404);
+    }
+
     public function destroy(string $id)
     {
         $user = UserModel::findOrFail($id);

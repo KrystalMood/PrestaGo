@@ -108,7 +108,7 @@
                     <td colspan="7" class="px-6 py-10 text-center text-gray-500">
                         <div class="flex flex-col items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                             </svg>
                             <p class="text-gray-600 font-medium">Tidak ada data kompetisi yang tersedia</p>
                             <p class="text-gray-500 mt-1 text-sm">Silakan tambahkan kompetisi baru atau ubah filter pencarian</p>

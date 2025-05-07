@@ -4,6 +4,7 @@
         @include('admin.components.ui.page-header', [
             'subtitle' => 'Halaman ini menampilkan daftar semua pengguna sistem dan memungkinkan Anda untuk menambah, mengubah, atau menghapus data pengguna.',
             'actionText' => 'Tambah Pengguna',
+            'actionUrl' => route('admin.users.create')
         ])
     </div>
     
@@ -45,8 +46,24 @@
         />
     </div>
 
-    @component('admin.users.components.search-and-filter')
-    @slot('roles', $roles ?? [])
+    @php
+        $filterOptions = [];
+        foreach ($roles ?? [] as $role) {
+            $filterOptions[] = [
+                'value' => $role->level_kode,
+                'label' => $role->level_nama
+            ];
+        }
+    @endphp
+
+    @component('admin.components.ui.search-and-filter', [
+        'searchRoute' => route('admin.users.index'),
+        'searchPlaceholder' => 'Cari pengguna berdasarkan nama atau email...',
+        'filterOptions' => $filterOptions,
+        'filterName' => 'role',
+        'filterLabel' => 'Semua Peran',
+        'currentFilter' => request('role')
+    ])
     @endcomponent
 
     @component('admin.users.components.tables')

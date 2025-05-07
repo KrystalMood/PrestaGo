@@ -54,12 +54,12 @@
         </div>
 
         @component('admin.competitions.components.search-and-filter')
-        @slot('categories', $categories ?? collect())
-        @slot('statuses', $statuses ?? collect())
+            @slot('categories', $categories ?? collect())
+            @slot('statuses', $statuses ?? collect())
         @endcomponent
 
         @component('admin.competitions.components.tables')
-        @slot('competitions', $competitions ?? collect())
+            @slot('competitions', $competitions ?? collect())
         @endcomponent
 
         @component('admin.components.tables.pagination', ['data' => $competitions ?? collect()])
