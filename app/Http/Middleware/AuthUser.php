@@ -20,23 +20,23 @@ class AuthUser
             return redirect()->route('login')
                 ->with('error', 'Silakan login terlebih dahulu.');
         }
-        
+
         $user = $request->user();
         $user_role = $user->getRole();
-        
+
         if (empty($roles) || in_array($user_role, $roles)) {
             return $next($request);
         }
-        
+
         switch ($user_role) {
             case 'ADM':
                 return redirect()->route('admin.dashboard')
                     ->with('error', 'Anda tidak memiliki izin untuk mengakses halaman tersebut.');
             case 'MHS':
-                return redirect()->route('student.dashboard')
+                return redirect()->route('Mahasiswa.dashboard')
                     ->with('error', 'Anda tidak memiliki izin untuk mengakses halaman tersebut.');
             case 'DSN':
-                return redirect()->route('lecturer.dashboard')
+                return redirect()->route('Dosen.dashboard')
                     ->with('error', 'Anda tidak memiliki izin untuk mengakses halaman tersebut.');
             default:
                 return redirect()->route('login')

@@ -1,3 +1,7 @@
+@extends('components.shared.content')
+
+@section('content')
+
 @component('layouts.app', ['title' => 'Kompetisi'])
 
 <div class="container">
@@ -14,7 +18,7 @@
                     @endif
 
                     <h4>Daftar Kompetisi</h4>
-                    
+
                     <div class="mb-3">
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Cari kompetisi...">
@@ -23,7 +27,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -46,4 +50,5 @@
         </div>
     </div>
 </div>
-@endcomponent 
+@endcomponent
+@endsection
