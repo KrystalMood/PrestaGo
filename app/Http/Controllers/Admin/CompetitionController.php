@@ -189,4 +189,11 @@ class CompetitionController extends Controller
         
         return back()->with('success', "Kompetisi telah {$status}!");
     }
+    
+    public function participants(CompetitionModel $competition)
+    {
+        $competition->load(['participants', 'participants.user']);
+        
+        return view('admin.competitions.participants', compact('competition'));
+    }
 } 

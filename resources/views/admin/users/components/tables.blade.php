@@ -130,7 +130,7 @@
         <!-- User ID card -->
         @component('admin.components.cards.info-card', [
             'title' => 'ID Pengguna',
-            'value' => 'Loading...',
+            'value' => ' ',
         ])
             <div id="user-id"></div>
         @endcomponent

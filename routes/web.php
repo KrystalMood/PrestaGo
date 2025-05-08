@@ -27,10 +27,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 
-
+    // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware(['auth.user:ADM'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'adminDashboard'])->name('dashboard');
 
+        // User Management Routes
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [UserController::class, 'index'])->name('index');
             Route::get('/create', [UserController::class, 'create'])->name('create');
@@ -42,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/details', [UserController::class, 'show'])->name('details');
         });
 
+        // Achievement Verification Routes
         Route::prefix('verification')->name('verification.')->group(function () {
             Route::get('/', function () {
                 return view('admin.verification.index');
@@ -54,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
             })->name('reject');
         });
 
+        // Competition Management Routes
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\CompetitionController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Admin\CompetitionController::class, 'create'])->name('create');
@@ -63,8 +66,10 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'update'])->name('update');
             Route::delete('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'destroy'])->name('destroy');
             Route::patch('/{competition}/toggle-verification', [App\Http\Controllers\Admin\CompetitionController::class, 'toggleVerification'])->name('toggle-verification');
+            Route::get('/{competition}/participants', [App\Http\Controllers\Admin\CompetitionController::class, 'participants'])->name('participants');
         });
 
+        // Period Management Routes
         Route::prefix('periods')->name('periods.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\PeriodController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Admin\PeriodController::class, 'create'])->name('create');
@@ -76,24 +81,28 @@ Route::middleware(['auth'])->group(function () {
             Route::patch('/{id}/toggle-active', [App\Http\Controllers\Admin\PeriodController::class, 'toggleActive'])->name('toggle-active');
         });
 
+        // Program Management Routes
         Route::prefix('programs')->name('programs.')->group(function () {
             Route::get('/', function () {
                 return view('admin.programs.index');
             })->name('index');
         });
 
+        // Recommendation Management Routes
         Route::prefix('recommendations')->name('recommendations.')->group(function () {
             Route::get('/', function () {
                 return view('admin.recommendations.index');
             })->name('index');
         });
 
+        // Report Management Routes
         Route::prefix('reports')->name('reports.')->group(function () {
             Route::get('/', function () {
                 return view('admin.reports.index');
             })->name('index');
         });
 
+        // Settings Management Routes
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', function () {
                 return view('admin.settings.index');

@@ -31,254 +31,28 @@
         <form action="{{ route('admin.competitions.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             
-            <!-- Basic Information -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                    Informasi Dasar
-                </h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <x-ui.form-input
-                        name="name"
-                        label="Nama Kompetisi"
-                        :value="old('name')"
-                        required
-                        placeholder="Masukkan nama kompetisi"
-                        :hasError="$errors->has('name')"
-                        :errorMessage="$errors->first('name')"
-                    />
-                    
-                    <x-ui.form-input
-                        name="organizer"
-                        label="Penyelenggara"
-                        :value="old('organizer')"
-                        required
-                        placeholder="Masukkan nama penyelenggara"
-                        :hasError="$errors->has('organizer')"
-                        :errorMessage="$errors->first('organizer')"
-                    />
-                    
-                    @php
-                        $levelOptions = [
-                            'international' => 'Internasional',
-                            'national' => 'Nasional',
-                            'regional' => 'Regional',
-                            'provincial' => 'Provinsi',
-                            'university' => 'Universitas'
-                        ];
-                        
-                        $typeOptions = [
-                            'individual' => 'Individu',
-                            'team' => 'Tim',
-                            'both' => 'Keduanya'
-                        ];
-                        
-                        $statusOptions = [
-                            'upcoming' => 'Akan Datang',
-                            'active' => 'Aktif',
-                            'completed' => 'Selesai',
-                            'cancelled' => 'Dibatalkan'
-                        ];
-                        
-                        $periodOptions = [];
-                        foreach($periods as $period) {
-                            $periodOptions[$period->id] = $period->name;
-                        }
-                    @endphp
-                    
-                    <x-ui.form-select
-                        name="level"
-                        label="Tingkat"
-                        :options="$levelOptions"
-                        :selected="old('level')"
-                        required
-                        placeholder="Pilih Tingkat"
-                        :hasError="$errors->has('level')"
-                        :errorMessage="$errors->first('level')"
-                    />
-                    
-                    <x-ui.form-select
-                        name="type"
-                        label="Tipe"
-                        :options="$typeOptions"
-                        :selected="old('type')"
-                        required
-                        placeholder="Pilih Tipe"
-                        :hasError="$errors->has('type')"
-                        :errorMessage="$errors->first('type')"
-                    />
-                </div>
-                
-                <div class="mt-4">
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
-                        Deskripsi <span class="text-red-500">*</span>
-                    </label>
-                    <textarea 
-                        id="description" 
-                        name="description" 
-                        rows="5"
-                        class="w-full px-4 py-2.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-brand focus:border-brand {{ $errors->has('description') ? 'border-red-500' : 'border-gray-300' }}"
-                        placeholder="Masukkan deskripsi kompetisi"
-                        required
-                    >{{ old('description') }}</textarea>
-                    <p class="mt-1.5 text-sm text-gray-500">Berikan informasi lengkap tentang kompetisi ini, termasuk tujuan dan manfaat bagi peserta.</p>
-                    @error('description')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-            
-            <!-- Dates and Details -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                    Jadwal & Detail
-                </h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4">
-                    <x-ui.form-input
-                        type="date"
-                        name="registration_start"
-                        label="Tanggal Mulai Pendaftaran"
-                        :value="old('registration_start')"
-                        required
-                        :hasError="$errors->has('registration_start')"
-                        :errorMessage="$errors->first('registration_start')"
-                    />
-                    
-                    <x-ui.form-input
-                        type="date"
-                        name="registration_end"
-                        label="Tanggal Akhir Pendaftaran"
-                        :value="old('registration_end')"
-                        required
-                        :hasError="$errors->has('registration_end')"
-                        :errorMessage="$errors->first('registration_end')"
-                    />
-                    
-                    <x-ui.form-input
-                        type="date"
-                        name="competition_date"
-                        label="Tanggal Kompetisi"
-                        :value="old('competition_date')"
-                        required
-                        :hasError="$errors->has('competition_date')"
-                        :errorMessage="$errors->first('competition_date')"
-                    />
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mt-4">
-                    <x-ui.form-select
-                        name="status"
-                        label="Status"
-                        :options="$statusOptions"
-                        :selected="old('status')"
-                        required
-                        placeholder="Pilih Status"
-                        :hasError="$errors->has('status')"
-                        :errorMessage="$errors->first('status')"
-                    />
-                    
-                    <x-ui.form-select
-                        name="period_id"
-                        label="Periode"
-                        :options="$periodOptions"
-                        :selected="old('period_id')"
-                        required
-                        placeholder="Pilih Periode"
-                        :hasError="$errors->has('period_id')"
-                        :errorMessage="$errors->first('period_id')"
-                    />
-                    
-                    <x-ui.form-input
-                        type="url"
-                        name="registration_link"
-                        label="Link Pendaftaran"
-                        :value="old('registration_link')"
-                        placeholder="https://example.com"
-                        helperText="Masukkan URL resmi kompetisi atau halaman pendaftaran jika ada"
-                        :hasError="$errors->has('registration_link')"
-                        :errorMessage="$errors->first('registration_link')"
-                    />
-                </div>
-            </div>
-            
-            <!-- Additional Information -->
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                    Informasi Tambahan
-                </h3>
-                
-                <div>
-                    <label for="requirements" class="block text-sm font-medium text-gray-700 mb-1">
-                        Persyaratan & Ketentuan <span class="text-red-500">*</span>
-                    </label>
-                    <textarea 
-                        id="requirements" 
-                        name="requirements" 
-                        rows="5"
-                        class="w-full px-4 py-2.5 border rounded-lg shadow-sm focus:ring-2 focus:ring-brand focus:border-brand {{ $errors->has('requirements') ? 'border-red-500' : 'border-gray-300' }}"
-                        placeholder="Masukkan persyaratan dan ketentuan kompetisi"
-                        required
-                    >{{ old('requirements') }}</textarea>
-                    <p class="mt-1.5 text-sm text-gray-500">Jelaskan persyaratan dan ketentuan lengkap yang perlu dipenuhi oleh peserta kompetisi.</p>
-                    @error('requirements')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-            
-            <!-- Skills Section (if needed) -->
-            @if(isset($skills) && $skills->count() > 0)
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">
-                    Keterampilan yang Dibutuhkan
-                </h3>
-                
-                <div class="space-y-4">
-                    <p class="text-sm text-gray-600">Pilih keterampilan yang dibutuhkan untuk kompetisi ini dan tingkat kepentingannya.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($skills as $skill)
-                        <div class="p-4 border border-gray-200 rounded-lg bg-white">
-                            <div class="flex items-start">
-                                <input type="checkbox" id="skill_{{ $skill->id }}" name="skills[{{ $loop->index }}][skill_id]" value="{{ $skill->id }}" class="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                                <div class="ml-3">
-                                    <label for="skill_{{ $skill->id }}" class="font-medium text-gray-700">{{ $skill->name }}</label>
-                                    <div class="mt-2">
-                                        <select name="skills[{{ $loop->index }}][importance_level]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                            <option value="1">Rendah</option>
-                                            <option value="2">Agak Rendah</option>
-                                            <option value="3" selected>Sedang</option>
-                                            <option value="4">Tinggi</option>
-                                            <option value="5">Sangat Tinggi</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            <!-- Form Actions -->
-            <div class="flex items-center justify-end space-x-3 pt-5 border-t border-gray-200 mt-6">
-                <x-ui.button 
-                    variant="secondary" 
-                    tag="a" 
-                    href="{{ route('admin.competitions.index') }}"
-                >
-                    Batal
-                </x-ui.button>
-                
-                <x-ui.button 
-                    type="submit" 
-                    variant="primary"
-                >
-                    Simpan Kompetisi
-                </x-ui.button>
-            </div>
+            @include('admin.competitions.components.form', [
+                'competition' => null,
+                'periods' => $periods ?? collect(),
+                'skills' => $skills ?? collect(),
+                'submitButtonText' => 'Simpan Kompetisi'
+            ])
         </form>
+        
+        <!-- Participants Section Placeholder -->
+        <div class="mt-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4 pb-2 border-b border-gray-200">
+                <span class="text-blue-600 mr-2">●</span>
+                Peserta Kompetisi
+                </h3>
+            
+            <div class="p-6 text-center bg-gray-50 rounded-lg border border-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="text-gray-700 font-medium">Anda dapat mengelola peserta setelah kompetisi dibuat.</p>
+                <p class="text-sm text-gray-500 mt-1">Peserta dapat ditambahkan setelah kompetisi berhasil disimpan.</p>
+            </div>
+            </div>
     </div>
 @endcomponent 

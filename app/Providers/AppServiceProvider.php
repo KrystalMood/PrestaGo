@@ -23,5 +23,7 @@ class AppServiceProvider extends ServiceProvider
         Blade::componentNamespace('App\\View\\Components\\Admin\\Users', 'admin.users');
         
         Blade::anonymousComponentNamespace('resources/views/admin/users/components', 'admin.users.components');
+        
+        Blade::anonymousComponentNamespace('resources/views/components/admin/components', 'admin.components');
     }
 }
