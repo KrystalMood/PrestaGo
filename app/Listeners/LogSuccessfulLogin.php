@@ -13,7 +13,7 @@ class LogSuccessfulLogin
     public function handle(UserLoggedIn $event): void
     {
         Log::info('User logged in successfully', [
-            'user_id' => $event->user->users_id,
+            'user_id' => $event->user->id,
             'email' => $event->user->email,
             'timestamp' => now()->toDateTimeString(),
             'ip' => request()->ip(),

@@ -9,7 +9,7 @@ class LevelModel extends Model
 {
     use HasFactory;
     protected $table = 'level';
-    protected $primaryKey = 'level_id';
+    protected $primaryKey = 'id';
     protected $fillable = [
         'level_kode',
         'level_nama',

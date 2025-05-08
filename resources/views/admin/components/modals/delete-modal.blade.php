@@ -1,29 +1,31 @@
-@props(['modalId' => 'delete-modal', 'route' => '', 'itemType' => 'item'])
+@props(['title' => 'Delete Confirmation', 'body' => '', 'formAction' => '', 'modalId' => 'delete-modal', 'route' => '', 'itemType' => 'item'])
 
 <!-- Delete Confirmation Modal -->
-<div id="{{ $modalId }}" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
-        <div class="p-6">
-            <div class="flex items-center justify-center mb-4">
-                <div class="bg-red-100 rounded-full p-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-            </div>
-            <h3 class="text-xl font-bold text-center text-gray-900 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 text-center mb-6">Apakah Anda yakin ingin menghapus {{ $itemType }} <span id="item-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
-            
-            <div class="flex justify-center gap-4">
-                <button id="cancel-delete-{{ $modalId }}" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-lg">
-                    Batal
-                </button>
+<div id="{{ $modalId }}" tabindex="-1" aria-hidden="true" class="fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <button type="button" class="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="{{ $modalId }}">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+                <span class="sr-only">Close modal</span>
+            </button>
+            <div class="p-6 text-center">
+                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">{{ $title }}</h3>
                 
-                <form id="delete-form-{{ $modalId }}" method="POST" action="">
+                {!! $body !!}
+                
+                <form action="{{ $formAction }}" method="POST" class="mt-6">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg">
-                        Ya, Hapus
+                    <button data-modal-hide="{{ $modalId }}" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600 mr-2">
+                        Batal
+                    </button>
+                    <button type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                        Ya, saya yakin
                     </button>
                 </form>
             </div>
@@ -32,32 +34,33 @@
 </div>
 
 <script>
-    // Delete modal functionality
     document.addEventListener('DOMContentLoaded', function() {
-        const deleteModal = document.getElementById('{{ $modalId }}');
-        const deleteForm = document.getElementById('delete-form-{{ $modalId }}');
-        const itemNameToDelete = document.getElementById('item-name-to-delete');
-        const cancelDelete = document.getElementById('cancel-delete-{{ $modalId }}');
+        const modal = document.getElementById('{{ $modalId }}');
         
-        document.querySelectorAll('.delete-item').forEach(button => {
-            button.addEventListener('click', () => {
-                const itemId = button.getAttribute('data-item-id');
-                const itemName = button.getAttribute('data-item-name');
-                
-                deleteForm.action = `{{ $route }}/${itemId}`;
-                itemNameToDelete.textContent = itemName;
-                deleteModal.classList.remove('hidden');
-            });
+        const modalToggleButton = document.querySelector('[data-modal-toggle="{{ $modalId }}"]');
+        const modalTargetButton = document.querySelector('[data-modal-target="{{ $modalId }}"]');
+        
+        const closeButtons = document.querySelectorAll('[data-modal-hide="{{ $modalId }}"]');
+        
+        function toggleModal() {
+            modal.classList.toggle('hidden');
+        }
+        
+        if (modalToggleButton) {
+            modalToggleButton.addEventListener('click', toggleModal);
+        }
+        
+        if (modalTargetButton) {
+            modalTargetButton.addEventListener('click', toggleModal);
+        }
+        
+        closeButtons.forEach(button => {
+            button.addEventListener('click', toggleModal);
         });
         
-        cancelDelete.addEventListener('click', () => {
-            deleteModal.classList.add('hidden');
-        });
-        
-        // Close modal when clicking outside
-        deleteModal.addEventListener('click', (e) => {
-            if (e.target === deleteModal) {
-                deleteModal.classList.add('hidden');
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                toggleModal();
             }
         });
     });

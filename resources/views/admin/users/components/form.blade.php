@@ -1,6 +1,6 @@
 @props(['user' => null, 'roles' => [], 'isEdit' => false])
 
-<form action="{{ $isEdit ? route('admin.users.update', $user->users_id) : route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
+<form action="{{ $isEdit ? route('admin.users.update', $user->id) : route('admin.users.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
     @if($isEdit)
         @method('PUT')
@@ -50,7 +50,7 @@
         @php
             $roleOptions = [];
             foreach($roles ?? [] as $role) {
-                $roleOptions[$role->level_id] = $role->level_nama;
+                $roleOptions[$role->id] = $role->level_nama;
             }
         @endphp
 

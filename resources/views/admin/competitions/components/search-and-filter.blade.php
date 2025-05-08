@@ -1,4 +1,4 @@
-@props(['categories' => collect(), 'statuses' => collect()])
+@props(['statuses' => collect(), 'levels' => collect()])
 
 <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
     <div class="flex flex-col md:flex-row gap-4 w-full">
@@ -12,31 +12,50 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </span>
-                        <input type="text" name="search" id="search" value="{{ request('search') }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Cari nama kompetisi, penyelenggara, dll.">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            id="search"
+                            value="{{ request('search') }}" 
+                            placeholder="Cari kompetisi..."
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
                     </div>
                 </div>
             </form>
         </div>
-
+        
         <!-- Filters -->
         <div class="w-full md:w-1/2 grid grid-cols-2 gap-3">
+            <!-- Status Filter -->
             <div>
-                <select id="category" name="category" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="applyFilter()">
-                    <option value="">Semua Kategori</option>
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                            {{ $category->name }}
+                <select 
+                    id="status"
+                    name="status" 
+                    class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    onchange="applyFilter()"
+                >
+                    <option value="">Semua Status</option>
+                    @foreach($statuses as $status)
+                        <option value="{{ $status['value'] }}" {{ request('status') == $status['value'] ? 'selected' : '' }}>
+                            {{ $status['label'] }}
                         </option>
                     @endforeach
                 </select>
             </div>
-
+            
+            <!-- Level Filter -->
             <div>
-                <select id="status" name="status" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md" onchange="applyFilter()">
-                    <option value="">Semua Status</option>
-                    @foreach($statuses as $key => $status)
-                        <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
-                            {{ $status }}
+                <select 
+                    id="level"
+                    name="level" 
+                    class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    onchange="applyFilter()"
+                >
+                    <option value="">Semua Level</option>
+                    @foreach($levels as $level)
+                        <option value="{{ $level['value'] }}" {{ request('level') == $level['value'] ? 'selected' : '' }}>
+                            {{ $level['label'] }}
                         </option>
                     @endforeach
                 </select>
@@ -47,17 +66,17 @@
 
 <script>
     function applyFilter() {
-        const category = document.getElementById('category').value;
         const status = document.getElementById('status').value;
+        const level = document.getElementById('level').value;
         const search = document.getElementById('search').value;
         
         const url = new URL(window.location.href);
         
-        if (category) url.searchParams.set('category', category);
-        else url.searchParams.delete('category');
-        
         if (status) url.searchParams.set('status', status);
         else url.searchParams.delete('status');
+        
+        if (level) url.searchParams.set('level', level);
+        else url.searchParams.delete('level');
         
         if (search) url.searchParams.set('search', search);
         else url.searchParams.delete('search');

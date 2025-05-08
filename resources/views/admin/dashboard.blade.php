@@ -190,6 +190,8 @@
                 </div>
             @endcomponent
             
+            @include('admin.periods.components.periods-summary')
+            
             @component('admin.components.cards.card', ['title' => 'Status Sistem'])
                 @php
                 $metrics = [

@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('competitions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 255);
+            $table->text('description');
+            $table->string('organizer', 255);
+            $table->string('level', 50);
+            $table->string('type', 50);
+            $table->date('registration_start');
+            $table->date('registration_end');
+            $table->date('competition_date');
+            $table->string('registration_link', 255)->nullable();
+            $table->text('requirements');
+            $table->string('status', 20);
+            $table->boolean('verified')->default(false);
+            $table->unsignedBigInteger('added_by');
+            $table->unsignedBigInteger('period_id');
+            $table->timestamps();
+            
+            $table->foreign('added_by')->references('id')->on('users');
+            $table->foreign('period_id')->references('id')->on('periods');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('competitions');
+    }
+}; 

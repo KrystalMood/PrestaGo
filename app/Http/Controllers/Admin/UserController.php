@@ -52,7 +52,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'level_id' => 'required|exists:level,level_id',
+            'level_id' => 'required|exists:level,id',
             'photo' => 'nullable|image|max:2048',
         ]);
 
@@ -88,9 +88,9 @@ class UserController extends Controller
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($user->users_id, 'users_id'),
+                Rule::unique('users')->ignore($user->id, 'id'),
             ],
-            'level_id' => 'required|exists:level,level_id',
+            'level_id' => 'required|exists:level,id',
             'photo' => 'nullable|image|max:2048',
             'password' => 'nullable|string|min:6|confirmed',
         ]);
@@ -118,25 +118,38 @@ class UserController extends Controller
 
     public function show(string $id)
     {
-        $user = UserModel::with('level')->findOrFail($id);
-        
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'id' => $user->users_id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->getRoleName(),
-                    'role_code' => $user->getRole(),
-                    'created_at' => $user->created_at->format('d M Y, H:i'),
-                    'photo' => $user->photo ? asset('storage/' . $user->photo) : 
-                        'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=4338ca&color=fff',
-                ]
-            ]);
+        try {
+            $user = UserModel::with('level')->findOrFail($id);
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'role' => $user->getRoleName(),
+                        'role_code' => $user->getRole(),
+                        'created_at' => $user->created_at->format('d M Y, H:i'),
+                        'photo' => $user->photo 
+                            ? asset('storage/' . $user->photo) 
+                            : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=4338ca&color=fff',
+                    ]
+                ]);
+            }
+            
+            return view('admin.users.show', compact('user'));
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memuat detail pengguna: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Gagal memuat detail pengguna: ' . $e->getMessage());
         }
-        
-        return abort(404);
     }
 
     public function destroy(string $id)

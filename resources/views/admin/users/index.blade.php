@@ -3,8 +3,6 @@
     <div class="mb-6">
         @include('admin.components.ui.page-header', [
             'subtitle' => 'Halaman ini menampilkan daftar semua pengguna sistem dan memungkinkan Anda untuk menambah, mengubah, atau menghapus data pengguna.',
-            'actionText' => 'Tambah Pengguna',
-            'actionUrl' => route('admin.users.create')
         ])
     </div>
     

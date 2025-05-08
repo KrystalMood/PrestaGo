@@ -9,7 +9,7 @@
         <div class="px-6 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <p class="text-sm text-gray-500">ID Pengguna</p>
-                <p class="font-medium">{{ $user->users_id }}</p>
+                <p class="font-medium">{{ $user->id }}</p>
             </div>
             
             <div>

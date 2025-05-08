@@ -17,7 +17,7 @@ Stores user information across all roles (students, lecturers, administrators).
 | password | varchar(255) | Hashed password |
 | role | varchar(20) | User role (admin, dosen, mahasiswa) |
 | nim | varchar(20) | Student ID number (for students) |
-| program_studi_id | bigint(20) unsigned | Foreign key to program_studi |
+| program_studi_id | bigint(20) unsigned | Foreign key to study_programs |
 | remember_token | varchar(100) | Remember me token |
 | created_at | timestamp | Creation timestamp |
 | updated_at | timestamp | Last update timestamp |
@@ -85,7 +85,7 @@ Stores files related to achievements.
 | created_at | timestamp | Creation timestamp |
 | updated_at | timestamp | Last update timestamp |
 
-### program_studi
+### study_programs
 
 Stores academic programs/departments.
 
@@ -191,9 +191,21 @@ Stores academic periods/semesters.
 | created_at | timestamp | Creation timestamp |
 | updated_at | timestamp | Last update timestamp |
 
+### levels
+
+Stores achievement levels for categorization.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint(20) unsigned | Primary key |
+| code | varchar(10) | Unique level code |
+| name | varchar(50) | Level name |
+| created_at | timestamp | Creation timestamp |
+| updated_at | timestamp | Last update timestamp |
+
 ## Relationships
 
-- **Users → Program Studi**: Many-to-one relationship
+- **Users → Study Programs**: Many-to-one relationship
 - **Users → Skills**: Many-to-many relationship through user_skills
 - **Achievements → Users**: Many-to-one relationship (student who earned achievement)
 - **Attachments → Achievements**: Many-to-one relationship
@@ -210,31 +222,3 @@ Stores academic periods/semesters.
 - **Competitions → Periods**: Many-to-one relationship
 
 ## Entity Relationship Diagram
-
-```
-+-------------+       +---------------+       +-------------+
-|             |       |               |       |             |
-|   users     +-------+ achievements  +-------+ attachments |
-|             |       |               |       |             |
-+------+------+       +-------+-------+       +-------------+
-       |                      |
-       |                      |
-+------v------+               |
-|             |               |
-| program_studi              |
-|             |               |
-+-------------+               |
-                              |
-+-------------+       +-------v-------+
-|             |       |               |
-|   periods   +-------+ competitions  |
-|             |       |               |
-+------+------+       +------+--------+
-       |                     |
-       |                     |
-+------v------+      +-------v--------+
-|             |      |                |
-|   skills    +------+ recommendations|
-|             |      |                |
-+-------------+      +----------------+
-``` 

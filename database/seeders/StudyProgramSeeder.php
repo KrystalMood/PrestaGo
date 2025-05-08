@@ -1,0 +1,232 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\StudyProgramModel;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class StudyProgramSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $studyPrograms = [
+            [
+                'name' => 'D-III Teknik Mesin',
+                'code' => 'TMES_D3',
+                'faculty' => 'Jurusan Teknik Mesin',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-III Teknologi Pemeliharaan Pesawat Udara',
+                'code' => 'TPPU_D3',
+                'faculty' => 'Jurusan Teknik Mesin',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Teknik Mesin Produksi dan Perawatan',
+                'code' => 'TMPP_D4',
+                'faculty' => 'Jurusan Teknik Mesin',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Teknik Otomotif Elektronik',
+                'code' => 'TOE_D4',
+                'faculty' => 'Jurusan Teknik Mesin',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'S2 Terapan Rekayasa Teknologi Manufaktur',
+                'code' => 'RTM_S2',
+                'faculty' => 'Pascasarjana (Jurusan Teknik Mesin)',
+                'degree_level' => 'S2 Terapan',
+                'is_active' => true,
+            ],
+        
+            [
+                'name' => 'D-III Teknik Elektronika',
+                'code' => 'TELKOM_D3',
+                'faculty' => 'Jurusan Teknik Elektro',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-III Teknik Telekomunikasi',
+                'code' => 'TTEL_D3',
+                'faculty' => 'Jurusan Teknik Elektro',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-III Teknik Listrik',
+                'code' => 'TLIS_D3',
+                'faculty' => 'Jurusan Teknik Elektro',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Teknik Elektronika',
+                'code' => 'TELKOM_D4',
+                'faculty' => 'Jurusan Teknik Elektro',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Sistem Kelistrikan',
+                'code' => 'SKL_D4',
+                'faculty' => 'Jurusan Teknik Elektro',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Jaringan Telekomunikasi Digital',
+                'code' => 'JTD_D4',
+                'faculty' => 'Jurusan Teknik Elektro',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'S2 Terapan Teknik Elektro',
+                'code' => 'TE_S2',
+                'faculty' => 'Pascasarjana (Jurusan Teknik Elektro)',
+                'degree_level' => 'S2 Terapan',
+                'is_active' => true,
+            ],
+        
+            [
+                'name' => 'D-III Manajemen Informatika',
+                'code' => 'MI_D3',
+                'faculty' => 'Jurusan Teknologi Informasi',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Teknik Informatika',
+                'code' => 'TI_D4',
+                'faculty' => 'Jurusan Teknologi Informasi',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Sistem Informasi Bisnis',
+                'code' => 'SIB_D4',
+                'faculty' => 'Jurusan Teknologi Informasi',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'S2 Terapan Rekayasa Teknologi Informasi',
+                'code' => 'RTI_S2',
+                'faculty' => 'Pascasarjana (Jurusan Teknologi Informasi)',
+                'degree_level' => 'S2 Terapan',
+                'is_active' => true,
+            ],
+        
+            [
+                'name' => 'D-III Akuntansi',
+                'code' => 'AKT_D3',
+                'faculty' => 'Jurusan Akuntansi',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Akuntansi Manajemen',
+                'code' => 'AKM_D4',
+                'faculty' => 'Jurusan Akuntansi',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Keuangan',
+                'code' => 'KEU_D4',
+                'faculty' => 'Jurusan Akuntansi',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+        
+            [
+                'name' => 'D-III Administrasi Bisnis',
+                'code' => 'ADBIS_D3',
+                'faculty' => 'Jurusan Administrasi Niaga',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Manajemen Pemasaran',
+                'code' => 'MP_D4',
+                'faculty' => 'Jurusan Administrasi Niaga',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Bahasa Inggris untuk Komunikasi Bisnis dan Profesional',
+                'code' => 'BIKBP_D4',
+                'faculty' => 'Jurusan Administrasi Niaga',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Usaha Perjalanan Wisata',
+                'code' => 'UPW_D4',
+                'faculty' => 'Jurusan Administrasi Niaga',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+        
+            [
+                'name' => 'D-III Teknik Kimia',
+                'code' => 'TKIM_D3',
+                'faculty' => 'Jurusan Teknik Kimia',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Teknologi Kimia Industri',
+                'code' => 'TKI_D4',
+                'faculty' => 'Jurusan Teknik Kimia',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+        
+            [
+                'name' => 'D-III Teknik Sipil',
+                'code' => 'TSIP_D3',
+                'faculty' => 'Jurusan Teknik Sipil',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-III Teknologi Pertambangan',
+                'code' => 'TPER_D3',
+                'faculty' => 'Jurusan Teknik Sipil',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-III Teknologi Konstruksi Jalan, Jembatan, dan Bangunan Air',
+                'code' => 'TKJJBA_D3',
+                'faculty' => 'Jurusan Teknik Sipil',
+                'degree_level' => 'D-III',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'D-IV Manajemen Rekayasa Konstruksi',
+                'code' => 'MRK_D4',
+                'faculty' => 'Jurusan Teknik Sipil',
+                'degree_level' => 'D-IV',
+                'is_active' => true,
+            ],
+        ];
+
+        foreach ($studyPrograms as $program) {
+            StudyProgramModel::create($program);
+        }
+    }
+}

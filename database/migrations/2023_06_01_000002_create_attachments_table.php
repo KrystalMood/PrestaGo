@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('attachments', function (Blueprint $table) {
-            $table->id('attachment_id');
+            $table->id();
             $table->unsignedBigInteger('achievement_id');
             $table->string('file_name');
             $table->string('file_path');
-            $table->string('file_type');
+            $table->string('file_type', 50);
             $table->integer('file_size');
             $table->timestamps();
             
             // Foreign keys
-            $table->foreign('achievement_id')->references('achievement_id')->on('achievements')->onDelete('cascade');
+            $table->foreign('achievement_id')->references('id')->on('achievements')->onDelete('cascade');
         });
     }
 

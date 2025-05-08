@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('level', function (Blueprint $table) {
-            $table->id('level_id');
-            $table->string('level_kode', 10)->unique();
-            $table->string('level_nama', 50);
+        Schema::create('periods', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 255);
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('level');
+        Schema::dropIfExists('periods');
     }
-};
+}; 
