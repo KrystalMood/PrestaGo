@@ -7,10 +7,8 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">{{ __('Kompetisi') }}</div>
 
-                <div class="card-body">
+            <x-ui.card title="Kompetisi">
                     @if (session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
@@ -45,8 +43,7 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
+            </x-ui.card>
         </div>
     </div>
 </div>

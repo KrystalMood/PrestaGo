@@ -1,4 +1,4 @@
-< iv class="py-2 mt-2 border-t border-gray-100">
+<div class="py-2 mt-2 border-t border-gray-100">
     <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Prestasi</span>
 </div>
 
