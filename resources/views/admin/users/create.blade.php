@@ -1,7 +1,7 @@
 @component('layouts.admin', ['title' => 'Tambah Pengguna Baru'])
     <div class="bg-white rounded-lg shadow-custom p-6">
         @component('admin.users.components.page-header')
-            @slot('title', 'Tambah Pengguna Baru')
+            @slot('subtitle', 'Formulir Pendaftaran Pengguna Baru')
         @endcomponent
 
         @if ($errors->any())
@@ -54,7 +54,7 @@
                 @php
                     $roleOptions = [];
                     foreach($roles as $role) {
-                        $roleOptions[$role->level_id] = $role->level_nama;
+                        $roleOptions[$role->id] = $role->level_nama;
                     }
                 @endphp
 

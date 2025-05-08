@@ -28,7 +28,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div class="md:col-span-2">
-                <form action="{{ route('admin.users.update', $user->users_id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                <form action="{{ route('admin.users.update', $user->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -57,7 +57,7 @@
                         @php
                             $roleOptions = [];
                             foreach($roles as $role) {
-                                $roleOptions[$role->level_id] = $role->level_nama;
+                                $roleOptions[$role->id] = $role->level_nama;
                             }
                         @endphp
 
@@ -136,7 +136,7 @@
                     <h3 class="text-red-800 font-medium mb-2">Zona Berbahaya</h3>
                     <p class="text-red-700 text-sm mb-3">Tindakan berikut tidak dapat dibatalkan. Harap hati-hati.</p>
                     
-                    <form method="POST" action="{{ route('admin.users.destroy', $user->users_id) }}" id="delete-form" class="mt-2">
+                    <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" id="delete-form" class="mt-2">
                         @csrf
                         @method('DELETE')
                         <x-ui.button

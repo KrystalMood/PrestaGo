@@ -29,7 +29,7 @@
                 @forelse($users as $user)
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {{ $user->users_id }}
+                        {{ $user->id }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
@@ -67,20 +67,20 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end gap-2">
-                            <button type="button" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 transition-colors show-user" data-user-id="{{ $user->users_id }}">
+                            <button type="button" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 transition-colors show-user" data-user-id="{{ $user->id }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                             </button>
                             
-                            <a href="{{ route('admin.users.edit', $user->users_id) }}" class="btn btn-sm btn-ghost text-brand hover:bg-brand-light hover:bg-opacity-10 transition-colors">
+                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-ghost text-brand hover:bg-brand-light hover:bg-opacity-10 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </a>
                             
-                            <button type="button" class="btn btn-sm btn-ghost text-red-600 hover:bg-red-50 transition-colors delete-user" data-user-id="{{ $user->users_id }}" data-user-name="{{ $user->name }}">
+                            <button type="button" class="btn btn-sm btn-ghost text-red-600 hover:bg-red-50 transition-colors delete-user" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -195,7 +195,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Delete user functionality
         const deleteModal = document.getElementById('delete-modal');
         const deleteForm = document.getElementById('delete-form-delete-modal');
         const userNameToDelete = document.getElementById('item-name-to-delete');
@@ -211,7 +210,6 @@
             });
         });
         
-        // User detail functionality
         const detailModal = document.getElementById('user-detail-modal');
         const closeDetailBtn = document.getElementById('close-detail-btn');
         
@@ -220,46 +218,73 @@
                 const userId = button.getAttribute('data-user-id');
                 
                 try {
-                    const response = await fetch(`/admin/users/${userId}/details`);
-                    if (!response.ok) throw new Error('Failed to fetch user details');
+                    const url = `/admin/users/${userId}/details`;
+                    console.log('Fetching user details from:', url);
                     
-                    const userData = await response.json();
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
                     
-                    // Update user details in modal
+                    if (!response.ok) {
+                        const contentType = response.headers.get('content-type');
+                        console.log('Error response content type:', contentType);
+                        
+                        if (contentType && contentType.includes('application/json')) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.message || `Server returned ${response.status}: ${response.statusText}`);
+                        } else {
+                            const text = await response.text();
+                            console.log('Server response text:', text);
+                            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                        }
+                    }
+                    
+                    const contentType = response.headers.get('content-type');
+                    console.log('Success response content type:', contentType);
+                    
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        console.error('Non-JSON response from server:', text);
+                        throw new Error('Server did not return JSON data');
+                    }
+                    
+                    const responseData = await response.json();
+                    console.log('User data received:', responseData);
+                    
+                    if (!responseData.success || !responseData.data) {
+                        throw new Error('Invalid response format from server');
+                    }
+                    
+                    const userData = responseData.data;
+                    
                     document.getElementById('user-id').textContent = userData.id;
                     document.getElementById('user-name').textContent = userData.name;
                     document.getElementById('user-email').textContent = userData.email;
                     document.getElementById('user-created-at').textContent = userData.created_at;
                     
-                    // Set role with appropriate styling
                     const roleElement = document.getElementById('user-role');
-                    roleElement.textContent = userData.role_name;
+                    roleElement.textContent = userData.role;
                     
-                    // Apply role-based styling
-                    if (userData.role === 'admin') {
+                    if (userData.role_code === 'admin') {
                         roleElement.className = 'px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-800';
-                    } else if (userData.role === 'user') {
+                    } else if (userData.role_code === 'user') {
                         roleElement.className = 'px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800';
                     } else {
                         roleElement.className = 'px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800';
                     }
                     
-                    // Set user photo
-                    const photoUrl = userData.photo 
-                        ? `/storage/${userData.photo}` 
-                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=4338ca&color=fff`;
+                    document.getElementById('user-photo').src = userData.photo;
                     
-                    document.getElementById('user-photo').src = photoUrl;
-                    
-                    // Set edit user link
                     document.getElementById('edit-user-link').href = `/admin/users/${userId}/edit`;
                     
-                    // Show modal
                     detailModal.classList.remove('hidden');
                     
                 } catch (error) {
                     console.error('Error fetching user details:', error);
-                    alert('Failed to load user details. Please try again.');
+                    alert(`Failed to load user details: ${error.message || 'Unknown error occurred'}. Please try again.`);
                 }
             });
         });

@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{id}', [UserController::class, 'update'])->name('update');
             Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
             Route::get('/{id}/show', [UserController::class, 'show'])->name('show');
+            Route::get('/{id}/details', [UserController::class, 'show'])->name('details');
         });
 
         Route::prefix('verification')->name('verification.')->group(function () {
@@ -54,19 +55,25 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.competitions.index');
-            })->name('index');
-
-            Route::get('/create', function () {
-                return view('admin.competitions.create');
-            })->name('create');
+            Route::get('/', [App\Http\Controllers\Admin\CompetitionController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Admin\CompetitionController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Admin\CompetitionController::class, 'store'])->name('store');
+            Route::get('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'show'])->name('show');
+            Route::get('/{competition}/edit', [App\Http\Controllers\Admin\CompetitionController::class, 'edit'])->name('edit');
+            Route::put('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'update'])->name('update');
+            Route::delete('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'destroy'])->name('destroy');
+            Route::patch('/{competition}/toggle-verification', [App\Http\Controllers\Admin\CompetitionController::class, 'toggleVerification'])->name('toggle-verification');
         });
 
         Route::prefix('periods')->name('periods.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.periods.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\Admin\PeriodController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Admin\PeriodController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Admin\PeriodController::class, 'store'])->name('store');
+            Route::get('/{id}', [App\Http\Controllers\Admin\PeriodController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [App\Http\Controllers\Admin\PeriodController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [App\Http\Controllers\Admin\PeriodController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\Admin\PeriodController::class, 'destroy'])->name('destroy');
+            Route::patch('/{id}/toggle-active', [App\Http\Controllers\Admin\PeriodController::class, 'toggleActive'])->name('toggle-active');
         });
 
         Route::prefix('programs')->name('programs.')->group(function () {

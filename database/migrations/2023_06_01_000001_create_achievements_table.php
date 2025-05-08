@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('achievements', function (Blueprint $table) {
-            $table->id('achievement_id');
+            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('title');
             $table->text('description');
             $table->string('competition_name');
             $table->unsignedBigInteger('competition_id')->nullable();
-            $table->string('type');
-            $table->string('level');
+            $table->string('type', 50);
+            $table->string('level', 50);
             $table->date('date');
-            $table->string('status')->default('pending');
+            $table->string('status', 20)->default('pending');
             $table->unsignedBigInteger('verified_by')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->text('rejected_reason')->nullable();
@@ -29,8 +29,10 @@ return new class extends Migration
             $table->timestamps();
             
             // Foreign Key
-            $table->foreign('user_id')->references('users_id')->on('users');
-            $table->foreign('verified_by')->references('users_id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('verified_by')->references('id')->on('users');
+            $table->foreign('competition_id')->references('id')->on('competitions')->nullable();
+            $table->foreign('period_id')->references('id')->on('periods');
         });
     }
 

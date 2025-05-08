@@ -35,12 +35,12 @@ class AchievementModel extends Model
 
     public function user()
     {
-        return $this->belongsTo(UserModel::class, 'user_id', 'users_id');
+        return $this->belongsTo(UserModel::class, 'user_id', 'id');
     }
 
     public function verifier()
     {
-        return $this->belongsTo(UserModel::class, 'verified_by', 'users_id');
+        return $this->belongsTo(UserModel::class, 'verified_by', 'id');
     }
 
     public function attachments()

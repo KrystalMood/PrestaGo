@@ -10,7 +10,7 @@ class UserModel extends Authenticatable
     use HasFactory;
 
     protected $table = 'users';
-    protected $primaryKey = 'users_id';
+    protected $primaryKey = 'id';
     protected $fillable = [
         'name',
         'email',
@@ -28,7 +28,7 @@ class UserModel extends Authenticatable
     ];
     public function level()
     {
-        return $this->belongsTo(LevelModel::class, 'level_id', 'level_id');
+        return $this->belongsTo(LevelModel::class, 'level_id', 'id');
     }
 
     public function getRoleName(): string
