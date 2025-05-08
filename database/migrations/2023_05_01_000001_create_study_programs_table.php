@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('code', 20);
             $table->string('faculty', 255);
+            $table->string('degree_level', 50)->default('S1');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

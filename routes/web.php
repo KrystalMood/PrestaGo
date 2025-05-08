@@ -83,9 +83,14 @@ Route::middleware(['auth'])->group(function () {
 
         // Program Management Routes
         Route::prefix('programs')->name('programs.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.programs.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\Admin\StudyProgramController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Admin\StudyProgramController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Admin\StudyProgramController::class, 'store'])->name('store');
+            Route::get('/{id}', [App\Http\Controllers\Admin\StudyProgramController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [App\Http\Controllers\Admin\StudyProgramController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [App\Http\Controllers\Admin\StudyProgramController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\Admin\StudyProgramController::class, 'destroy'])->name('destroy');
+            Route::patch('/{id}/toggle-active', [App\Http\Controllers\Admin\StudyProgramController::class, 'toggleActive'])->name('toggle-active');
         });
 
         // Recommendation Management Routes

@@ -12,10 +12,13 @@
                     'award' => 'text-indigo-600 bg-indigo-100',
                     'clock' => 'text-yellow-500 bg-yellow-100',
                     'check-circle' => 'text-green-500 bg-green-100',
+                    'check-badge' => 'text-emerald-600 bg-emerald-100',
                     'x-circle' => 'text-red-500 bg-red-100',
                     'trophy' => 'text-amber-500 bg-amber-100',
                     'calendar' => 'text-blue-500 bg-blue-100',
                     'users' => 'text-emerald-500 bg-emerald-100',
+                    'academic-cap' => 'text-blue-600 bg-blue-100',
+                    'building-library' => 'text-violet-600 bg-violet-100',
                     default => 'text-gray-500 bg-gray-100'
                 };
                 
@@ -62,6 +65,14 @@
                 @elseif($icon === 'users')
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                @elseif($icon === 'academic-cap')
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                    </svg>
+                @elseif($icon === 'building-library')
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
                     </svg>
                 @else
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

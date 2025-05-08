@@ -14,6 +14,13 @@ class StudyProgramModel extends Model
     protected $fillable = [
         'name',
         'code',
+        'faculty',
+        'degree_level',
+        'is_active',
+    ];
+    
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function users()
