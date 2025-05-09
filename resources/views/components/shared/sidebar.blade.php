@@ -28,7 +28,7 @@
             </div>
 
             <li>
-                <a href="{{ route($userRole . '.profile.edit') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
+                <a href="#" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -48,7 +48,6 @@
                 </li>
             @endif
         </ul>
-    </div>
 </aside>
 
 <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden"></div>
@@ -84,7 +83,7 @@
             </div>
 
             <li>
-                <a href="{{ route($userRole . '.profile.edit') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
+                <a href="#" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>

@@ -126,8 +126,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Student routes
-    Route::prefix('student')->name('student.')->middleware(['auth.user:MHS'])->group(function () {
-        Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('Mahasiswa.dashboard');
+    Route::prefix('student')->name('Mahasiswa.')->middleware(['auth.user:MHS'])->group(function () {
+        Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('dashboard');
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
             Route::get('/', function () {
