@@ -1,3 +1,8 @@
+@extends('components.shared.content')
+
+@section('content')
+
+
 @component('layouts.app', ['title' => 'Prestasi Saya'])
 
 <div class="container">
@@ -14,11 +19,11 @@
                     @endif
 
                     <h4>Daftar Prestasi</h4>
-                    
+
                     <div class="text-right mb-3">
                         <a href="#" class="btn btn-primary">Tambah Prestasi</a>
                     </div>
-                    
+
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -41,4 +46,6 @@
         </div>
     </div>
 </div>
-@endcomponent 
+@endcomponent
+
+@endsection

@@ -99,7 +99,7 @@
     .animate-fadeIn {
         animation: fadeIn 0.2s ease-out;
     }
-    
+
     @keyframes fadeIn {
         0% {
             opacity: 0;

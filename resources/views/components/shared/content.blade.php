@@ -58,8 +58,8 @@
 
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
-            <x-shared.navbar :title="$title" :user="$user" />
 
+            <x-shared.navbar :title="$title" :user="$user" />
             <main class="flex-1 overflow-y-auto bg-gray-50">
                 <div class="py-6 px-4 sm:px-6 lg:px-8">
                     <div class="lg:hidden mb-6">
