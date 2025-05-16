@@ -6,6 +6,9 @@
     'export' => null,
 ])
 
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
 {{-- Card Structure --}}
 <div>
     <div class="card bg-base-100 card-xs rounded-lg border border-gray-200">
@@ -20,7 +23,7 @@
 
     <div class="text-right">
         @if ($tambah)
-            <a href="{{ $tambah }}" class="btn btn-primary">Tambah Prestasi</a>
+            <button onclick="openPopup('{{ route('Mahasiswa.achievements.create') }}')" class="btn btn-primary">Tambah Prestasi</button>
         @endif
         @if ($export)
             <a href="{{ $export }}" class="btn btn-outline-primary">Export Prestasi</a>
@@ -33,3 +36,8 @@
             {{ $slot }}
         </div>
 </div>
+
+<dialog id="modal" class="modal">
+<x-ui.popupcard title="Tambah Prestasi">
+</x-ui.popupcard>
+</dialog>

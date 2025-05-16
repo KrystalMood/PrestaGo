@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+
+@plugin "daisyui";
+
 /* UI Custom */
 .btn-primary {
     @apply bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white border-0 shadow-md transition-all duration-200 !important;

@@ -133,6 +133,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', function () {
                 return view('Mahasiswa.achievements.index');
             })->name('index');
+            Route::get('/create', function () {
+                return view('Mahasiswa.achievements.create');
+            })->name('create');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {

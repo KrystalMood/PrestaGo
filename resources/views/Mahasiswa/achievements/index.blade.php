@@ -3,12 +3,14 @@
 @section('content')
 
 
-@component('layouts.app', ['title' => 'Prestasi Saya'])
+@component('layouts.mahasiswa', ['title' => 'Prestasi Saya'])
+
+
 
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
-            <x-ui.card title="Prestasi Saya" tambah="#">
+            <x-ui.card title="Prestasi Saya" tambah="{{ route('Mahasiswa.achievements.create') }}">
                     @if (session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
