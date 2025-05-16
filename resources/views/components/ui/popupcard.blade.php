@@ -3,7 +3,7 @@
 ])
 
 <div>
-    <div class="modal-box modal-bottom">
+    <div class="modal-box modal-bottom max-w-4xl w-11/12 p-6">
         <!-- header -->
 
             <div class="text-center mb-4">

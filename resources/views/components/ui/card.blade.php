@@ -41,3 +41,11 @@
 <x-ui.popupcard title="Tambah Prestasi">
 </x-ui.popupcard>
 </dialog>
+
+<style>
+    dialog.modal {
+        max-width: 100vw;
+        width: 100%;
+        padding: 0;
+    }
+</style>
