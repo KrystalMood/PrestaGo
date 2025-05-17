@@ -40,7 +40,8 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{id}', [UserController::class, 'update'])->name('update');
             Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
             Route::get('/{id}/show', [UserController::class, 'show'])->name('show');
-            Route::get('/{id}/details', [UserController::class, 'show'])->name('details');
+            Route::get('/{id}/details', [UserController::class, 'getDetails'])->name('details');
+            Route::get('/export', [UserController::class, 'export'])->name('export');
         });
 
         // Achievement Verification Routes

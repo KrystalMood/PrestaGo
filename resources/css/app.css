@@ -104,3 +104,22 @@
         opacity: 0;
     }
 }
+
+/* Custom Pagination Styles */
+.pagination-white svg {
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.pagination-white span.relative.z-0.inline-flex.shadow-sm.rounded-md span,
+.pagination-white span.relative.z-0.inline-flex.shadow-sm.rounded-md a {
+    @apply bg-white text-gray-600 border-gray-200;
+}
+
+.pagination-white span.relative.z-0.inline-flex.shadow-sm.rounded-md span[aria-current="page"] span {
+    @apply bg-blue-600 text-white border-blue-600;
+}
+
+.pagination-white span.relative.z-0.inline-flex.shadow-sm.rounded-md span[aria-disabled="true"] span {
+    @apply text-gray-300;
+}

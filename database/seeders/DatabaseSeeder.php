@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             SkillSeeder::class,
             CompetitionSeeder::class,
             CompetitionSkillSeeder::class,
+            MahasiswaSeeder::class,
         ]);
     }
 }

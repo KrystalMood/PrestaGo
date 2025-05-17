@@ -37,6 +37,29 @@ class UserController extends Controller
         $newUsers = UserModel::whereDate('created_at', '>=', now()->subDays(30))->count();
         $activeUsers = $totalUsers;
         
+        if ($request->ajax()) {
+            if ($request->has('ajax') && $request->ajax == 1) {
+                $tableHtml = view('admin.users.components.tables', compact('users'))->render();
+                $paginationHtml = view('admin.components.tables.pagination', compact('users'))->render();
+                
+                return response()->json([
+                    'tableHtml' => $tableHtml,
+                    'paginationHtml' => $paginationHtml,
+                    'currentPage' => $users->currentPage()
+                ]);
+            }
+            
+            return response()->json([
+                'users' => $users,
+                'roles' => $roles,
+                'stats' => [
+                    'totalUsers' => $totalUsers,
+                    'newUsers' => $newUsers,
+                    'activeUsers' => $activeUsers,
+                ]
+            ]);
+        }
+        
         return view('admin.users.index', compact('users', 'roles', 'totalUsers', 'newUsers', 'activeUsers'));
     }
 
@@ -63,7 +86,15 @@ class UserController extends Controller
 
         $validated['password'] = Hash::make($validated['password']);
 
-        UserModel::create($validated);
+        $user = UserModel::create($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengguna berhasil ditambahkan!',
+                'user' => $user
+            ]);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Pengguna berhasil ditambahkan!');
@@ -73,6 +104,10 @@ class UserController extends Controller
     {
         $user = UserModel::findOrFail($id);
         $roles = LevelModel::all();
+        
+        if (request()->ajax()) {
+            return response()->json($user);
+        }
         
         return view('admin.users.edit', compact('user', 'roles'));
     }
@@ -111,6 +146,14 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengguna berhasil diperbarui!',
+                'user' => $user
+            ]);
+        }
 
         return redirect()->route('admin.users.index')
             ->with('success', 'Pengguna berhasil diperbarui!');
@@ -151,6 +194,34 @@ class UserController extends Controller
                 ->with('error', 'Gagal memuat detail pengguna: ' . $e->getMessage());
         }
     }
+    
+    public function getDetails(string $id)
+    {
+        try {
+            $user = UserModel::with('level')->findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'level_id' => $user->level_id,
+                    'role' => $user->getRoleName(),
+                    'role_code' => $user->getRole(),
+                    'created_at' => $user->created_at->format('d M Y, H:i'),
+                    'photo' => $user->photo 
+                        ? asset('storage/' . $user->photo) 
+                        : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=4338ca&color=fff',
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat detail pengguna: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function destroy(string $id)
     {
@@ -162,7 +233,52 @@ class UserController extends Controller
         
         $user->delete();
 
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengguna berhasil dihapus!'
+            ]);
+        }
+
         return redirect()->route('admin.users.index')
             ->with('success', 'Pengguna berhasil dihapus!');
+    }
+    
+    public function export()
+    {
+        $users = UserModel::with('level')->get();
+        
+        $filename = 'users_' . now()->format('Y-m-d') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+        
+        $callback = function() use ($users) {
+            $file = fopen('php://output', 'w');
+            
+            fputcsv($file, [
+                'ID', 
+                'Nama',
+                'Email',
+                'Peran',
+                'Tanggal Registrasi'
+            ]);
+            
+            foreach ($users as $user) {
+                fputcsv($file, [
+                    $user->id,
+                    $user->name,
+                    $user->email,
+                    $user->getRoleName(),
+                    $user->created_at->format('d/m/Y H:i:s')
+                ]);
+            }
+            
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
     }
 }

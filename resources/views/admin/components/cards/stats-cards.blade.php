@@ -83,7 +83,7 @@
             
             <div>
                 <div class="text-sm font-medium text-gray-500">{{ $stat['title'] ?? '-' }}</div>
-                <div class="text-2xl font-bold text-gray-800">{{ $stat['value'] ?? 0 }}</div>
+                <div class="text-2xl font-bold text-gray-800" data-stat="{{ $stat['key'] ?? '' }}">{{ $stat['value'] ?? 0 }}</div>
             </div>
         </div>
         <div class="h-1 w-full bg-gray-100">
