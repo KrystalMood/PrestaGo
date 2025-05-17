@@ -1,12 +1,14 @@
+@extends('components.shared.content')
+
+@section('content')
+
 @component('layouts.app', ['title' => 'Kompetisi'])
 
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">{{ __('Kompetisi') }}</div>
 
-                <div class="card-body">
+            <x-ui.card title="Kompetisi">
                     @if (session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
@@ -14,7 +16,7 @@
                     @endif
 
                     <h4>Daftar Kompetisi</h4>
-                    
+
                     <div class="mb-3">
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Cari kompetisi...">
@@ -23,7 +25,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <table class="table table-bordered">
                         <thead>
                             <tr>
@@ -41,9 +43,9 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
+            </x-ui.card>
         </div>
     </div>
 </div>
-@endcomponent 
+@endcomponent
+@endsection

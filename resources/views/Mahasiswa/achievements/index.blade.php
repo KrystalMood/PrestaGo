@@ -3,15 +3,14 @@
 @section('content')
 
 
-@component('layouts.app', ['title' => 'Prestasi Saya'])
+@component('layouts.mahasiswa', ['title' => 'Prestasi Saya'])
+
+
 
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">{{ __('Prestasi Saya') }}</div>
-
-                <div class="card-body">
+            <x-ui.card title="Prestasi Saya" tambah="{{ route('Mahasiswa.achievements.create') }}">
                     @if (session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
@@ -19,10 +18,6 @@
                     @endif
 
                     <h4>Daftar Prestasi</h4>
-
-                    <div class="text-right mb-3">
-                        <a href="#" class="btn btn-primary">Tambah Prestasi</a>
-                    </div>
 
                     <table class="table table-bordered">
                         <thead>
@@ -41,8 +36,7 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
+            </x-ui.card>
         </div>
     </div>
 </div>
