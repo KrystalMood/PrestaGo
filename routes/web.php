@@ -95,9 +95,16 @@ Route::middleware(['auth'])->group(function () {
 
         // Recommendation Management Routes
         Route::prefix('recommendations')->name('recommendations.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.recommendations.index');
-            })->name('index');
+           Route::get('/', [App\Http\Controllers\Admin\RecommendationController::class, 'index'])->name('index');
+           Route::get('/create', [App\Http\Controllers\Admin\RecommendationController::class, 'create'])->name('create');
+           Route::post('/', [App\Http\Controllers\Admin\RecommendationController::class, 'store'])->name('store');
+           Route::get('/automatic', [App\Http\Controllers\Admin\RecommendationController::class, 'automatic'])->name('automatic');
+           Route::post('/generate', [App\Http\Controllers\Admin\RecommendationController::class, 'generate'])->name('generate');
+           Route::post('/save-generated', [App\Http\Controllers\Admin\RecommendationController::class, 'saveGenerated'])->name('save-generated');
+           Route::post('/save-all-generated', [App\Http\Controllers\Admin\RecommendationController::class, 'saveAllGenerated'])->name('save-all-generated');
+           Route::get('/export', [App\Http\Controllers\Admin\RecommendationController::class, 'export'])->name('export');
+           Route::get('/{id}', [App\Http\Controllers\Admin\RecommendationController::class, 'show'])->name('show');
+           Route::patch('/{id}/status', [App\Http\Controllers\Admin\RecommendationController::class, 'updateStatus'])->name('update-status');
         });
 
         // Report Management Routes
@@ -172,5 +179,16 @@ Route::middleware(['auth'])->group(function () {
                 return view('Dosen.profile.index');
             })->name('index');
         });
+    });
+
+    // Admin Reports Routes
+    Route::prefix('admin/reports')->name('admin.reports.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\ReportController::class, 'index'])->name('index');
+        Route::get('/achievements', [App\Http\Controllers\Admin\ReportController::class, 'achievements'])->name('achievements');
+        Route::get('/programs', [App\Http\Controllers\Admin\ReportController::class, 'programs'])->name('programs');
+        Route::get('/trends', [App\Http\Controllers\Admin\ReportController::class, 'trends'])->name('trends');
+        Route::get('/periods', [App\Http\Controllers\Admin\ReportController::class, 'periods'])->name('periods');
+        Route::get('/export', [App\Http\Controllers\Admin\ReportController::class, 'export'])->name('export');
+        Route::post('/generate-report', [App\Http\Controllers\Admin\ReportController::class, 'generateReport'])->name('generate-report');
     });
 });
