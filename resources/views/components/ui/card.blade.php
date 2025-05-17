@@ -23,7 +23,7 @@
 
     <div class="text-right">
         @if ($tambah)
-            <button onclick="openPopup('{{ route('Mahasiswa.achievements.create') }}')" class="btn btn-primary">Tambah Prestasi</button>
+            <button onclick="openPopup('{{ $tambah }}')" class="btn btn-primary">Tambah</button>
         @endif
         @if ($export)
             <a href="{{ $export }}" class="btn btn-outline-primary">Export Prestasi</a>

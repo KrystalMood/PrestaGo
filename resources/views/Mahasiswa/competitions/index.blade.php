@@ -8,7 +8,7 @@
     <div class="row justify-content-center">
         <div class="col-md-12">
 
-            <x-ui.card title="Kompetisi">
+            <x-ui.card title="Kompetisi" tambah="{{ route('Mahasiswa.competitions.create') }}">
                     @if (session('status'))
                         <div class="alert alert-success" role="alert">
                             {{ session('status') }}
