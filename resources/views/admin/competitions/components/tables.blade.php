@@ -26,6 +26,9 @@
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Tanggal
                     </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Peserta
+                    </th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Aksi
                     </th>
@@ -44,9 +47,46 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10 rounded-md bg-indigo-100 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            @php
+                                $categoryName = strtolower($competition->category->name ?? '');
+                                $iconBg = 'bg-indigo-100';
+                                $iconColor = 'text-indigo-500';
+                                
+                                if (strpos($categoryName, 'program') !== false) {
+                                    $iconBg = 'bg-blue-100';
+                                    $iconColor = 'text-blue-600';
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />';
+                                } elseif (strpos($categoryName, 'design') !== false || strpos($categoryName, 'desain') !== false) {
+                                    $iconBg = 'bg-purple-100';
+                                    $iconColor = 'text-purple-600';
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />';
+                                } elseif (strpos($categoryName, 'business') !== false || strpos($categoryName, 'bisnis') !== false) {
+                                    $iconBg = 'bg-green-100';
+                                    $iconColor = 'text-green-600';
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+                                } elseif (strpos($categoryName, 'debate') !== false || strpos($categoryName, 'debat') !== false) {
+                                    $iconBg = 'bg-yellow-100';
+                                    $iconColor = 'text-yellow-600';
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />';
+                                } elseif (strpos($categoryName, 'research') !== false || strpos($categoryName, 'penelitian') !== false || strpos($categoryName, 'riset') !== false) {
+                                    $iconBg = 'bg-teal-100';
+                                    $iconColor = 'text-teal-600';
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />';
+                                } elseif (strpos($categoryName, 'writing') !== false || strpos($categoryName, 'essay') !== false || strpos($categoryName, 'esai') !== false || strpos($categoryName, 'tulis') !== false) {
+                                    $iconBg = 'bg-red-100';
+                                    $iconColor = 'text-red-600';
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />';
+                                } elseif (strpos($categoryName, 'sport') !== false || strpos($categoryName, 'olahraga') !== false) {
+                                    $iconBg = 'bg-pink-100';
+                                    $iconColor = 'text-pink-600';
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />';
+                                } else {
+                                    $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />';
+                                }
+                            @endphp
+                            <div class="flex-shrink-0 h-10 w-10 rounded-md {{ $iconBg }} flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ $iconColor }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    {!! $icon !!}
                                 </svg>
                             </div>
                             <div class="ml-4">
@@ -88,6 +128,16 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $competition->start_date ? $competition->start_date->format('d M Y') : '-' }}
                     </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <a href="{{ route('admin.competitions.participants', $competition) }}" class="group flex items-center text-sm text-gray-500 hover:text-brand transition-colors" title="Kelola Peserta">
+                            <div class="bg-blue-50 rounded-full p-1.5 mr-2 group-hover:bg-blue-100 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </div>
+                            <span class="font-medium">{{ $competition->participants_count ?? 0 }}</span>
+                        </a>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end gap-2">
                             <button type="button" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 transition-colors show-competition" data-competition-id="{{ $competition->id }}">
@@ -113,7 +163,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-6 py-10 text-center text-gray-500">
+                    <td colspan="9" class="px-6 py-10 text-center text-gray-500">
                         <div class="flex flex-col items-center justify-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />

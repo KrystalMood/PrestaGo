@@ -8,7 +8,8 @@ export default defineConfig({
                 'resources/css/app.css', 
                 'resources/js/app.js',
                 'resources/js/admin/users.js',
-                'resources/js/admin/competitions.js'
+                'resources/js/admin/competitions.js',
+                'resources/js/admin/periods.js'
             ],
             refresh: true,
         }),
