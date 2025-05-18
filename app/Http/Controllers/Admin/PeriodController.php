@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PeriodModel;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\View;
 
 class PeriodController extends Controller
 {
@@ -29,6 +30,21 @@ class PeriodController extends Controller
         $totalPeriods = PeriodModel::count();
         $activePeriods = PeriodModel::where('is_active', true)->count();
         
+        // Handle AJAX request
+        if ($request->ajax() || $request->has('ajax')) {
+            $table = View::make('admin.periods.components.tables', compact('periods'))->render();
+            $pagination = View::make('admin.components.tables.pagination', ['data' => $periods])->render();
+            
+            return response()->json([
+                'table' => $table,
+                'pagination' => $pagination,
+                'stats' => [
+                    'totalPeriods' => $totalPeriods,
+                    'activePeriods' => $activePeriods
+                ]
+            ]);
+        }
+        
         return view('admin.periods.index', compact('periods', 'totalPeriods', 'activePeriods'));
     }
 
@@ -44,6 +60,7 @@ class PeriodController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'is_active' => 'sometimes|boolean',
+            'description' => 'nullable|string|max:1000',
         ]);
 
         // If this period is active, deactivate all other periods
@@ -51,7 +68,15 @@ class PeriodController extends Controller
             PeriodModel::where('is_active', true)->update(['is_active' => false]);
         }
 
-        PeriodModel::create($validated);
+        $period = PeriodModel::create($validated);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Periode berhasil ditambahkan!',
+                'data' => $period
+            ]);
+        }
 
         return redirect()->route('admin.periods.index')
             ->with('success', 'Periode berhasil ditambahkan!');
@@ -78,6 +103,7 @@ class PeriodController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'is_active' => 'sometimes|boolean',
+            'description' => 'nullable|string|max:1000',
         ]);
 
         // If this period is active, deactivate all other periods
@@ -87,6 +113,14 @@ class PeriodController extends Controller
 
         $period->update($validated);
 
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Periode berhasil diperbarui!',
+                'data' => $period
+            ]);
+        }
+
         return redirect()->route('admin.periods.index')
             ->with('success', 'Periode berhasil diperbarui!');
     }
@@ -95,18 +129,18 @@ class PeriodController extends Controller
     {
         $period = PeriodModel::with('competitions')->findOrFail($id);
         
-        if (request()->ajax()) {
+        if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
-                'success' => true,
-                'data' => [
-                    'id' => $period->id,
-                    'name' => $period->name,
-                    'start_date' => $period->start_date->format('d M Y'),
-                    'end_date' => $period->end_date->format('d M Y'),
-                    'is_active' => $period->is_active,
-                    'competitions_count' => $period->competitions->count(),
-                    'created_at' => $period->created_at->format('d M Y, H:i'),
-                ]
+                'id' => $period->id,
+                'name' => $period->name,
+                'start_date' => $period->start_date->format('d M Y'),
+                'end_date' => $period->end_date->format('d M Y'),
+                'start_date_raw' => $period->start_date,
+                'end_date_raw' => $period->end_date,
+                'is_active' => $period->is_active,
+                'description' => $period->description,
+                'competitions_count' => $period->competitions->count(),
+                'created_at' => $period->created_at->format('d M Y, H:i'),
             ]);
         }
         
@@ -118,11 +152,25 @@ class PeriodController extends Controller
         $period = PeriodModel::findOrFail($id);
         
         if ($period->competitions()->count() > 0) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Periode tidak dapat dihapus karena memiliki kompetisi terkait!'
+                ], 422);
+            }
+            
             return redirect()->route('admin.periods.index')
                 ->with('error', 'Periode tidak dapat dihapus karena memiliki kompetisi terkait!');
         }
         
         $period->delete();
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Periode berhasil dihapus!'
+            ]);
+        }
 
         return redirect()->route('admin.periods.index')
             ->with('success', 'Periode berhasil dihapus!');
@@ -140,7 +188,21 @@ class PeriodController extends Controller
         
         $status = $period->is_active ? 'diaktifkan' : 'dinonaktifkan';
         
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Periode berhasil $status!",
+                'is_active' => $period->is_active
+            ]);
+        }
+        
         return redirect()->route('admin.periods.index')
             ->with('success', "Periode berhasil $status!");
+    }
+    
+    public function export()
+    {
+        // Example export functionality
+        return response()->download(public_path('sample-export.csv'));
     }
 } 

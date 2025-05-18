@@ -54,12 +54,15 @@ Route::middleware(['auth'])->group(function () {
         // Competition Management Routes
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\CompetitionController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Admin\CompetitionController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Admin\CompetitionController::class, 'store'])->name('store');
             Route::get('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'show'])->name('show');
             Route::put('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'update'])->name('update');
             Route::delete('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'destroy'])->name('destroy');
             Route::patch('/{competition}/toggle-verification', [App\Http\Controllers\Admin\CompetitionController::class, 'toggleVerification'])->name('toggle-verification');
             Route::get('/{competition}/participants', [App\Http\Controllers\Admin\CompetitionController::class, 'participants'])->name('participants');
+            Route::post('/{competition}/participants', [App\Http\Controllers\Admin\CompetitionController::class, 'addParticipant'])->name('participants.store');
+            Route::delete('/{competition}/participants/{participant}', [App\Http\Controllers\Admin\CompetitionController::class, 'removeParticipant'])->name('participants.destroy');
         });
 
         // Period Management Routes
@@ -67,6 +70,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\PeriodController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Admin\PeriodController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Admin\PeriodController::class, 'store'])->name('store');
+            Route::get('/{id}/json', [App\Http\Controllers\Admin\PeriodController::class, 'show'])->name('show.json');
+            Route::get('/export', [App\Http\Controllers\Admin\PeriodController::class, 'export'])->name('export');
             Route::get('/{id}', [App\Http\Controllers\Admin\PeriodController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [App\Http\Controllers\Admin\PeriodController::class, 'edit'])->name('edit');
             Route::put('/{id}', [App\Http\Controllers\Admin\PeriodController::class, 'update'])->name('update');

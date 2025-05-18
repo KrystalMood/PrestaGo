@@ -88,7 +88,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-2">
                                         <a href="#" class="text-blue-600 hover:text-blue-900">Detail</a>
-                                        <a href="#" class="text-red-600 hover:text-red-900">Hapus</a>
+                                        <form action="{{ route('admin.competitions.participants.destroy', ['competition' => $competition->id, 'participant' => $participant->id]) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Apakah Anda yakin ingin menghapus peserta ini?');">Hapus</button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -110,7 +114,7 @@
                 <span class="text-blue-600 mr-2">●</span>
                 Tambah Peserta
             </h3>
-            <form action="#" method="POST" class="space-y-4">
+            <form action="{{ route('admin.competitions.participants.store', $competition) }}" method="POST" class="space-y-4">
                 @csrf
                 <div class="form-group mb-4">
                     <label for="student_id" class="block text-sm font-medium text-gray-700 mb-2">
@@ -119,7 +123,9 @@
                     </label>
                     <select id="student_id" name="student_id" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                         <option value="">-- Pilih Mahasiswa --</option>
-                        <!-- Add options dynamically from your student data -->
+                        @foreach($students as $student)
+                            <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->nim ?? 'NIM tidak tersedia' }})</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="form-group mb-4">
