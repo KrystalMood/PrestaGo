@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('faculty', 255);
             $table->string('degree_level', 50)->default('S1');
             $table->boolean('is_active')->default(true);
+            $table->string('accreditation', 10)->nullable();
+            $table->year('year_established')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

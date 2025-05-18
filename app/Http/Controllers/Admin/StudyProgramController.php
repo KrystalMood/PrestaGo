@@ -57,18 +57,37 @@ class StudyProgramController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                    'message' => 'Validasi gagal'
+                ], 422);
+            }
+            
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
 
-        StudyProgramModel::create([
+        $program = StudyProgramModel::create([
             'name' => $request->name,
             'code' => $request->code,
             'faculty' => $request->faculty,
             'degree_level' => $request->degree_level,
+            'accreditation' => $request->accreditation,
+            'year_established' => $request->year_established,
+            'description' => $request->description,
             'is_active' => $request->has('is_active'),
         ]);
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $program,
+                'message' => 'Program studi berhasil ditambahkan'
+            ]);
+        }
 
         return redirect()->route('admin.programs.index')
             ->with('success', 'Program studi berhasil ditambahkan.');
@@ -80,12 +99,31 @@ class StudyProgramController extends Controller
         
         $totalStudents = $program->users()->count();
         
+        $program->updated_at_formatted = $program->updated_at->format('d M Y H:i');
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $program,
+                'message' => 'Program studi berhasil ditemukan'
+            ]);
+        }
+        
         return view('admin.programs.show', compact('program', 'totalStudents'));
     }
 
     public function edit($id)
     {
         $program = StudyProgramModel::findOrFail($id);
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $program,
+                'message' => 'Program studi berhasil ditemukan'
+            ]);
+        }
+        
         return view('admin.programs.edit', compact('program'));
     }
 
@@ -102,6 +140,14 @@ class StudyProgramController extends Controller
         ]);
 
         if ($validator->fails()) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors(),
+                    'message' => 'Validasi gagal'
+                ], 422);
+            }
+            
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -112,8 +158,19 @@ class StudyProgramController extends Controller
             'code' => $request->code,
             'faculty' => $request->faculty,
             'degree_level' => $request->degree_level,
+            'accreditation' => $request->accreditation,
+            'year_established' => $request->year_established,
+            'description' => $request->description,
             'is_active' => $request->has('is_active'),
         ]);
+
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $program,
+                'message' => 'Program studi berhasil diperbarui'
+            ]);
+        }
 
         return redirect()->route('admin.programs.index')
             ->with('success', 'Program studi berhasil diperbarui.');
@@ -124,11 +181,25 @@ class StudyProgramController extends Controller
         $program = StudyProgramModel::findOrFail($id);
         
         if ($program->users()->count() > 0) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Program studi tidak dapat dihapus karena masih memiliki data mahasiswa terkait.'
+                ], 400);
+            }
+            
             return redirect()->route('admin.programs.index')
                 ->with('error', 'Program studi tidak dapat dihapus karena masih memiliki data mahasiswa terkait.');
         }
         
         $program->delete();
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Program studi berhasil dihapus'
+            ]);
+        }
         
         return redirect()->route('admin.programs.index')
             ->with('success', 'Program studi berhasil dihapus.');

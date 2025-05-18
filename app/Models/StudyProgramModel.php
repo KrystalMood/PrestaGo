@@ -17,6 +17,9 @@ class StudyProgramModel extends Model
         'faculty',
         'degree_level',
         'is_active',
+        'accreditation',
+        'year_established',
+        'description'
     ];
     
     protected $casts = [
