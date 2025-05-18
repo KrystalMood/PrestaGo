@@ -1,58 +1,79 @@
-@component('layouts.admin', ['title' => 'Verifikasi Prestasi'])
+@component('layouts.admin', ['title' => 'Verifikasi Pengguna'])
     <div class="bg-white rounded-lg shadow-custom p-6">
         <div class="mb-6">
             @include('admin.components.ui.page-header', [
-                'title' => 'Verifikasi Prestasi',
-                'subtitle' => 'Halaman ini menampilkan daftar prestasi mahasiswa yang perlu diverifikasi. Anda dapat memeriksa, menyetujui, atau menolak prestasi yang diajukan.',
+                'subtitle' => 'Halaman ini menampilkan daftar semua permintaan verifikasi dan memungkinkan Anda untuk menyetujui atau menolak verifikasi.',
             ])
         </div>
         
         @php
             $stats = [
                 [
-                    'title' => 'Total Prestasi',
-                    'value' => 0,
-                    'icon' => 'award'
+                    'title' => 'Total Verifikasi',
+                    'value' => $totalVerifications ?? 0,
+                    'icon' => 'clipboard-check',
+                    'key' => 'totalVerifications'
                 ],
                 [
                     'title' => 'Menunggu Verifikasi',
-                    'value' => 0,
-                    'icon' => 'clock'
+                    'value' => $pendingVerifications ?? 0,
+                    'icon' => 'clock',
+                    'key' => 'pendingVerifications'
                 ],
                 [
-                    'title' => 'Disetujui',
-                    'value' => 0,
-                    'icon' => 'check-circle'
-                ],
-                [
-                    'title' => 'Ditolak',
-                    'value' => 0,
-                    'icon' => 'x-circle'
+                    'title' => 'Verifikasi Disetujui',
+                    'value' => $approvedVerifications ?? 0,
+                    'icon' => 'check-circle',
+                    'key' => 'approvedVerifications'
                 ],
             ];
         @endphp
-        @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 4])
+        @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
         @endcomponent
 
-        <div class="mt-4 mb-6 flex justify-end space-x-3">
-            <x-admin.buttons.action-button
-                route="#"
-                text="Ekspor Data"
-                icon="download"
-                color="green"
-            />
+        @php
+            $filterOptions = [
+                ['value' => 'all', 'label' => 'Semua Status'],
+                ['value' => 'pending', 'label' => 'Menunggu'],
+                ['value' => 'approved', 'label' => 'Disetujui'],
+                ['value' => 'rejected', 'label' => 'Ditolak']
+            ];
+        @endphp
+
+        @component('admin.components.ui.search-and-filter', [
+            'searchRoute' => route('admin.verification.index'),
+            'searchPlaceholder' => 'Cari berdasarkan nama atau email pengguna...',
+            'filterOptions' => $filterOptions,
+            'filterName' => 'status',
+            'filterLabel' => 'Semua Status',
+            'currentFilter' => request('status')
+        ])
+        @endcomponent
+
+        <div id="verifications-table-container">
+            @component('admin.verification.components.tables')
+            @slot('verifications', $verifications ?? collect())
+            @endcomponent
         </div>
 
-        @component('admin.verification.components.search-and-filter')
-        @slot('categories', collect())
-        @slot('levels', collect())
-        @endcomponent
-
-        @component('admin.verification.components.tables')
-        @slot('achievements', collect())
-        @endcomponent
-
-        @component('admin.components.tables.pagination', ['data' => $achievements ?? collect()])
-        @endcomponent
+        <div id="pagination-container">
+            @component('admin.components.tables.pagination', ['data' => $verifications ?? collect()])
+            @endcomponent
+        </div>
     </div>
+
+    <!-- Include modals -->
+    @include('admin.verification.components.show-verification-modal')
+
+    <!-- JavaScript Variables and Setup -->
+    <script>
+        window.verificationRoutes = {
+            index: "{{ route('admin.verification.index') }}",
+            update: "{{ route('admin.verification.update', ['id' => '__ID__']) }}"
+        };
+        window.csrfToken = "{{ csrf_token() }}";
+    </script>
+
+    <!-- Load External JS -->
+    @vite('resources/js/admin/verification.js')
 @endcomponent 

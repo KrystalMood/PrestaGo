@@ -1,0 +1,93 @@
+<!-- Show Competition Modal -->
+<div id="show-competition-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 my-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-medium text-gray-900">Detail Kompetisi</h3>
+                <button type="button" id="close-show-modal" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div id="competition-details" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="col-span-2 flex items-center justify-center mb-4">
+                    <div class="bg-indigo-100 rounded-full p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Competition Name -->
+                <div class="col-span-2 text-center mb-2">
+                    <h2 id="competition-name" class="text-2xl font-bold text-gray-900"></h2>
+                    <p id="competition-level" class="text-gray-500"></p>
+                </div>
+                
+                <!-- Competition Details -->
+                <div class="col-span-2">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Left Column -->
+                            <div>
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-medium text-gray-500">Penyelenggara</h4>
+                                    <p id="competition-organizer" class="mt-1 text-base font-medium text-gray-900"></p>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-medium text-gray-500">Kategori</h4>
+                                    <p id="competition-category" class="mt-1 text-base font-medium text-gray-900"></p>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-medium text-gray-500">Status</h4>
+                                    <div class="mt-1">
+                                        <span id="competition-status" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div>
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-medium text-gray-500">Tanggal Kompetisi</h4>
+                                    <p id="competition-dates" class="mt-1 text-base font-medium text-gray-900"></p>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-medium text-gray-500">Pendaftaran</h4>
+                                    <p id="competition-registration" class="mt-1 text-base font-medium text-gray-900"></p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h4 class="text-sm font-medium text-gray-500">ID</h4>
+                                    <p id="competition-id" class="mt-1 text-base font-medium text-gray-900"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="col-span-2 mt-4">
+                    <h4 class="text-base font-medium text-gray-700 mb-2">Deskripsi</h4>
+                    <div id="competition-description" class="bg-gray-50 p-4 rounded-lg text-gray-700"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="px-6 py-4 bg-gray-50 text-right">
+            <button type="button" id="close-show-competition" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Tutup
+            </button>
+            <button type="button" id="edit-from-show" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-competition-id="">
+                Edit Kompetisi
+            </button>
+        </div>
+    </div>
+</div> 

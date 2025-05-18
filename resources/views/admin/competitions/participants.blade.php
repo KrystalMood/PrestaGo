@@ -1,9 +1,9 @@
 @component('layouts.admin', ['title' => 'Peserta ' . $competition->name])
     <div class="bg-white rounded-lg shadow-custom p-6">
-        @component('admin.users.components.page-header')
+        @component('admin.competitions.components.page-header')
             @slot('subtitle', 'Halaman ini memungkinkan Anda mengelola peserta yang terdaftar untuk kompetisi ini.')
             @slot('showBackButton', true)
-            @slot('backRoute', route('admin.competitions.show', $competition->id))
+            @slot('backRoute', route('admin.competitions.index'))
         @endcomponent
 
         <!-- Search and Filter Bar -->

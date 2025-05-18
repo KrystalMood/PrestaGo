@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             StudyProgramSeeder::class,
             PeriodSeeder::class,
             SkillSeeder::class,
+            CategorySeeder::class,
             CompetitionSeeder::class,
             CompetitionSkillSeeder::class,
             MahasiswaSeeder::class,

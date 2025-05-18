@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('organizer', 255);
             $table->string('level', 50);
             $table->string('type', 50);
+            $table->date('start_date');
+            $table->date('end_date');
             $table->date('registration_start');
             $table->date('registration_end');
             $table->date('competition_date');
@@ -27,10 +29,12 @@ return new class extends Migration
             $table->boolean('verified')->default(false);
             $table->unsignedBigInteger('added_by');
             $table->unsignedBigInteger('period_id');
+            $table->unsignedBigInteger('category_id')->nullable();
             $table->timestamps();
             
             $table->foreign('added_by')->references('id')->on('users');
             $table->foreign('period_id')->references('id')->on('periods');
+            $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
         });
     }
 

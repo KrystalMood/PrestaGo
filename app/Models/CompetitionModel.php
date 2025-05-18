@@ -18,6 +18,8 @@ class CompetitionModel extends Model
         'organizer',
         'level',
         'type',
+        'start_date',
+        'end_date',
         'registration_start',
         'registration_end',
         'competition_date',
@@ -27,9 +29,12 @@ class CompetitionModel extends Model
         'verified',
         'added_by',
         'period_id',
+        'category_id',
     ];
 
     protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
         'registration_start' => 'date',
         'registration_end' => 'date',
         'competition_date' => 'date',
@@ -44,6 +49,11 @@ class CompetitionModel extends Model
     public function period()
     {
         return $this->belongsTo(PeriodModel::class, 'period_id', 'id');
+    }
+    
+    public function category()
+    {
+        return $this->belongsTo(CategoryModel::class, 'category_id', 'id');
     }
 
     public function skills()

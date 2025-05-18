@@ -58,6 +58,23 @@ class CompetitionController extends Controller
             ['value' => 'university', 'label' => 'Universitas'],
         ];
         
+        if ($request->ajax() || $request->has('ajax')) {
+            $tableView = view('admin.competitions.components.tables', compact('competitions'))->render();
+            $paginationView = view('admin.components.tables.pagination', ['data' => $competitions])->render();
+            
+            return response()->json([
+                'success' => true,
+                'table' => $tableView,
+                'pagination' => $paginationView,
+                'stats' => [
+                    'totalCompetitions' => $totalCompetitions,
+                    'activeCompetitions' => $activeCompetitions,
+                    'completedCompetitions' => $completedCompetitions,
+                    'registeredParticipants' => $registeredParticipants,
+                ],
+            ]);
+        }
+        
         return view('admin.competitions.index', compact(
             'competitions', 
             'totalCompetitions', 
@@ -69,32 +86,19 @@ class CompetitionController extends Controller
         ));
     }
 
-    public function create()
-    {
-        $periods = PeriodModel::orderBy('name')->get();
-        $skills = SkillModel::orderBy('name')->get();
-        
-        return view('admin.competitions.create', compact('periods', 'skills'));
-    }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
             'organizer' => 'required|string|max:255',
-            'level' => 'required|string|max:50',
-            'type' => 'required|string|max:50',
-            'registration_start' => 'required|date',
-            'registration_end' => 'required|date|after_or_equal:registration_start',
-            'competition_date' => 'required|date|after_or_equal:registration_start',
-            'registration_link' => 'nullable|url|max:255',
-            'requirements' => 'required|string',
+            'level' => 'nullable|string|max:50',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'registration_start' => 'nullable|date',
+            'registration_end' => 'nullable|date|after_or_equal:registration_start',
+            'description' => 'nullable|string',
             'status' => 'required|string|in:upcoming,active,completed,cancelled',
-            'period_id' => 'required|exists:periods,id',
-            'skills' => 'nullable|array',
-            'skills.*.skill_id' => 'exists:skills,id',
-            'skills.*.importance_level' => 'integer|min:1|max:5',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
         
         $validated['added_by'] = Auth::id();
@@ -102,79 +106,78 @@ class CompetitionController extends Controller
         
         $competition = CompetitionModel::create($validated);
         
-        if (isset($validated['skills']) && !empty($validated['skills'])) {
-            foreach ($validated['skills'] as $skill) {
-                $competition->skills()->attach($skill['skill_id'], [
-                    'importance_level' => $skill['importance_level'] ?? 3
-                ]);
-            }
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Kompetisi berhasil ditambahkan.',
+                'data' => $competition,
+            ]);
         }
         
         return redirect()->route('admin.competitions.index')
             ->with('success', 'Kompetisi berhasil dibuat!');
     }
 
-    public function show(CompetitionModel $competition)
+    public function show(CompetitionModel $competition, Request $request)
     {
-        $competition->load(['addedBy', 'period', 'skills', 'participants', 'participants.user']);
+        $competition->load(['addedBy', 'period', 'category']);
         
-        return view('admin.competitions.show', compact('competition'));
-    }
-
-    public function edit(CompetitionModel $competition)
-    {
-        $periods = PeriodModel::orderBy('name')->get();
-        $skills = SkillModel::orderBy('name')->get();
-        $competition->load(['skills']);
-        
-        return view('admin.competitions.edit', compact('competition', 'periods', 'skills'));
+        return response()->json([
+            'success' => true,
+            'data' => $competition,
+        ]);
     }
 
     public function update(Request $request, CompetitionModel $competition)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
             'organizer' => 'required|string|max:255',
-            'level' => 'required|string|max:50',
-            'type' => 'required|string|max:50',
-            'registration_start' => 'required|date',
-            'registration_end' => 'required|date|after_or_equal:registration_start',
-            'competition_date' => 'required|date|after_or_equal:registration_start',
-            'registration_link' => 'nullable|url|max:255',
-            'requirements' => 'required|string',
+            'level' => 'nullable|string|max:50',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'registration_start' => 'nullable|date',
+            'registration_end' => 'nullable|date|after_or_equal:registration_start',
+            'description' => 'nullable|string',
             'status' => 'required|string|in:upcoming,active,completed,cancelled',
-            'period_id' => 'required|exists:periods,id',
-            'skills' => 'nullable|array',
-            'skills.*.skill_id' => 'exists:skills,id',
-            'skills.*.importance_level' => 'integer|min:1|max:5',
+            'category_id' => 'nullable|exists:categories,id',
         ]);
         
         $competition->update($validated);
         
-        if (isset($validated['skills'])) {
-            $competition->skills()->detach();
-            
-            foreach ($validated['skills'] as $skill) {
-                $competition->skills()->attach($skill['skill_id'], [
-                    'importance_level' => $skill['importance_level'] ?? 3
-                ]);
-            }
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Kompetisi berhasil diperbarui.',
+                'data' => $competition,
+            ]);
         }
         
         return redirect()->route('admin.competitions.index')
             ->with('success', 'Kompetisi berhasil diperbarui!');
     }
 
-    public function destroy(CompetitionModel $competition)
+    public function destroy(CompetitionModel $competition, Request $request)
     {
         if ($competition->participants()->count() > 0) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat menghapus kompetisi yang sudah memiliki peserta.',
+                ], 400);
+            }
             return back()->with('error', 'Tidak dapat menghapus kompetisi yang sudah memiliki peserta.');
         }
         
         $competition->skills()->detach();
-        
         $competition->delete();
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Kompetisi berhasil dihapus.',
+            ]);
+        }
         
         return redirect()->route('admin.competitions.index')
             ->with('success', 'Kompetisi berhasil dihapus!');
