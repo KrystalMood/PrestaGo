@@ -18,9 +18,6 @@
                         Jenis Kompetisi
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Tanggal
                     </th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -45,29 +42,8 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $achievement->competition->name }}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @php
-                            $statusClass = [
-                                'upcoming' => 'bg-yellow-100 text-yellow-800',
-                                'active' => 'bg-green-100 text-green-800',
-                                'completed' => 'bg-blue-100 text-blue-800',
-                                'cancelled' => 'bg-red-100 text-red-800',
-                            ][$achievement->status] ?? 'bg-gray-100 text-gray-800';
-                            
-                            $statusText = [
-                                'upcoming' => 'Akan Datang',
-                                'active' => 'Aktif',
-                                'completed' => 'Selesai',
-                                'cancelled' => 'Dibatalkan',
-                            ][$achievement->status] ?? $achievement->status;
-                        @endphp
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                            {{ $statusText }}
-                        </span>
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $achievement->date ? $achievement->date->format('d M Y') : '-' }}
-                    </td>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end gap-2">

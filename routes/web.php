@@ -130,11 +130,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('dashboard');
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
-            Route::get('/', function () {
-                return view('Mahasiswa.achievements.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'index'])->name('index');
             Route::get('/create', function () {
-                return view('Mahasiswa.achievements.create');
+                return view('Mahasiswa.achievements.components.add-achievement');
             })->name('create');
         });
 

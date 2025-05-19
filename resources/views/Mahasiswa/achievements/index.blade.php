@@ -16,26 +16,11 @@
                             {{ session('status') }}
                         </div>
                     @endif
-
-                    <h4>Daftar Prestasi</h4>
-
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Prestasi</th>
-                                <th>Jenis</th>
-                                <th>Tanggal</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" class="text-center">Belum ada data prestasi</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            <div id="achievemnets-table-container">
+                                @component('Mahasiswa.achievements.components.tables')
+                                    @slot('achievements', $achievements ?? collect())
+                                @endcomponent
+                            </div>
             </x-ui.card>
         </div>
     </div>

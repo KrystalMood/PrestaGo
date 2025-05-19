@@ -12,7 +12,7 @@ class AchievementSeeder extends Seeder
     {
         $achievements = [
             [
-                'user_id' => 4,
+                'user_id' => 3,
                 'title' => 'Achievement 1',
                 'description' => 'This is achievement 1',
                 'competition_name' => 'Competition 1',
@@ -29,7 +29,7 @@ class AchievementSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'user_id' => 4,
+                'user_id' => 3,
                 'title' => 'Achievement 2',
                 'description' => 'This is achievement 2',
                 'competition_name' => 'Competition 2',

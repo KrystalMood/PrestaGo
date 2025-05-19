@@ -48,6 +48,11 @@ class AchievementModel extends Model
         return $this->hasMany(AttachmentModel::class, 'achievement_id', 'achievement_id');
     }
 
+    public function competition()
+    {
+        return $this->belongsTo(CompetitionModel::class, 'competition_id', 'id');
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');

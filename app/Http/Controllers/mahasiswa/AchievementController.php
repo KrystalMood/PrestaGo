@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AchievementModel;
 
-class AchievementContoller extends Controller
+class AchievementController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,7 +15,7 @@ class AchievementContoller extends Controller
     {
         $query = AchievementModel::with('competition')
         ->where('user_id', auth()->id())
-        ->OrderBy('user_id', 'desc');
+        ->orderBy('created_at', 'desc');
 
         if ($request->has('search') && $request->search) {
             $search = $request->search;
