@@ -141,14 +141,13 @@ Route::middleware(['auth'])->group(function () {
     // Student routes
     Route::prefix('student')->name('Mahasiswa.')->middleware(['auth.user:MHS'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('dashboard');
-        
-        Route::resource('achievements', App\Http\Controllers\mahasiswa\AchievementController::class);
 
-        // Route::prefix('achievements')->name('achievements.')->group(function () {
-        //     Route::get('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'index'])->name('index');
-        //     Route::get('/create', [App\Http\Controllers\mahasiswa\AchievementController::class, 'create'])->name('create');
-        //     Route::post('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'store'])->name('store');
-        // });
+        Route::prefix('achievements')->name('achievements.')->group(function () {
+            Route::get('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'index'])->name('index');
+            Route::get('/create', function () {
+                return view('Mahasiswa.achievements.components.add-achievement');
+            })->name('create');
+        });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', function () {
