@@ -41,9 +41,9 @@ class AchievementController extends Controller
         $no = 1;
 
         if ($request->ajax() || $request->has('ajax')) {
-            $tableView = view('mahasiswa.achievements.components.tables', compact('achievements'))->render();
-            $paginationView = view('mahasiswa.components.tables.pagination', ['data' => $achievements])->render();
-            
+            $tableView = view('Mahasiswa.achievements.components.tables', compact('achievements'))->render();
+            $paginationView = view('Mahasiswa.components.tables.pagination', ['data' => $achievements])->render();
+
             return response()->json([
                 'success' => true,
                 'table' => $tableView,
@@ -51,7 +51,7 @@ class AchievementController extends Controller
             ]);
         }
 
-        return view('mahasiswa.achievements.index', compact('achievements', 'statuses', 'no'));
+        return view('Mahasiswa.achievements.index', compact('achievements', 'statuses', 'no'));
     }
 
     /**
