@@ -33,25 +33,43 @@
                         <p id="period-detail-end-date" class="text-base text-gray-900"></p>
                     </div>
                 </div>
-                
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Deskripsi</p>
-                    <p id="period-detail-description" class="text-base text-gray-900 whitespace-pre-line"></p>
+            </div>
+
+            <div class="md:col-span-2 space-y-2">
+                <h5 class="text-sm font-medium text-gray-500">KETERANGAN</h5>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-700" id="show-period-description">-</p>
                 </div>
             </div>
-            
-            <!-- Form Actions -->
-            <div class="flex items-center justify-end space-x-3 pt-5 border-t border-gray-200 mt-6">
-                <x-ui.button 
-                    variant="secondary" 
-                    id="cancel-show-period"
-                    type="button"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Tutup
-                </x-ui.button>
+
+            <div class="flex items-center justify-between pt-5 border-t border-gray-200 mt-6">
+                <div class="flex items-center text-gray-500 text-sm">
+                    <span>Terakhir diperbarui: <span id="show-period-updated-at">-</span></span>
+                </div>
+                <div class="flex space-x-3">
+                    <x-ui.button 
+                        variant="secondary" 
+                        id="cancel-show-period" 
+                        type="button"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Tutup
+                    </x-ui.button>
+                    
+                    <x-ui.button 
+                        variant="primary"
+                        id="edit-from-show"
+                        type="button"
+                        data-period-id=""
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                    </x-ui.button>
+                </div>
             </div>
         </div>
     </div>

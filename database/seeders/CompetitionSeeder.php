@@ -15,8 +15,7 @@ class CompetitionSeeder extends Seeder
      */
     public function run(): void
     {
-        $activePeriod = PeriodModel::where('is_active', true)->first();
-        $periodId = $activePeriod ? $activePeriod->id : 1;
+        $periodId = 1;
 
         $programmingId = CategoryModel::where('slug', 'pemrograman')->first()->id ?? null;
         $uiuxId = CategoryModel::where('slug', 'desain-ui-ux')->first()->id ?? null;
@@ -174,6 +173,25 @@ class CompetitionSeeder extends Seeder
                 'updated_at' => now(),
             ],
         ];
+
+        $levelMap = [
+            'Nasional' => 'national',
+            'Regional'  => 'regional',
+            'Internal'  => 'university',
+        ];
+        $typeMap = [
+            'Development' => 'individual',
+            'Coding'      => 'individual',
+            'Design'      => 'individual',
+            'Business'    => 'individual',
+            'Scientific'  => 'individual',
+        ];
+
+        foreach ($competitions as &$competition) {
+            $competition['level'] = $levelMap[$competition['level']] ?? $competition['level'];
+            $competition['type']  = $typeMap[$competition['type']]   ?? $competition['type'];
+        }
+        unset($competition);
 
         foreach ($competitions as $competition) {
             CompetitionModel::create($competition);

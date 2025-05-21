@@ -29,7 +29,6 @@ class CompetitionModel extends Model
         'verified',
         'added_by',
         'period_id',
-        'category_id',
     ];
 
     protected $casts = [
@@ -51,11 +50,6 @@ class CompetitionModel extends Model
         return $this->belongsTo(PeriodModel::class, 'period_id', 'id');
     }
     
-    public function category()
-    {
-        return $this->belongsTo(CategoryModel::class, 'category_id', 'id');
-    }
-
     public function skills()
     {
         return $this->belongsToMany(SkillModel::class, 'competition_skills', 'competition_id', 'skill_id')
@@ -66,6 +60,11 @@ class CompetitionModel extends Model
     public function participants()
     {
         return $this->hasMany(CompetitionParticipantModel::class, 'competition_id', 'id');
+    }
+
+    public function subCompetitions()
+    {
+        return $this->hasMany(SubCompetitionModel::class, 'competition_id', 'id');
     }
 
     public function recommendations()
@@ -101,5 +100,45 @@ class CompetitionModel extends Model
     public function scopeVerified($query)
     {
         return $query->where('verified', true);
+    }
+
+    public function getRequirementsHtmlAttribute()
+    {
+        if (empty($this->requirements)) {
+            return null;
+        }
+        
+        $lines = explode("\n", $this->requirements);
+        $htmlLines = [];
+        
+        foreach ($lines as $line) {
+            $trimmedLine = trim($line);
+            if (!empty($trimmedLine)) {
+                $htmlLines[] = "<li>{$trimmedLine}</li>";
+            }
+        }
+        
+        if (empty($htmlLines)) {
+            return null;
+        }
+        
+        return '<ul class="list-disc pl-5 space-y-1">' . implode('', $htmlLines) . '</ul>';
+    }
+    
+    public function getLevelFormattedAttribute()
+    {
+        if (empty($this->level)) {
+            return null;
+        }
+        
+        $levels = [
+            'international' => 'International',
+            'national' => 'National',
+            'regional' => 'Regional',
+            'provincial' => 'Provincial',
+            'university' => 'University'
+        ];
+        
+        return $levels[$this->level] ?? ucfirst($this->level);
     }
 } 

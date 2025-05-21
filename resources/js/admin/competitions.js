@@ -1,18 +1,19 @@
+// Initializes the competition management interface when the DOM is fully loaded.
 document.addEventListener('DOMContentLoaded', function() {
     const competitionRoutes = window.competitionRoutes || {};
     const csrfToken = window.csrfToken || '';
-    
+
     setupCompetitionModals();
-    
+
     attachPaginationHandlers();
-    
-    // Initialize and set up event listeners for competition modals
+
+    // Function to initialize and set up event listeners for competition modals.
     function setupCompetitionModals() {
         window.addCompetitionModal = document.getElementById('add-competition-modal');
         window.editCompetitionModal = document.getElementById('edit-competition-modal');
         window.showCompetitionModal = document.getElementById('show-competition-modal');
         window.deleteCompetitionModal = document.getElementById('delete-competition-modal');
-        
+
         const openAddModalBtn = document.getElementById('open-add-competition-modal');
         if (openAddModalBtn) {
             openAddModalBtn.addEventListener('click', function() {
@@ -23,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
-        
+
         const closeAddModalBtn = document.getElementById('close-add-modal');
         const cancelAddBtn = document.getElementById('cancel-add-competition');
         [closeAddModalBtn, cancelAddBtn].forEach(button => {
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
-        
+
         const closeEditModalBtn = document.getElementById('close-edit-modal');
         const cancelEditBtn = document.getElementById('cancel-edit-competition');
         [closeEditModalBtn, cancelEditBtn].forEach(button => {
@@ -92,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
         attachDeleteButtonListeners();
     }
     
-    // Resets the multi-step form to its initial (first) step
+    // Resets the multi-step form to its initial (first) step.
     function resetMultiStepForm() {
         const step1 = document.getElementById('step-1-content');
         const step2 = document.getElementById('step-2-content');
@@ -123,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Set up the multi-step form navigation
+    // Set up the multi-step form navigation.
     function setupMultiStepFormNavigation() {
         const step1 = document.getElementById('step-1-content');
         const step2 = document.getElementById('step-2-content');
@@ -227,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.classList.add('hidden');
         });
         
+        // Function to display an error message for a specific form field.
         function showFieldError(field, message) {
             const formGroup = field.closest('.form-group');
             
@@ -248,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // Function to reset error messages and styling for form fields in the add competition form.
         function resetFieldErrors() {
             const inputFields = document.getElementById('add-competition-form').querySelectorAll('input, select, textarea');
             inputFields.forEach(field => {
@@ -263,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Set up the add competition form with AJAX submission
+    // Set up the add competition form with AJAX submission.
     function setupAddCompetitionForm() {
         const addForm = document.getElementById('add-competition-form');
         if (!addForm) return;
@@ -280,10 +283,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Function to handle the submission of the add competition form via AJAX.
         function submitAddCompetitionForm() {
             const form = document.getElementById('add-competition-form');
             
-            // Validate form fields
             const startDate = document.getElementById('add-start-date').value;
             const endDate = document.getElementById('add-end-date').value;
             const regStart = document.getElementById('add-registration-start').value;
@@ -292,7 +295,6 @@ document.addEventListener('DOMContentLoaded', function() {
             let isValid = true;
             let errorMessages = [];
             
-            // Validate required fields
             const requiredFields = form.querySelectorAll('[required]');
             requiredFields.forEach(field => {
                 if (!field.value.trim()) {
@@ -307,7 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Validate date logic
             if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
                 isValid = false;
                 errorMessages.push('<li>Tanggal Selesai tidak boleh kurang dari Tanggal Mulai</li>');
@@ -389,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Attach event listeners to edit buttons
+    // Attach event listeners to edit buttons.
     function attachEditButtonListeners() {
         const editButtons = document.querySelectorAll('.edit-competition');
         editButtons.forEach(button => {
@@ -400,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Attach event listeners to show buttons
+    // Attach event listeners to show buttons.
     function attachShowButtonListeners() {
         const showButtons = document.querySelectorAll('.show-competition');
         showButtons.forEach(button => {
@@ -411,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Load competition data for editing
+    // Load competition data for editing.
     function loadCompetitionForEdit(competitionId) {
         const editModal = window.editCompetitionModal;
         if (!editModal) return;
@@ -480,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Load competition data for viewing
+    // Load competition data for viewing.
     function loadCompetitionForView(competitionId) {
         const showModal = window.showCompetitionModal;
         if (!showModal) return;
@@ -502,28 +503,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.getElementById('competition-id').textContent = competition.id;
             document.getElementById('competition-name').textContent = competition.name;
-            document.getElementById('competition-level').textContent = competition.level || 'Umum';
+            document.getElementById('competition-level').textContent = competition.level_formatted || 'Umum';
             document.getElementById('competition-organizer').textContent = competition.organizer;
-            document.getElementById('competition-category').textContent = competition.category?.name || 'N/A';
             document.getElementById('competition-period').textContent = competition.period?.name || 'N/A';
-            
-            // Set competition type
-            const typeText = {
-                'individual': 'Individual',
-                'team': 'Tim',
-                'both': 'Keduanya'
-            };
-            document.getElementById('competition-type').textContent = typeText[competition.type] || 'Tidak Ditentukan';
-            
-            // Set competition level
-            const levelText = {
-                'international': 'Internasional',
-                'national': 'Nasional',
-                'regional': 'Regional',
-                'provincial': 'Provinsi',
-                'university': 'Universitas'
-            };
-            document.getElementById('competition-level').textContent = levelText[competition.level] || 'Umum';
             
             let startDate = new Date(competition.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
             let endDate = new Date(competition.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -550,9 +532,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             document.getElementById('competition-description').textContent = competition.description || 'Tidak ada deskripsi tersedia';
             
-            document.getElementById('competition-requirements').textContent = competition.requirements || 'Tidak ada persyaratan tersedia';
+            document.getElementById('competition-requirements').innerHTML = competition.requirements_html || '<p class="text-gray-500">Tidak ada persyaratan khusus.</p>';
+
+            document.getElementById('show-competition-updated-at').textContent = competition.updated_at ? new Date(competition.updated_at).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : '-';
+
+            const editButton = document.getElementById('edit-from-show');
+            if (editButton) {
+                editButton.setAttribute('data-competition-id', competition.id);
+            }
             
-            document.getElementById('edit-from-show').setAttribute('data-competition-id', competition.id);
+            // Update level icon
+            updateLevelIcon(competition.level);
             
             showModal.classList.remove('hidden');
         })
@@ -562,7 +552,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Update competition data
+    // Function to update the level icon based on competition level
+    function updateLevelIcon(level) {
+        const levelText = level ? level.toLowerCase() : '';
+        const iconContainer = document.getElementById('level-icon-container');
+        const icon = document.getElementById('level-icon');
+        
+        if (!iconContainer || !icon) return;
+        
+        let bgClass = 'bg-indigo-100';
+        let iconClass = 'text-indigo-500';
+        let iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />';
+        
+        if (levelText === 'international' || levelText.includes('internasional')) {
+            bgClass = 'bg-blue-100';
+            iconClass = 'text-blue-600';
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+        } else if (levelText === 'national' || levelText.includes('nasional')) {
+            bgClass = 'bg-red-100';
+            iconClass = 'text-red-600';
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />';
+        } else if (levelText === 'regional' || levelText.includes('regional')) {
+            bgClass = 'bg-green-100';
+            iconClass = 'text-green-600';
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />';
+        } else if (levelText === 'provincial' || levelText.includes('provinsi')) {
+            bgClass = 'bg-yellow-100';
+            iconClass = 'text-yellow-600';
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />';
+        } else if (levelText === 'university' || levelText.includes('universitas')) {
+            bgClass = 'bg-purple-100';
+            iconClass = 'text-purple-600';
+            iconPath = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />';
+        }
+        
+        const existingContainerClasses = iconContainer.getAttribute('class') || '';
+        const newContainerClasses = existingContainerClasses
+            .replace(/bg-\w+-\d+/g, '')
+            .trim() + ' h-24 w-24 rounded-full overflow-hidden ' + bgClass + ' flex items-center justify-center shadow-md';
+        iconContainer.setAttribute('class', newContainerClasses);
+        
+        const existingIconClasses = icon.getAttribute('class') || '';
+        const newIconClasses = existingIconClasses
+            .replace(/text-\w+-\d+/g, '')
+            .trim() + ' h-12 w-12 ' + iconClass;
+        icon.setAttribute('class', newIconClasses);
+        
+        icon.innerHTML = iconPath;
+    }
+    
+    // Update competition data.
     function updateCompetition(competitionId) {
         const form = document.getElementById('edit-competition-form');
         
@@ -598,7 +637,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit-type').classList.add('border-red-500');
         }
         
-        // Check if period is selected
         const period = document.getElementById('edit-period').value;
         if (!period) {
             isValid = false;
@@ -674,7 +712,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Attach event listeners to delete buttons
+    // Attach event listeners to delete buttons.
     function attachDeleteButtonListeners() {
         const deleteButtons = document.querySelectorAll('.delete-competition');
         deleteButtons.forEach(button => {
@@ -697,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Delete competition
+    // Delete competition.
     function deleteCompetition(competitionId) {
         const confirmBtn = document.getElementById('confirm-delete-competition');
         const originalButtonText = confirmBtn.innerHTML;
@@ -727,12 +765,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(data.message || 'Failed to delete competition');
             }
             
-            // Find and trigger click on a button that has data-modal-hide attribute
             const closeButtons = document.querySelectorAll('[data-modal-hide="delete-competition-modal"]');
             if (closeButtons.length > 0) {
                 closeButtons[0].click();
             } else {
-                // Fallback if no button is found
                 window.deleteCompetitionModal.classList.add('hidden');
             }
             
@@ -745,12 +781,10 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmBtn.innerHTML = originalButtonText;
             
             console.error('Error deleting competition:', error);
-            // Find and trigger click on a button that has data-modal-hide attribute
             const closeButtons = document.querySelectorAll('[data-modal-hide="delete-competition-modal"]');
             if (closeButtons.length > 0) {
                 closeButtons[0].click();
             } else {
-                // Fallback if no button is found
                 window.deleteCompetitionModal.classList.add('hidden');
             }
             
@@ -758,7 +792,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Refresh the competitions table
+    // Refresh the competitions table.
     async function refreshCompetitionsTable() {
         const tableContainer = document.getElementById('competitions-table-container');
         const paginationContainer = document.getElementById('pagination-container');
@@ -798,7 +832,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Attach pagination handlers
+    // Attach pagination handlers.
     function attachPaginationHandlers() {
         const pagButtons = document.querySelectorAll('.pagination-button');
         pagButtons.forEach(button => {
@@ -843,7 +877,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Update stats cards
+    // Update stats cards.
     function updateStats(stats) {
         if (!stats) return;
         
@@ -857,7 +891,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Helper function to get status text
+    // Helper function to get status text.
     function getStatusText(status) {
         const statusMap = {
             'upcoming': 'Akan Datang',
@@ -869,7 +903,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return statusMap[status] || status;
     }
     
-    // Helper function to get status class
+    // Helper function to get status class.
     function getStatusClass(status) {
         const classMap = {
             'upcoming': 'bg-yellow-100 text-yellow-800',
@@ -881,7 +915,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return classMap[status] || 'bg-gray-100 text-gray-800';
     }
     
-    // Display validation errors
+    // Display validation errors.
     function displayErrors(errors, form, errorContainer, errorList) {
         const container = document.getElementById(errorContainer);
         const list = document.getElementById(errorList);
@@ -889,10 +923,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!container || !list) return;
         
-        // Reset previous errors
         list.innerHTML = '';
         
-        // Reset form field errors
         const inputFields = form.querySelectorAll('input, select, textarea');
         inputFields.forEach(field => {
             field.classList.remove('border-red-500');
@@ -908,7 +940,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Process new errors
         let errorCount = 0;
         let errorMessages = [];
         
@@ -921,44 +952,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMessages.push(`<li>${message}</li>`);
                 });
                 
-                // Find the input field and highlight it
                 const inputField = form.querySelector(`[name="${field}"]`);
                 if (inputField) {
                     inputField.classList.add('border-red-500');
                     inputField.classList.remove('border-gray-300');
                     
-                    // Find the corresponding error message element
                     const fieldId = inputField.id;
                     const errorElement = document.getElementById(`${fieldId.replace('add-', '')}-error`) || 
                                         document.getElementById(`${fieldId.replace('edit-', '')}-error`);
                     
                     if (errorElement) {
-                        errorElement.textContent = messages[0]; // Show the first error message
+                        errorElement.textContent = messages[0]; 
                         errorElement.classList.remove('hidden');
                     }
                 }
             }
         }
         
-        // Update error list and show container
         list.innerHTML = errorMessages.join('');
         if (countElement) countElement.textContent = errorCount;
         container.classList.remove('hidden');
         
-        // If we're in a multi-step form, make sure we show the right step that has errors
         const step1 = document.getElementById('step-1-content');
         const step2 = document.getElementById('step-2-content');
         
         if (step1 && step2) {
-            // Check if step 1 has errors
             const step1Fields = ['name', 'organizer', 'category_id', 'status', 'level', 'type'];
             const hasStep1Errors = step1Fields.some(field => errors[field]);
             
-            // Check if step 2 has errors
             const step2Fields = ['start_date', 'end_date', 'registration_start', 'registration_end', 'description'];
             const hasStep2Errors = step2Fields.some(field => errors[field]);
             
-            // Show the step with errors
             if (hasStep1Errors) {
                 showStep(1);
             } else if (hasStep2Errors) {
@@ -966,10 +990,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Scroll to error container
         container.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     
+    // Function to show a specific step in the multi-step form.
     function showStep(stepNumber) {
         const step1 = document.getElementById('step-1-content');
         const step2 = document.getElementById('step-2-content');
@@ -1016,26 +1040,23 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Reset form errors
+    // Reset form errors.
     function resetFormErrors(formOrId) {
         const form = typeof formOrId === 'string' ? document.getElementById(formOrId) : formOrId;
         
         if (!form) return;
         
-        // Reset form field errors
         form.querySelectorAll('input, select, textarea').forEach(field => {
             field.classList.remove('border-red-500');
             field.classList.add('border-gray-300');
         });
         
-        // Reset error messages
         const errorElements = form.closest('.fixed')?.querySelectorAll('.error-message') || [];
         errorElements.forEach(error => {
             error.textContent = '';
             error.classList.add('hidden');
         });
         
-        // Hide error containers
         const errorContainers = form.closest('.fixed')?.querySelectorAll('[id$="-error"]') || [];
         errorContainers.forEach(container => {
             if (container.id.endsWith('-error') && !container.classList.contains('error-message')) {
@@ -1044,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Show notification
+    // Show notification.
     function showNotification(message, type = 'success') {
         const existingNotification = document.getElementById('notification');
         if (existingNotification) {
@@ -1114,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
             notification.classList.add('translate-x-0');
         }, 10);
         
-        // Close notification function
+        // Function to close the displayed notification.
         function closeNotification(notif) {
             notif.classList.remove('translate-x-0');
             notif.classList.add('translate-x-full');

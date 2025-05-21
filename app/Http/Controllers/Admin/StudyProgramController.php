@@ -22,21 +22,14 @@ class StudyProgramController extends Controller
             });
         }
         
-        if ($request->has('status') && $request->status !== 'all') {
-            $status = $request->status === 'active';
-            $query->where('is_active', $status);
-        }
-        
         $programs = $query->orderBy('name')->paginate(10);
         
         $totalPrograms = StudyProgramModel::count();
-        $activePrograms = StudyProgramModel::where('is_active', true)->count();
         $totalFaculties = StudyProgramModel::distinct('faculty')->count('faculty');
         
         return view('admin.programs.index', compact(
             'programs',
             'totalPrograms',
-            'activePrograms',
             'totalFaculties'
         ));
     }
@@ -53,7 +46,6 @@ class StudyProgramController extends Controller
             'code' => 'required|string|max:20|unique:study_programs,code',
             'faculty' => 'required|string|max:255',
             'degree_level' => 'required|string|max:50',
-            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -78,7 +70,6 @@ class StudyProgramController extends Controller
             'accreditation' => $request->accreditation,
             'year_established' => $request->year_established,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
         ]);
 
         if (request()->ajax()) {
@@ -136,7 +127,6 @@ class StudyProgramController extends Controller
             'code' => 'required|string|max:20|unique:study_programs,code,' . $id,
             'faculty' => 'required|string|max:255',
             'degree_level' => 'required|string|max:50',
-            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -161,7 +151,6 @@ class StudyProgramController extends Controller
             'accreditation' => $request->accreditation,
             'year_established' => $request->year_established,
             'description' => $request->description,
-            'is_active' => $request->has('is_active'),
         ]);
 
         if (request()->ajax()) {
@@ -203,17 +192,5 @@ class StudyProgramController extends Controller
         
         return redirect()->route('admin.programs.index')
             ->with('success', 'Program studi berhasil dihapus.');
-    }
-    
-    public function toggleActive($id)
-    {
-        $program = StudyProgramModel::findOrFail($id);
-        $program->is_active = !$program->is_active;
-        $program->save();
-        
-        $status = $program->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        
-        return redirect()->route('admin.programs.index')
-            ->with('success', "Program studi berhasil {$status}.");
     }
 } 

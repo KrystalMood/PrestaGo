@@ -16,6 +16,8 @@ Stores user information across all roles (students, lecturers, administrators).
 | email_verified_at | timestamp | When email was verified |
 | password | varchar(255) | Hashed password |
 | role | varchar(20) | User role (admin, dosen, mahasiswa) |
+| level_id | bigint(20) unsigned | User level or permission level |
+| photo | varchar(255) | User profile photo path |
 | nim | varchar(20) | Student ID number (for students) |
 | program_studi_id | bigint(20) unsigned | Foreign key to study_programs |
 | remember_token | varchar(100) | Remember me token |
@@ -95,6 +97,11 @@ Stores academic programs/departments.
 | name | varchar(255) | Name of program/department |
 | code | varchar(20) | Department code |
 | faculty | varchar(255) | Faculty name |
+| degree_level | varchar(50) | Degree level (S1, S2, etc.) |
+| is_active | boolean | Whether the program is active |
+| accreditation | varchar(10) | Program accreditation |
+| year_established | year | Year the program was established |
+| description | text | Program description |
 | created_at | timestamp | Creation timestamp |
 | updated_at | timestamp | Last update timestamp |
 
@@ -110,6 +117,8 @@ Stores information about competitions available for students.
 | organizer | varchar(255) | Competition organizer |
 | level | varchar(50) | Competition level (international, national, regional) |
 | type | varchar(50) | Competition type/category |
+| start_date | date | Competition start date |
+| end_date | date | Competition end date |
 | registration_start | date | Registration start date |
 | registration_end | date | Registration deadline |
 | competition_date | date | Competition date |
@@ -119,6 +128,7 @@ Stores information about competitions available for students.
 | verified | boolean | Whether verified by admin |
 | added_by | bigint(20) unsigned | User who added the competition |
 | period_id | bigint(20) unsigned | Academic period reference |
+| category_id | bigint(20) unsigned | Category reference |
 | created_at | timestamp | Creation timestamp |
 | updated_at | timestamp | Last update timestamp |
 
@@ -193,13 +203,36 @@ Stores academic periods/semesters.
 
 ### levels
 
-Stores achievement levels for categorization.
+Stores user permission levels.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | id | bigint(20) unsigned | Primary key |
-| code | varchar(10) | Unique level code |
-| name | varchar(50) | Level name |
+| level_kode | varchar(10) | Unique level code |
+| level_nama | varchar(50) | Level name |
+| created_at | timestamp | Creation timestamp |
+| updated_at | timestamp | Last update timestamp |
+
+### categories
+
+Stores competition categories.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint(20) unsigned | Primary key |
+| name | varchar(255) | Category name |
+| description | text | Category description |
+| slug | varchar(255) | Unique slug for URL |
+| created_at | timestamp | Creation timestamp |
+| updated_at | timestamp | Last update timestamp |
+
+### verifications
+
+Stores verification records.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | bigint(20) unsigned | Primary key |
 | created_at | timestamp | Creation timestamp |
 | updated_at | timestamp | Last update timestamp |
 
@@ -207,10 +240,16 @@ Stores achievement levels for categorization.
 
 - **Users → Study Programs**: Many-to-one relationship
 - **Users → Skills**: Many-to-many relationship through user_skills
+- **Users → Levels**: Many-to-one relationship
 - **Achievements → Users**: Many-to-one relationship (student who earned achievement)
+- **Achievements → Users (verified_by)**: Many-to-one relationship
+- **Achievements → Competitions**: Many-to-one relationship
+- **Achievements → Periods**: Many-to-one relationship
 - **Attachments → Achievements**: Many-to-one relationship
 - **Competitions → Skills**: Many-to-many relationship through competition_skills
 - **Competitions → Users (added_by)**: Many-to-one relationship
+- **Competitions → Periods**: Many-to-one relationship
+- **Competitions → Categories**: Many-to-one relationship
 - **Recommendations → Users**: Many-to-one relationship
 - **Recommendations → Competitions**: Many-to-one relationship
 - **Competition Participants → Users**: Many-to-one relationship
@@ -218,7 +257,5 @@ Stores achievement levels for categorization.
 - **Competition Participants → Users (mentor_id)**: Many-to-one relationship
 - **Lecturer Mentorships → Users (dosen_id)**: Many-to-one relationship
 - **Lecturer Mentorships → Competitions**: Many-to-one relationship
-- **Achievements → Periods**: Many-to-one relationship
-- **Competitions → Periods**: Many-to-one relationship
 
 ## Entity Relationship Diagram

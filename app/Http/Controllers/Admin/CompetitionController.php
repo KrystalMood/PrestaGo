@@ -16,7 +16,7 @@ class CompetitionController extends Controller
 { 
     public function index(Request $request)
     {
-        $query = CompetitionModel::with(['addedBy', 'period', 'skills', 'category'])
+        $query = CompetitionModel::with(['addedBy', 'period', 'skills'])
             ->withCount('participants')
             ->orderBy('created_at', 'desc');
             
@@ -45,7 +45,7 @@ class CompetitionController extends Controller
         $registeredParticipants = \App\Models\CompetitionParticipantModel::count();
         $categories = \App\Models\CategoryModel::all();
         $skills = SkillModel::all();
-        $periods = PeriodModel::where('is_active', true)->get();
+        $periods = PeriodModel::all();
         
         $statuses = [
             ['value' => 'upcoming', 'label' => 'Akan Datang'],
@@ -96,7 +96,7 @@ class CompetitionController extends Controller
     public function create()
     {
         $skills = SkillModel::all();
-        $periods = PeriodModel::where('is_active', true)->get();
+        $periods = PeriodModel::all();
         
         return view('admin.competitions.create', compact('skills', 'periods'));
     }
@@ -116,7 +116,6 @@ class CompetitionController extends Controller
             'description' => 'nullable|string',
             'requirements' => 'nullable|string',
             'status' => 'required|string|in:upcoming,active,completed,cancelled',
-            'category_id' => 'nullable|exists:categories,id',
             'period_id' => 'required|exists:periods,id',
         ]);
         
@@ -139,11 +138,11 @@ class CompetitionController extends Controller
 
     public function show(CompetitionModel $competition, Request $request)
     {
-        $competition->load(['addedBy', 'period', 'category']);
+        $competition->load(['addedBy', 'period']);
         
         return response()->json([
             'success' => true,
-            'data' => $competition,
+            'data' => $competition->append(['requirements_html', 'level_formatted']),
         ]);
     }
 
@@ -162,7 +161,6 @@ class CompetitionController extends Controller
             'description' => 'nullable|string',
             'requirements' => 'nullable|string',
             'status' => 'required|string|in:upcoming,active,completed,cancelled',
-            'category_id' => 'nullable|exists:categories,id',
             'period_id' => 'required|exists:periods,id',
         ]);
         
@@ -220,7 +218,6 @@ class CompetitionController extends Controller
     {
         $competition->load(['participants', 'participants.user']);
         
-        // Get all student users (with role MHS)
         $students = UserModel::where('role', 'MHS')
             ->whereNotIn('id', $competition->participants->pluck('user_id')) // Exclude already participating students
             ->orderBy('name')
@@ -237,14 +234,12 @@ class CompetitionController extends Controller
             'status' => 'required|in:registered,pending',
         ]);
         
-        // Check if student is already registered
         $exists = $competition->participants()->where('user_id', $validated['student_id'])->exists();
         
         if ($exists) {
             return back()->with('error', 'Mahasiswa ini sudah terdaftar pada kompetisi ini.');
         }
         
-        // Create participant
         $competition->participants()->create([
             'user_id' => $validated['student_id'],
             'team_name' => $validated['team_name'],
@@ -253,11 +248,10 @@ class CompetitionController extends Controller
         
         return back()->with('success', 'Peserta berhasil ditambahkan.');
     }
-
+    
     public function removeParticipant(CompetitionModel $competition, $participant)
     {
-        $participant = $competition->participants()->findOrFail($participant);
-        $participant->delete();
+        $competition->participants()->findOrFail($participant)->delete();
         
         return back()->with('success', 'Peserta berhasil dihapus.');
     }
