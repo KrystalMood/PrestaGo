@@ -63,6 +63,16 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{competition}/participants', [App\Http\Controllers\Admin\CompetitionController::class, 'participants'])->name('participants');
             Route::post('/{competition}/participants', [App\Http\Controllers\Admin\CompetitionController::class, 'addParticipant'])->name('participants.store');
             Route::delete('/{competition}/participants/{participant}', [App\Http\Controllers\Admin\CompetitionController::class, 'removeParticipant'])->name('participants.destroy');
+            
+            // Sub-competition routes
+            Route::get('/{competition}/sub-competitions', [App\Http\Controllers\Admin\SubCompetitionController::class, 'index'])->name('sub-competitions.index');
+            Route::post('/{competition}/sub-competitions', [App\Http\Controllers\Admin\SubCompetitionController::class, 'store'])->name('sub-competitions.store');
+            Route::get('/{competition}/sub-competitions/{sub_competition}', [App\Http\Controllers\Admin\SubCompetitionController::class, 'show'])->name('sub-competitions.show');
+            Route::put('/{competition}/sub-competitions/{sub_competition}', [App\Http\Controllers\Admin\SubCompetitionController::class, 'update'])->name('sub-competitions.update');
+            Route::delete('/{competition}/sub-competitions/{sub_competition}', [App\Http\Controllers\Admin\SubCompetitionController::class, 'destroy'])->name('sub-competitions.destroy');
+            Route::get('/{competition}/sub-competitions/{sub_competition}/participants', [App\Http\Controllers\Admin\SubCompetitionController::class, 'participants'])->name('sub-competitions.participants');
+            Route::post('/{competition}/sub-competitions/{sub_competition}/participants', [App\Http\Controllers\Admin\SubCompetitionController::class, 'addParticipant'])->name('sub-competitions.participants.store');
+            Route::delete('/{competition}/sub-competitions/{sub_competition}/participants/{participant}', [App\Http\Controllers\Admin\SubCompetitionController::class, 'removeParticipant'])->name('sub-competitions.participants.destroy');
         });
 
         // Period Management Routes
@@ -76,7 +86,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/edit', [App\Http\Controllers\Admin\PeriodController::class, 'edit'])->name('edit');
             Route::put('/{id}', [App\Http\Controllers\Admin\PeriodController::class, 'update'])->name('update');
             Route::delete('/{id}', [App\Http\Controllers\Admin\PeriodController::class, 'destroy'])->name('destroy');
-            Route::patch('/{id}/toggle-active', [App\Http\Controllers\Admin\PeriodController::class, 'toggleActive'])->name('toggle-active');
         });
 
         // Program Management Routes
@@ -88,7 +97,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/edit', [App\Http\Controllers\Admin\StudyProgramController::class, 'edit'])->name('edit');
             Route::put('/{id}', [App\Http\Controllers\Admin\StudyProgramController::class, 'update'])->name('update');
             Route::delete('/{id}', [App\Http\Controllers\Admin\StudyProgramController::class, 'destroy'])->name('destroy');
-            Route::patch('/{id}/toggle-active', [App\Http\Controllers\Admin\StudyProgramController::class, 'toggleActive'])->name('toggle-active');
         });
 
         // Recommendation Management Routes

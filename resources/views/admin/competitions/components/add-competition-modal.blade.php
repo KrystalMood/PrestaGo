@@ -73,19 +73,6 @@
 
                         <div class="form-group">
                             <x-ui.form-select
-                                name="category_id"
-                                id="add-category"
-                                label="Kategori"
-                                :options="collect($categories ?? [])->pluck('name', 'id')->toArray()"
-                                :selected="''"
-                                required
-                                placeholder="Pilih Kategori"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="category-id-error"></p>
-                        </div>
-
-                        <div class="form-group">
-                            <x-ui.form-select
                                 name="period_id"
                                 id="add-period"
                                 label="Periode"
@@ -114,23 +101,6 @@
                                 placeholder="Pilih Level Kompetisi"
                             />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="level-error"></p>
-                        </div>
-
-                        <div class="form-group">
-                            <x-ui.form-select
-                                name="type"
-                                id="add-type"
-                                label="Tipe Kompetisi"
-                                :options="[
-                                    'individual' => 'Individual',
-                                    'team' => 'Tim',
-                                    'both' => 'Keduanya'
-                                ]"
-                                :selected="'individual'"
-                                required
-                                placeholder="Pilih Tipe Kompetisi"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="type-error"></p>
                         </div>
 
                         <div class="form-group">

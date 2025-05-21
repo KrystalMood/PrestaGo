@@ -16,14 +16,12 @@ class StudyProgramModel extends Model
         'code',
         'faculty',
         'degree_level',
-        'is_active',
         'accreditation',
         'year_established',
         'description'
     ];
     
     protected $casts = [
-        'is_active' => 'boolean',
     ];
 
     public function users()

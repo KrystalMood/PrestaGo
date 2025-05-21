@@ -67,29 +67,6 @@
                         />
                         <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-end-date-error"></p>
                     </div>
-
-                    <div class="form-group md:col-span-2">
-                        <div class="flex items-center">
-                            <input type="checkbox" 
-                                name="is_active" 
-                                id="edit-is-active" 
-                                value="1" 
-                                class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                            >
-                            <label for="edit-is-active" class="ml-2 block text-sm text-gray-700">Aktifkan periode ini</label>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">Jika diaktifkan, periode ini akan menjadi periode aktif dan periode lain akan dinonaktifkan</p>
-                    </div>
-
-                    <div class="form-group md:col-span-2">
-                        <label for="edit-description" class="block text-sm font-medium text-gray-700">Deskripsi (Opsional)</label>
-                        <textarea id="edit-description" 
-                            name="description" 
-                            rows="3" 
-                            class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" 
-                            placeholder="Masukkan deskripsi periode"></textarea>
-                        <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-description-error"></p>
-                    </div>
                 </div>
 
                 <!-- Form Actions -->

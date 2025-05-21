@@ -654,12 +654,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 document.getElementById('show-id').textContent = userData.id;
                 document.getElementById('show-name').textContent = userData.name;
-                document.getElementById('show-email').textContent = userData.email;
-                document.getElementById('show-created-at').textContent = userData.created_at;
+                document.getElementById('show-email').textContent = userData.email || '-';
+                document.getElementById('show-role').textContent = userData.role ? userData.role.charAt(0).toUpperCase() + userData.role.slice(1) : '-';
+                document.getElementById('show-created-at').textContent = userData.created_at ? new Date(userData.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+                document.getElementById('show-user-updated-at').textContent = userData.updated_at ? new Date(userData.updated_at).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : '-';
                 
                 const roleElement = document.getElementById('show-role');
-                roleElement.textContent = userData.role;
-                
                 if (userData.role_code === 'admin') {
                     roleElement.className = 'px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-800';
                 } else if (userData.role_code === 'user') {

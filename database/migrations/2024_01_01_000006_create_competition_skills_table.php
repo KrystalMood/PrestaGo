@@ -16,6 +16,9 @@ return new class extends Migration
             $table->unsignedBigInteger('competition_id');
             $table->unsignedBigInteger('skill_id');
             $table->integer('importance_level');
+            $table->float('weight_value')->default(1.0); 
+            $table->string('criterion_type', 50)->default('benefit'); 
+            $table->float('ahp_priority')->default(0.0); 
             $table->timestamps();
             
             $table->foreign('competition_id')->references('id')->on('competitions')->onDelete('cascade');

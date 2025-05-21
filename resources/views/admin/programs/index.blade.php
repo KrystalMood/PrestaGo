@@ -20,17 +20,11 @@
                     'icon' => 'building-library',
                     'key' => 'totalFaculties'
                 ],
-                [
-                    'title' => 'Program Studi Aktif',
-                    'value' => $activePrograms ?? 0,
-                    'icon' => 'check-badge',
-                    'key' => 'activePrograms'
-                ],
             ];
         @endphp
         
         <div class="mb-4">
-            @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
+            @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 2])
             @endcomponent
         </div>
 
@@ -53,13 +47,9 @@
         @component('admin.components.ui.search-and-filter', [
             'searchRoute' => route('admin.programs.index'),
             'searchPlaceholder' => 'Cari program studi...',
-            'filterOptions' => [
-                ['value' => 'active', 'label' => 'Aktif'],
-                ['value' => 'inactive', 'label' => 'Tidak Aktif']
-            ],
-            'filterName' => 'status',
-            'filterLabel' => 'Semua Status',
-            'currentFilter' => request('status')
+            'filterName' => '',
+            'filterLabel' => '',
+            'currentFilter' => ''
         ])
         @endcomponent
 

@@ -60,20 +60,6 @@
                         <p id="edit-organizer-error" class="hidden mt-1 text-sm text-red-600"></p>
                     </div>
 
-                    <!-- Category -->
-                    <div class="form-group">
-                        <x-ui.form-select
-                            name="category_id"
-                            id="edit-category"
-                            label="Kategori"
-                            :options="collect($categories ?? [])->pluck('name', 'id')->toArray()"
-                            :selected="''"
-                            required
-                            placeholder="Pilih Kategori"
-                        />
-                        <p id="edit-category-id-error" class="hidden mt-1 text-sm text-red-600"></p>
-                    </div>
-
                     <!-- Period -->
                     <div class="form-group">
                         <x-ui.form-select
@@ -106,24 +92,6 @@
                             placeholder="Pilih Level Kompetisi"
                         />
                         <p id="edit-level-error" class="hidden mt-1 text-sm text-red-600"></p>
-                    </div>
-
-                    <!-- Type -->
-                    <div class="form-group">
-                        <x-ui.form-select
-                            name="type"
-                            id="edit-type"
-                            label="Tipe Kompetisi"
-                            :options="[
-                                'individual' => 'Individual',
-                                'team' => 'Tim',
-                                'both' => 'Keduanya'
-                            ]"
-                            :selected="''"
-                            required
-                            placeholder="Pilih Tipe Kompetisi"
-                        />
-                        <p id="edit-type-error" class="hidden mt-1 text-sm text-red-600"></p>
                     </div>
 
                     <!-- Status -->

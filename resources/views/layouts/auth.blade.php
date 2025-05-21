@@ -67,3 +67,5 @@
         &copy; {{ date('Y') }} Politeknik Negeri Malang. Hak Cipta Dilindungi.
     </div>
 @endcomponent
+
+
