@@ -5,6 +5,9 @@ namespace App\Http\Controllers\mahasiswa;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\AchievementModel;
+use App\Models\CompetitionModel;
+use App\Models\AttachmentModel;
+use Illuminate\Support\Facades\Storage;
 
 class AchievementController extends Controller
 {
@@ -56,7 +59,10 @@ class AchievementController extends Controller
      */
     public function create()
     {
-        //
+        $competitions = CompetitionModel::all()->pluck('name', 'id')->toArray();
+        $user_id = auth()->id();
+
+        return view('mahasiswa.achievements.components.add-achievement', compact('competitions',  'user_id'));
     }
 
     /**
@@ -64,7 +70,45 @@ class AchievementController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'competition_name' => 'required|string|max:255',
+            'type' => 'required|string',
+            'level' => 'required|string',
+            'date' => 'required|date',
+            'description' => 'required|string',
+            'competition_id' => 'required|exists:competitions,id',
+            'attachments' => 'required',
+            'attachments.*' => 'mimes:pdf,jpg,jpeg,png|max:2300',
+        ]);
+
+        $achievement = new AchievementModel();
+        $achievement->user_id = auth()->id();
+        $achievement->status = 'pending';
+        $achievement->fill($validatedData);
+        $achievement->save();
+
+        $achievement_id = $achievement->achievement_id; 
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('attachments', $fileName, 'public'); // Simpan file
+                $fileType = $file->getClientOriginalExtension();
+                $fileSize = $file->getSize(); // Ukuran dalam byte
+
+                // Simpan detail file ke tabel achievement_files
+                AttachmentModel::create([
+                    'achievement_id' => $achievement_id,
+                    'file_name' => $fileName,
+                    'file_path' => $filePath,
+                    'file_type' => $fileType,
+                    'file_size' => $fileSize,
+                ]);
+            }
+        }
+
+        return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil disimpan!');
     }
 
     /**
@@ -72,7 +116,11 @@ class AchievementController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // $achievement = AchievementModel::where('user_id', auth()->id())
+        //     ->with('competition')
+        //     ->findOrFail($id);
+            
+        // return view('mahasiswa.achievements.components.show-achievement', compact('achievement'));
     }
 
     /**
@@ -96,6 +144,17 @@ class AchievementController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        // $achievement = AchievementModel::where('user_id', auth()->id())->findOrFail($id);
+
+        // // Hapus lampiran terkait jika ada
+        // if ($achievement->attachments) {
+        //     foreach ($achievement->attachments as $attachment) {
+        //         Storage::disk('public')->delete($attachment->file_path);
+        //         $attachment->delete();
+        //     }
+        // }
+
+        // $achievement->delete();
+        // return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil dihapus!');
     }
 }

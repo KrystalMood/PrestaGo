@@ -1,5 +1,5 @@
-<!-- Show Competition Modal -->
-<div id="show-competition-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto flex items-center justify-center">
+<!-- Show achievement Modal -->
+<div id="show-achievement-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 my-6">
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
@@ -13,7 +13,7 @@
         </div>
         
         <div class="p-6">
-            <div id="competition-details" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="achievement-details" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="col-span-2 flex items-center justify-center mb-4">
                     <div class="bg-indigo-100 rounded-full p-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -22,13 +22,13 @@
                     </div>
                 </div>
                 
-                <!-- Competition Name -->
+                <!-- achievement Name -->
                 <div class="col-span-2 text-center mb-2">
-                    <h2 id="competition-name" class="text-2xl font-bold text-gray-900"></h2>
-                    <p id="competition-level" class="text-gray-500"></p>
+                    <h2 id="achievement-name" class="text-2xl font-bold text-gray-900"></h2>
+                    <p id="achievement-level" class="text-gray-500"></p>
                 </div>
                 
-                <!-- Competition Details -->
+                <!-- achievement Details -->
                 <div class="col-span-2">
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -36,18 +36,18 @@
                             <div>
                                 <div class="mb-4">
                                     <h4 class="text-sm font-medium text-gray-500">Penyelenggara</h4>
-                                    <p id="competition-organizer" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <p id="achievement-organizer" class="mt-1 text-base font-medium text-gray-900"></p>
                                 </div>
                                 
                                 <div class="mb-4">
                                     <h4 class="text-sm font-medium text-gray-500">Kategori</h4>
-                                    <p id="competition-category" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <p id="achievement-category" class="mt-1 text-base font-medium text-gray-900"></p>
                                 </div>
                                 
                                 <div class="mb-4">
                                     <h4 class="text-sm font-medium text-gray-500">Status</h4>
                                     <div class="mt-1">
-                                        <span id="competition-status" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"></span>
+                                        <span id="achievement-status" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"></span>
                                     </div>
                                 </div>
                             </div>
@@ -56,17 +56,17 @@
                             <div>
                                 <div class="mb-4">
                                     <h4 class="text-sm font-medium text-gray-500">Tanggal Kompetisi</h4>
-                                    <p id="competition-dates" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <p id="achievement-dates" class="mt-1 text-base font-medium text-gray-900"></p>
                                 </div>
                                 
                                 <div class="mb-4">
                                     <h4 class="text-sm font-medium text-gray-500">Pendaftaran</h4>
-                                    <p id="competition-registration" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <p id="achievement-registration" class="mt-1 text-base font-medium text-gray-900"></p>
                                 </div>
 
                                 <div class="mb-4">
                                     <h4 class="text-sm font-medium text-gray-500">ID</h4>
-                                    <p id="competition-id" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <p id="achievement-id" class="mt-1 text-base font-medium text-gray-900"></p>
                                 </div>
                             </div>
                         </div>
@@ -76,16 +76,16 @@
                 <!-- Description -->
                 <div class="col-span-2 mt-4">
                     <h4 class="text-base font-medium text-gray-700 mb-2">Deskripsi</h4>
-                    <div id="competition-description" class="bg-gray-50 p-4 rounded-lg text-gray-700"></div>
+                    <div id="achievement-description" class="bg-gray-50 p-4 rounded-lg text-gray-700"></div>
                 </div>
             </div>
         </div>
         
         <div class="px-6 py-4 bg-gray-50 text-right">
-            <button type="button" id="close-show-competition" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <button type="button" id="close-show-achievement" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Tutup
             </button>
-            <button type="button" id="edit-from-show" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-competition-id="">
+            <button type="button" id="edit-from-show" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-achievement-id="">
                 Edit Kompetisi
             </button>
         </div>
