@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PeriodModel;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\View;
 
 class PeriodController extends Controller
 {
@@ -20,16 +21,24 @@ class PeriodController extends Controller
             });
         }
         
-        if ($request->has('status') && $request->status != '') {
-            $query->where('is_active', $request->status === 'active');
-        }
-        
         $periods = $query->latest()->paginate(10);
         
         $totalPeriods = PeriodModel::count();
-        $activePeriods = PeriodModel::where('is_active', true)->count();
         
-        return view('admin.periods.index', compact('periods', 'totalPeriods', 'activePeriods'));
+        if ($request->ajax() || $request->has('ajax')) {
+            $table = View::make('admin.periods.components.tables', compact('periods'))->render();
+            $pagination = View::make('admin.components.tables.pagination', ['data' => $periods])->render();
+            
+            return response()->json([
+                'table' => $table,
+                'pagination' => $pagination,
+                'stats' => [
+                    'totalPeriods' => $totalPeriods,
+                ]
+            ]);
+        }
+        
+        return view('admin.periods.index', compact('periods', 'totalPeriods'));
     }
 
     public function create()
@@ -43,15 +52,17 @@ class PeriodController extends Controller
             'name' => 'required|string|max:255|unique:periods',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'is_active' => 'sometimes|boolean',
         ]);
 
-        // If this period is active, deactivate all other periods
-        if (isset($validated['is_active']) && $validated['is_active']) {
-            PeriodModel::where('is_active', true)->update(['is_active' => false]);
-        }
+        $period = PeriodModel::create($validated);
 
-        PeriodModel::create($validated);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Periode berhasil ditambahkan!',
+                'data' => $period
+            ]);
+        }
 
         return redirect()->route('admin.periods.index')
             ->with('success', 'Periode berhasil ditambahkan!');
@@ -77,15 +88,17 @@ class PeriodController extends Controller
             ],
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'is_active' => 'sometimes|boolean',
         ]);
 
-        // If this period is active, deactivate all other periods
-        if (isset($validated['is_active']) && $validated['is_active']) {
-            PeriodModel::where('id', '!=', $id)->where('is_active', true)->update(['is_active' => false]);
-        }
-
         $period->update($validated);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Periode berhasil diperbarui!',
+                'data' => $period
+            ]);
+        }
 
         return redirect()->route('admin.periods.index')
             ->with('success', 'Periode berhasil diperbarui!');
@@ -95,18 +108,28 @@ class PeriodController extends Controller
     {
         $period = PeriodModel::with('competitions')->findOrFail($id);
         
-        if (request()->ajax()) {
+        if (request()->ajax() || request()->wantsJson()) {
+            // Calculate status based on dates
+            $now = now();
+            $status = 'upcoming';
+            
+            if ($period->start_date <= $now && $period->end_date >= $now) {
+                $status = 'active';
+            } elseif ($period->end_date < $now) {
+                $status = 'completed';
+            }
+            
             return response()->json([
-                'success' => true,
-                'data' => [
-                    'id' => $period->id,
-                    'name' => $period->name,
-                    'start_date' => $period->start_date->format('d M Y'),
-                    'end_date' => $period->end_date->format('d M Y'),
-                    'is_active' => $period->is_active,
-                    'competitions_count' => $period->competitions->count(),
-                    'created_at' => $period->created_at->format('d M Y, H:i'),
-                ]
+                'id' => $period->id,
+                'name' => $period->name,
+                'start_date' => $period->start_date->format('d M Y'),
+                'end_date' => $period->end_date->format('d M Y'),
+                'start_date_raw' => $period->start_date->format('Y-m-d'),
+                'end_date_raw' => $period->end_date->format('Y-m-d'),
+                'competitions_count' => $period->competitions->count(),
+                'created_at' => $period->created_at->format('d M Y, H:i'),
+                'updated_at' => $period->updated_at->format('d M Y, H:i'),
+                'status' => $status,
             ]);
         }
         
@@ -118,29 +141,33 @@ class PeriodController extends Controller
         $period = PeriodModel::findOrFail($id);
         
         if ($period->competitions()->count() > 0) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Periode tidak dapat dihapus karena memiliki kompetisi terkait!'
+                ], 422);
+            }
+            
             return redirect()->route('admin.periods.index')
                 ->with('error', 'Periode tidak dapat dihapus karena memiliki kompetisi terkait!');
         }
         
         $period->delete();
 
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Periode berhasil dihapus!'
+            ]);
+        }
+
         return redirect()->route('admin.periods.index')
             ->with('success', 'Periode berhasil dihapus!');
     }
 
-    public function toggleActive(string $id)
+    public function export()
     {
-        $period = PeriodModel::findOrFail($id);
-        
-        if (!$period->is_active) {
-            PeriodModel::where('id', '!=', $id)->update(['is_active' => false]);
-        }
-        
-        $period->update(['is_active' => !$period->is_active]);
-        
-        $status = $period->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        
-        return redirect()->route('admin.periods.index')
-            ->with('success', "Periode berhasil $status!");
+        // Example export functionality
+        return response()->download(public_path('sample-export.csv'));
     }
 } 

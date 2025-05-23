@@ -1,26 +1,105 @@
-<!-- Delete Competition Modal -->
-<div id="delete-competition-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-custom max-w-md w-full mx-4">
+@props(['modalId' => 'delete-competition-modal'])
+
+<!-- Delete Competition Confirmation Modal -->
+<div id="{{ $modalId }}" tabindex="-1" aria-hidden="true" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-4" id="delete-modal-container">
         <div class="p-6">
-            <div class="flex items-center justify-center mb-4">
-                <div class="bg-red-100 rounded-full p-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Hapus Kompetisi</h3>
+                <button type="button" data-modal-hide="{{ $modalId }}" class="text-gray-400 hover:text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="text-center py-4">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-5">
+                    <svg class="h-10 w-10 text-red-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                     </svg>
                 </div>
-            </div>
-            <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus kompetisi <span id="competition-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
-            
-            <div class="flex justify-center gap-4">
-                <button id="cancel-delete-competition" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-                    Batal
-                </button>
+                <h3 class="mb-3 text-lg font-medium text-gray-900">Yakin ingin menghapus kompetisi ini?</h3>
+                <p class="mb-5 text-sm text-gray-500">Tindakan ini tidak dapat dibatalkan dan semua data terkait kompetisi <span id="competition-name-to-delete" class="font-semibold"></span> akan dihapus secara permanen.</p>
                 
-                <button id="confirm-delete-competition" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-                    Ya, Hapus
-                </button>
+                <form id="delete-competition-form" action="" method="POST" class="mt-6">
+                    @csrf
+                    @method('DELETE')
+                    <div class="flex items-center justify-center space-x-4">
+                        <button data-modal-hide="{{ $modalId }}" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
+                            Batal
+                        </button>
+                        <button type="button" id="confirm-delete-competition" class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Ya, hapus kompetisi
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('{{ $modalId }}');
+        const modalContainer = document.getElementById('delete-modal-container');
+        
+        if (!modal || !modalContainer) return;
+        
+        const closeButtons = document.querySelectorAll('[data-modal-hide="{{ $modalId }}"]');
+        
+        function showModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modalContainer.classList.add('animate-modal-appear');
+            }, 10);
+        }
+        
+        function hideModal() {
+            modalContainer.classList.remove('animate-modal-appear');
+            modalContainer.classList.add('animate-modal-disappear');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modalContainer.classList.remove('animate-modal-disappear');
+            }, 300);
+        }
+        
+        document.addEventListener('delete-modal:show', function() {
+            showModal();
+        });
+        
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                hideModal();
+            });
+        });
+        
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                hideModal();
+            }
+        });
+    });
+</script>
+
+<style>
+    @keyframes modalAppear {
+        from { opacity: 0; transform: translateY(-1rem); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes modalDisappear {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-1rem); }
+    }
+    
+    .animate-modal-appear {
+        animation: modalAppear 0.3s ease-out forwards;
+    }
+    
+    .animate-modal-disappear {
+        animation: modalDisappear 0.3s ease-in forwards;
+    }
+</style> 

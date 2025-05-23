@@ -1,10 +1,9 @@
 @component('layouts.admin', ['title' => 'Manajemen Kompetisi'])
     <div class="bg-white rounded-lg shadow-custom p-6">
         <div class="mb-6">
-            @component('admin.competitions.components.page-header')
-                @slot('title', 'Manajemen Kompetisi')
-                @slot('subtitle', 'Halaman ini menampilkan daftar kompetisi yang tersedia dan memungkinkan Anda untuk menambah, mengubah, atau menghapus informasi kompetisi.')
-            @endcomponent
+            @include('admin.components.ui.page-header', [
+                'subtitle' => 'Halaman ini menampilkan daftar kompetisi yang tersedia dan memungkinkan Anda untuk menambah, mengubah, atau menghapus informasi kompetisi.',
+            ])
         </div>
         
         @php

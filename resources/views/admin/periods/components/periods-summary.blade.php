@@ -1,104 +1,87 @@
 @php
-$activePeriod = \App\Models\PeriodModel::where('is_active', true)->first();
-$upcomingPeriods = \App\Models\PeriodModel::where('start_date', '>', now())
-    ->where('is_active', false)
-    ->orderBy('start_date', 'asc')
-    ->limit(2)
-    ->get();
+    // Get the current period (whose date range includes today)
+    $currentPeriod = \App\Models\PeriodModel::where('start_date', '<=', now())
+                      ->where('end_date', '>=', now())
+                      ->first();
+    
+    // Get upcoming periods (start date in the future)
+    $upcomingPeriods = \App\Models\PeriodModel::where('start_date', '>', now())
+                        ->orderBy('start_date', 'asc')
+                        ->take(2)
+                        ->get();
 @endphp
 
-<div class="bg-white rounded-lg shadow-custom p-5">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">Periode Semester</h3>
-        <a href="{{ route('admin.periods.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">Lihat Semua</a>
-    </div>
-    
-    @if($activePeriod)
-        <div class="mb-4 p-4 border border-green-200 rounded-lg bg-green-50">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="text-xs font-medium bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Aktif</span>
-                    <h4 class="text-base font-medium text-gray-800 mt-1">{{ $activePeriod->name }}</h4>
-                    <div class="mt-1 flex items-center text-sm text-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>{{ $activePeriod->start_date->format('d M Y') }} - {{ $activePeriod->end_date->format('d M Y') }}</span>
-                    </div>
-                </div>
-                <a href="{{ route('admin.periods.show', $activePeriod->id) }}" class="text-indigo-600 hover:text-indigo-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                </a>
-            </div>
-            
-            @php
-            $daysPassed = now()->diffInDays($activePeriod->start_date);
-            $totalDays = $activePeriod->end_date->diffInDays($activePeriod->start_date);
-            $progress = $totalDays > 0 ? min(100, max(0, (($daysPassed / $totalDays) * 100))) : 0;
-            @endphp
-            
-            <div class="mt-3">
-                <div class="flex justify-between text-xs text-gray-600 mb-1">
-                    <span>Progres</span>
-                    <span>{{ round($progress) }}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="bg-green-600 h-2 rounded-full" style="width: {{ $progress }}%"></div>
-                </div>
-            </div>
-        </div>
-    @else
-        <div class="mb-4 p-4 border border-yellow-200 rounded-lg bg-yellow-50">
-            <p class="text-sm text-yellow-800">Tidak ada periode aktif saat ini.</p>
-            <a href="{{ route('admin.periods.create') }}" class="mt-2 inline-flex items-center text-sm font-medium text-yellow-800 hover:text-yellow-900">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                </svg>
-                Tambah Periode Baru
-            </a>
-        </div>
-    @endif
-    
-    @if($upcomingPeriods->count() > 0)
-        <h4 class="text-sm font-medium text-gray-700 mb-2">Periode Mendatang</h4>
-        <div class="space-y-3">
-            @foreach($upcomingPeriods as $period)
-                <div class="p-3 border border-gray-200 rounded-lg">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h5 class="text-sm font-medium text-gray-800">{{ $period->name }}</h5>
-                            <div class="mt-1 flex items-center text-xs text-gray-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <span>Mulai: {{ $period->start_date->format('d M Y') }}</span>
+@component('admin.components.cards.card', ['title' => 'Periode Akademik'])
+    <div class="space-y-4">
+        <div>
+            <h3 class="text-sm font-medium text-gray-500">PERIODE SAAT INI</h3>
+            @if($currentPeriod)
+                <div class="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex-shrink-0">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-base font-medium text-gray-900">{{ $currentPeriod->name }}</p>
+                                <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($currentPeriod->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($currentPeriod->end_date)->format('d M Y') }}</p>
                             </div>
                         </div>
-                        <a href="{{ route('admin.periods.show', $period->id) }}" class="text-indigo-600 hover:text-indigo-800">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        </a>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Saat Ini
+                        </span>
                     </div>
                 </div>
-            @endforeach
+            @else
+                <div class="mt-2 p-3 bg-gray-50 border border-gray-100 rounded-lg">
+                    <p class="text-sm text-gray-500">Tidak ada periode saat ini</p>
+                </div>
+            @endif
         </div>
-    @else
-        <div class="py-3">
-            <p class="text-sm text-gray-500">Tidak ada periode mendatang.</p>
+
+        <div>
+            <h3 class="text-sm font-medium text-gray-500">PERIODE MENDATANG</h3>
+            <div class="mt-2 space-y-2">
+                @forelse($upcomingPeriods as $period)
+                    <div class="p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="text-base font-medium text-gray-900">{{ $period->name }}</p>
+                                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($period->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($period->end_date)->format('d M Y') }}</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ \Carbon\Carbon::parse($period->start_date)->diffForHumans() }}
+                            </span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="p-3 bg-gray-50 border border-gray-100 rounded-lg">
+                        <p class="text-sm text-gray-500">Tidak ada periode mendatang yang terjadwal</p>
+                    </div>
+                @endforelse
+            </div>
         </div>
-    @endif
-    
-    <div class="mt-4 pt-4 border-t border-gray-100">
-        <a href="{{ route('admin.periods.create') }}" class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            Tambah Periode Baru
-        </a>
+        
+        <div class="pt-2 mt-2 border-t border-gray-100">
+            <a href="{{ route('admin.periods.index') }}" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500">
+                Lihat semua periode
+                <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </a>
+        </div>
     </div>
-</div> 
+@endcomponent 

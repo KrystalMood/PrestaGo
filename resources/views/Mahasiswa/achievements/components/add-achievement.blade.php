@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+<form action="{{ route('Mahasiswa.achievements.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6 w-full px-2">
+=======
  <form action="" method="POST" enctype="multipart/form-data" class="space-y-6 w-full px-2">
+>>>>>>> 26abb91 (`Removed AchievementController, AchievementModel, and related views and routes`)
     @csrf
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Judul Prestasi -->
@@ -87,7 +91,7 @@
             <x-ui.form-select 
                 name="competition_id" 
                 label="Kompetisi Terkait (Opsional)" 
-                :options="[]"
+                :options="$competitions"
                 placeholder="-- Pilih jika prestasi terkait dengan kompetisi terdaftar --"
                 helperText="Kosongkan jika prestasi ini tidak terkait kompetisi yang terdaftar di sistem"
             />

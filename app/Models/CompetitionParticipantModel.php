@@ -14,6 +14,7 @@ class CompetitionParticipantModel extends Model
     protected $fillable = [
         'competition_id',
         'user_id',
+        'team_name',
         'status',
         'notes',
     ];

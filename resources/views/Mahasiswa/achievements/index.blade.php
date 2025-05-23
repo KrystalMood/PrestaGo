@@ -21,6 +21,11 @@
                                     @slot('achievements', $achievements ?? collect())
                                 @endcomponent
                             </div>
+
+        <div id="pagination-container">
+            @component('Mahasiswa.components.tables.pagination', ['data' => $achievements ?? collect()])
+            @endcomponent
+        </div>
             </x-ui.card>
         </div>
     </div>
