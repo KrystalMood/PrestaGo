@@ -30,6 +30,11 @@
         </div>
     </div>
 </div>
+
+<dialog id="modal" class="modal">
+<x-ui.popupcard>
+</x-ui.popupcard>
+</dialog>
 @endcomponent
 
 @endsection

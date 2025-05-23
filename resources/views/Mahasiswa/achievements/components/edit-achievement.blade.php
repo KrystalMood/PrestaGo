@@ -1,14 +1,13 @@
 <!-- Edit Competition Modal -->
-<div id="edit-competition-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden overflow-y-auto flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl max-w-5xl w-full mx-4 my-6">
-        <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-medium text-gray-900">Edit Kompetisi</h3>
-                <button type="button" id="close-edit-modal" class="text-gray-400 hover:text-gray-500">
-                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <form method="dialog">
+                    <button class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </form>
             </div>
         </div>
         
@@ -121,12 +120,11 @@
         </div>
         
         <div class="px-6 py-4 bg-gray-50 text-right">
-            <button type="button" id="cancel-edit-competition" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Batal
-            </button>
+            <form method="dialog" class="inline-flex">
+                <button class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Batal
+                </button>
+            </form>
             <button type="button" id="submit-edit-competition" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 Perbarui Kompetisi
             </button>
-        </div>
-    </div>
-</div> 

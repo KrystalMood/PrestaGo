@@ -1,23 +1,16 @@
-@props(['
-    title' => 'Card Title',
+@props([
+    'title' => 'Card Title',
 ])
 
 <div>
-    <div class="modal-box modal-bottom max-w-4xl w-11/12 p-6">
-        <!-- header -->
-
-            <div class="text-center mb-4">
-                <h4 class="font-semibold leading-tight">
-                    {{ $title }}
-                </h4>
+    <div class="modal-box max-w-6xl w-full p-6">
+        <!-- Header, konten dll -->
+        <div id="popup_modal_content">
+            <div class="flex justify-center items-center gap-2">
+                <span class="text-center">Loading...</span>
+                <span class="loading loading-dots loading-sm"></span>
             </div>
-            <form method="dialog">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-    </form>
-    <div id="popup_modal_content">
-      <!-- Konten dari AJAX akan dimuat di sini -->
-      <div class="text-center">Loading...................................................</div>
-    </div>
+        </div>
     </div>
 </div>
 
@@ -28,7 +21,7 @@
         const container = document.getElementById('popup_modal_content');
 
         // Tampilkan loading dulu
-        container.innerHTML = '<div class="text-center py-8">Loading...</div>';
+        container.innerHTML = '<div class="flex justify-center items-center"><span class="loading loading-spinner loading-lg"></span></div>';
 
         // Load konten dari URL
         $.get(url, function(response) {
