@@ -63,7 +63,7 @@ class AchievementController extends Controller
         $competitions = CompetitionModel::all()->pluck('name', 'id')->toArray();
         $user_id = auth()->id();
 
-        return view('mahasiswa.achievements.components.add-achievement', compact('competitions',  'user_id'));
+        return view('Mahasiswa.achievements.components.add-achievement', compact('competitions',  'user_id'));
     }
 
     /**

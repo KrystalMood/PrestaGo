@@ -115,13 +115,13 @@
 
         <!-- Bukti/Lampiran -->
         <div class="md:col-span-2">
-            <x-ui.form-file 
+            <x-ui.form-attachment 
                 name="attachments[]" 
                 label="Bukti Prestasi" 
                 required="true"
                 accept=".pdf,.jpg,.jpeg,.png" 
-                helperText="Unggah sertifikat atau bukti prestasi (Format: PDF, JPG, JPEG, PNG. Maks 2MB)"
                 multiple
+                helperText="Unggah sertifikat atau bukti prestasi (Format: PDF, JPG, JPEG, PNG. Maks 2MB)"
             />
         </div>
     </div>
