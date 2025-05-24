@@ -30,5 +30,6 @@
 <x-ui.popupcard>
 </x-ui.popupcard>
 </dialog>
+@vite('resources/js/admin/users.js')
 @endcomponent
 
