@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\AchievementModel;
 use App\Models\CompetitionModel;
 use App\Models\AttachmentModel;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Support\Facades\Storage;
 
 class AchievementController extends Controller
@@ -70,6 +71,7 @@ class AchievementController extends Controller
      */
     public function store(Request $request)
     {
+        // Validasi data
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'competition_name' => 'required|string|max:255',
@@ -77,38 +79,46 @@ class AchievementController extends Controller
             'level' => 'required|string',
             'date' => 'required|date',
             'description' => 'required|string',
-            'competition_id' => 'required|exists:competitions,id',
+            'competition_id' => 'nullable|exists:competitions,id',
             'attachments' => 'required',
             'attachments.*' => 'mimes:pdf,jpg,jpeg,png|max:2300',
         ]);
 
-        $achievement = new AchievementModel();
-        $achievement->user_id = auth()->id();
-        $achievement->status = 'pending';
-        $achievement->fill($validatedData);
-        $achievement->save();
+        try {
+            // Simpan achievement
+            $achievement = new AchievementModel();
+            $achievement->user_id = auth()->id();
+            $achievement->status = 'pending';
+            $achievement->fill($validatedData);
 
-        $achievement_id = $achievement->achievement_id; 
-
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('attachments', $fileName, 'public'); // Simpan file
-                $fileType = $file->getClientOriginalExtension();
-                $fileSize = $file->getSize(); // Ukuran dalam byte
-
-                // Simpan detail file ke tabel achievement_files
-                AttachmentModel::create([
-                    'achievement_id' => $achievement_id,
-                    'file_name' => $fileName,
-                    'file_path' => $filePath,
-                    'file_type' => $fileType,
-                    'file_size' => $fileSize,
-                ]);
+            if (!$achievement->save()) {
+                throw new \Exception('Gagal menyimpan achievement.');
             }
-        }
 
-        return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil disimpan!');
+            $achievement_id = $achievement->id;
+
+            // Simpan lampiran jika ada
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $filePath = $file->storeAs('attachments', $fileName, 'public');
+                    $fileType = strtolower($file->getClientOriginalExtension());
+                    $fileSize = $file->getSize();
+
+                    AttachmentModel::create([
+                        'achievement_id' => $achievement_id,
+                        'file_name' => $fileName,
+                        'file_path' => $filePath,
+                        'file_type' => $fileType,
+                        'file_size' => $fileSize,
+                    ]);
+                }
+            }
+
+            return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil disimpan!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal menyimpan prestasi: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -116,11 +126,11 @@ class AchievementController extends Controller
      */
     public function show(string $id)
     {
-        // $achievement = AchievementModel::where('user_id', auth()->id())
-        //     ->with('competition')
-        //     ->findOrFail($id);
-            
-        // return view('mahasiswa.achievements.components.show-achievement', compact('achievement'));
+        $achievement = AchievementModel::where('user_id', auth()->id())
+            ->with(['competition', 'attachments'])
+            ->findOrFail($id);
+
+        return view('Mahasiswa.achievements.components.show-achievement', compact('achievement'));
     }
 
     /**
@@ -128,7 +138,13 @@ class AchievementController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $competitions = CompetitionModel::all()->pluck('name', 'id')->toArray();
+
+        $achievement = AchievementModel::where('user_id', auth()->id())
+            ->with(['competition', 'attachments'])
+            ->findOrFail($id);
+            
+        return view('Mahasiswa.achievements.components.edit-achievement', compact('achievement', 'competitions'));
     }
 
     /**
@@ -136,7 +152,54 @@ class AchievementController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        // Validasi data
+        $validatedData = $request->validate([
+            'title' => 'required|string|max:255',
+            'competition_name' => 'required|string|max:255',
+            'type' => 'required|string',
+            'level' => 'required|string',
+            'date' => 'required|date',
+            'description' => 'required|string',
+            'competition_id' => 'nullable|exists:competitions,id',
+            'attachments' => 'required',
+            'attachments.*' => 'mimes:pdf,jpg,jpeg,png|max:2300',
+        ]);
+
+        try {
+            // Simpan achievement
+            $achievement = new AchievementModel();
+            $achievement->user_id = auth()->id();
+            $achievement->status = 'pending';
+            $achievement->fill($validatedData);
+
+            if (!$achievement->save()) {
+                throw new \Exception('Gagal menyimpan achievement.');
+            }
+
+            $achievement_id = $achievement->id;
+
+            // Simpan lampiran jika ada
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $filePath = $file->storeAs('attachments', $fileName, 'public');
+                    $fileType = strtolower($file->getClientOriginalExtension());
+                    $fileSize = $file->getSize();
+
+                    AttachmentModel::create([
+                        'achievement_id' => $achievement_id,
+                        'file_name' => $fileName,
+                        'file_path' => $filePath,
+                        'file_type' => $fileType,
+                        'file_size' => $fileSize,
+                    ]);
+                }
+            }
+
+            return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil diubah!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengubah prestasi: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -144,17 +207,17 @@ class AchievementController extends Controller
      */
     public function destroy(string $id)
     {
-        // $achievement = AchievementModel::where('user_id', auth()->id())->findOrFail($id);
+        $achievement = AchievementModel::where('user_id', auth()->id())->findOrFail($id);
 
-        // // Hapus lampiran terkait jika ada
-        // if ($achievement->attachments) {
-        //     foreach ($achievement->attachments as $attachment) {
-        //         Storage::disk('public')->delete($attachment->file_path);
-        //         $attachment->delete();
-        //     }
-        // }
+        // Hapus lampiran terkait jika ada
+        if ($achievement->attachments) {
+            foreach ($achievement->attachments as $attachment) {
+                Storage::disk('public')->delete($attachment->file_path);
+                $attachment->delete();
+            }
+        }
 
-        // $achievement->delete();
-        // return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil dihapus!');
+        $achievement->delete();
+        return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil dihapus!');
     }
 }

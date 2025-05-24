@@ -40,7 +40,7 @@
                         {{ $achievement->competition_name }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $achievement->competition->name }}
+                        {{ $achievement->competition->name ?? '-' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $achievement->date ? $achievement->date->format('d M Y') : '-' }}
@@ -99,7 +99,7 @@
                 </div>
             </div>
             <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus kompetisi <span id="competition-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
+            <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus kompetisi <span id="achievement-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
             
             <div class="flex justify-center gap-4">
                 <button id="cancel-delete" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">

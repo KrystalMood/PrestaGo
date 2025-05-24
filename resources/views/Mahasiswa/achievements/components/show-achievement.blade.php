@@ -1,7 +1,7 @@
 <!-- Show achievement Modal -->
 
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-medium text-gray-900">Detail Kompetisi</h3>
+                <h3 class="text-lg font-medium text-gray-900">Detail Achievement</h3>
                 <form method="dialog">
                     <button class="text-gray-400 hover:text-gray-500">
                         <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,19 +35,19 @@
                             <!-- Left Column -->
                             <div>
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-medium text-gray-500">Penyelenggara</h4>
-                                    <p id="achievement-organizer" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <h4 class="text-sm font-medium text-gray-500">Judul Prestasi</h4>
+                                    <p id="achievement-organizer" class="mt-1 text-base font-medium text-gray-900">{{ $achievement->title }}</p>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-medium text-gray-500">Kategori</h4>
-                                    <p id="achievement-category" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <h4 class="text-sm font-medium text-gray-500">nama kompetisi</h4>
+                                    <p id="achievement-category" class="mt-1 text-base font-medium text-gray-900">{{ $achievement->competition_name }}</p>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-medium text-gray-500">Status</h4>
+                                    <h4 class="text-sm font-medium text-gray-500">Kompetisi Terkait</h4>
                                     <div class="mt-1">
-                                        <span id="achievement-status" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"></span>
+                                        <span id="achievement-status" class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full">{{ $achievement->competition->name ?? '-' }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -55,18 +55,18 @@
                             <!-- Right Column -->
                             <div>
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-medium text-gray-500">Tanggal Kompetisi</h4>
-                                    <p id="achievement-dates" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <h4 class="text-sm font-medium text-gray-500">Jenis Prestasi</h4>
+                                    <p id="achievement-dates" class="mt-1 text-base font-medium text-gray-900">{{ $achievement->type }}</p>
                                 </div>
                                 
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-medium text-gray-500">Pendaftaran</h4>
-                                    <p id="achievement-registration" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <h4 class="text-sm font-medium text-gray-500">Tingkat Prestasi</h4>
+                                    <p id="achievement-dates" class="mt-1 text-base font-medium text-gray-900">{{ $achievement->level }}</p>
                                 </div>
-
+                                
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-medium text-gray-500">ID</h4>
-                                    <p id="achievement-id" class="mt-1 text-base font-medium text-gray-900"></p>
+                                    <h4 class="text-sm font-medium text-gray-500">Date</h4>
+                                    <p id="achievement-registration" class="mt-1 text-base font-medium text-gray-900">{{ $achievement->date ? $achievement->date->format('d M Y') : '-' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -76,7 +76,33 @@
                 <!-- Description -->
                 <div class="col-span-2 mt-4">
                     <h4 class="text-base font-medium text-gray-700 mb-2">Deskripsi</h4>
-                    <div id="achievement-description" class="bg-gray-50 p-4 rounded-lg text-gray-700"></div>
+                    <div id="achievement-description" class="bg-gray-50 p-4 rounded-lg text-gray-700">{{ $achievement->description }}</div>
+                </div>
+                
+                <div class="col-span-2 mt-4">
+                    <h4 class="text-base font-medium text-gray-700 mb-2">Bukti</h4>
+                    <div id="achievement-description" class="bg-gray-50 p-4 rounded-lg text-gray-700">
+                        <ul class="list-disc pl-5">
+                            @foreach ($achievement->attachments as $attachment)
+                                @if (in_array(strtolower($attachment->file_type), ['jpg', 'jpeg', 'png']))
+                                    <!-- Tampilkan gambar -->
+                                    <li class="mb-2">
+                                        <img src="{{ Storage::url($attachment->file_path) }}" alt="Bukti Prestasi - {{ $attachment->file_name }}" class="max-w-full h-auto mb-2">
+                                    </li>
+                                @elseif (strtolower($attachment->file_type) === 'pdf')
+                                    <!-- Tampilkan link untuk PDF -->
+                                    <li class="mb-2">
+                                        <a href="{{ Storage::url($attachment->file_path) }}" target="_blank" class="text-blue-600 hover:underline">Lihat PDF: {{ $attachment->file_name }}</a>
+                                    </li>
+                                @else
+                                    <p clxass="text-gray-500">Tipe file tidak didukung: {{ $attachment->file_name }} ({{ $attachment->file_type }})</p>
+                                @endif
+                            @endforeach
+                        </ul>
+                            @if ($achievement->attachments->isEmpty())
+                                <p>Tidak ada bukti yang tersedia.</p>
+                            @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -87,6 +113,6 @@
                     Tutup
                 </button>
             </form>
-            <button type="button" id="edit-from-show" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" data-achievement-id="">
+            <button type="button" id="edit-from-show" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="openPopup('{{ route('Mahasiswa.achievements.edit',$achievement->id)  }}')">
                 Edit Kompetisi
             </button>

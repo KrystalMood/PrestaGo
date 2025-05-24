@@ -10,7 +10,7 @@ class AchievementModel extends Model
     use HasFactory;
 
     protected $table = 'achievements';
-    protected $primaryKey = 'achievement_id';
+    protected $primaryKey = 'id';
     
     protected $fillable = [
         'user_id',
@@ -45,7 +45,7 @@ class AchievementModel extends Model
 
     public function attachments()
     {
-        return $this->hasMany(AttachmentModel::class, 'achievement_id', 'achievement_id');
+        return $this->hasMany(AttachmentModel::class, 'achievement_id', 'id');
     }
 
     public function competition()

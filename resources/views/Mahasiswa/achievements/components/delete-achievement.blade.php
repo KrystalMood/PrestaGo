@@ -1,5 +1,5 @@
-<!-- Delete Competition Modal -->
-<div id="delete-competition-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+<!-- Delete achievement Modal -->
+<div id="delete-achievement-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-custom max-w-md w-full mx-4">
         <div class="p-6">
             <div class="flex items-center justify-center mb-4">
@@ -10,14 +10,14 @@
                 </div>
             </div>
             <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus kompetisi <span id="competition-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
+            <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus achievement <span id="achievement-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
             
             <div class="flex justify-center gap-4">
-                <button id="cancel-delete-competition" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
+                <button id="cancel-delete-achievement" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
                     Batal
                 </button>
                 
-                <button id="confirm-delete-competition" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                <button id="confirm-delete-achievement" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
                     Ya, Hapus
                 </button>
             </div>

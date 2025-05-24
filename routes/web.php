@@ -144,15 +144,12 @@ Route::middleware(['auth'])->group(function () {
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
             Route::get('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'index'])->name('index');
-            Route::get('/create', function () {
-                return view('Mahasiswa.achievements.components.add-achievement');
-            })->name('create');
-            Route::get('/show/{id}', function () {
-                return view('Mahasiswa.achievements.components.show-achievement');
-            })->name('show');
-            Route::get('/edit/{id}', function () {
-                return view('Mahasiswa.achievements.components.edit-achievement');
-            })->name('edit');
+            Route::get('/create', [App\Http\Controllers\mahasiswa\AchievementController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'store'])->name('store');
+            Route::get('/show/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'show'])->name('show');
+            Route::get('/edit/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
