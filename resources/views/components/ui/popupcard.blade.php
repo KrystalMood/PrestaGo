@@ -3,7 +3,7 @@
 ])
 
 <div>
-    <div class="modal-box max-w-6xl w-full p-6">
+    <div class="modal-box min-w-[1000px] min-h-[700px] w-100 p-6 ">
         <!-- Header, konten dll -->
         <div id="popup_modal_content">
             <div class="flex justify-center items-center gap-2">

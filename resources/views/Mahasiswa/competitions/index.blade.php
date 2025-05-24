@@ -1,8 +1,6 @@
-@extends('components.shared.content')
 
-@section('content')
 
-@component('layouts.app', ['title' => 'Kompetisi'])
+@component('layouts.mahasiswa', ['title' => 'Kompetisi'])
 
 <div class="container">
     <div class="row justify-content-center">
@@ -48,4 +46,4 @@
     </div>
 </div>
 @endcomponent
-@endsection
+

@@ -1,16 +1,17 @@
-<div class="flex items-center justify-between">
-    <h3 class="text-lg font-medium text-gray-900">Tambah Prestasi</h3>
-    <form method="dialog">
-        <button class="text-gray-400 hover:text-gray-500">
-            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-    </form>
-</div>
-
+<div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Tambah Prestasi</h3>
+                <form method="dialog">
+                    <button class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </form>
+            </div>
+ 
 <form action="{{ route('Mahasiswa.achievements.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6 w-full px-2">
     @csrf
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Judul Prestasi -->
         <div class="md:col-span-2">
@@ -104,15 +105,16 @@
             />
         </div>
 
+
         <!-- Bukti/Lampiran -->
         <div class="md:col-span-2">
-            <x-ui.form-file 
+            <x-ui.form-attachment 
                 name="attachments[]" 
                 label="Bukti Prestasi" 
                 required="true"
                 accept=".pdf,.jpg,.jpeg,.png" 
-                helperText="Unggah sertifikat atau bukti prestasi (Format: PDF, JPG, JPEG, PNG. Maks 2MB)"
                 multiple
+                helperText="Unggah sertifikat atau bukti prestasi (Format: PDF, JPG, JPEG, PNG. Maks 2MB)"
             />
         </div>
     </div>
@@ -126,3 +128,18 @@
         </button>
     </div>
 </form>
+@push('scripts')
+<script>
+    // This ensures the form component's scripts run properly when in a modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('modal');
+        if (modal) {
+            modal.addEventListener('open', function() {
+                // Trigger a custom event that our uploader will listen for
+                document.dispatchEvent(new CustomEvent('dialogopen'));
+            });
+        }
+    });
+</script>
+@endpush
+

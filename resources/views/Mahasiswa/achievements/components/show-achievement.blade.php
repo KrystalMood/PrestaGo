@@ -1,5 +1,5 @@
 <!-- Show achievement Modal -->
-
+<div class="space-y-6 w-md px-2">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-medium text-gray-900">Detail Achievement</h3>
                 <form method="dialog">
@@ -116,3 +116,4 @@
             <button type="button" id="edit-from-show" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="openPopup('{{ route('Mahasiswa.achievements.edit',$achievement->id)  }}')">
                 Edit Kompetisi
             </button>
+</div>

@@ -1,8 +1,3 @@
-@extends('components.shared.content')
-
-@section('content')
-
-
 @component('layouts.mahasiswa', ['title' => 'Prestasi Saya'])
 
 
@@ -37,4 +32,3 @@
 </dialog>
 @endcomponent
 
-@endsection
