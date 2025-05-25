@@ -65,18 +65,127 @@
                         </div>
                     @endif
 
+                    @if($recommendation->recommendation_reason)
+                        <div>
+                            <span class="text-sm font-medium text-gray-500">Alasan Rekomendasi:</span>
+                            <p class="text-sm text-gray-700 mt-1">{{ $recommendation->recommendation_reason }}</p>
+                        </div>
+                    @endif
+
                     <div class="border-t border-gray-200 pt-4">
-                        <h4 class="text-sm font-medium text-gray-500 mb-2">Skor Kecocokan</h4>
-                        <div class="flex items-center">
-                            @php
-                                $score = $recommendation->match_score;
-                                $scoreColor = $score >= 80 ? 'text-green-600' : ($score >= 50 ? 'text-amber-600' : 'text-red-600');
-                                $bgColor = $score >= 80 ? 'bg-green-100' : ($score >= 50 ? 'bg-amber-100' : 'bg-red-100');
-                            @endphp
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                <div class="{{ $bgColor }} h-2.5 rounded-full" style="width: {{ $score }}%"></div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">Hasil Perhitungan DSS</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- AHP Result -->
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                    Analytical Hierarchy Process (AHP)
+                                </h5>
+                                
+                                @if($recommendation->ahp_result_id)
+                                    <div class="space-y-2">
+                                        <div>
+                                            <span class="text-xs text-gray-500">Skor Final:</span>
+                                            <span class="text-sm font-medium text-indigo-700 ml-1">{{ number_format($recommendation->ahpResult->final_score * 100, 2) }}%</span>
+                                        </div>
+                                        
+                                        <div>
+                                            <span class="text-xs text-gray-500">Rasio Konsistensi:</span>
+                                            <span class="text-sm font-medium {{ $recommendation->ahpResult->is_consistent ? 'text-green-600' : 'text-amber-600' }} ml-1">
+                                                {{ number_format($recommendation->ahpResult->consistency_ratio, 3) }}
+                                                @if($recommendation->ahpResult->is_consistent)
+                                                    <span class="text-xs text-green-600">(Konsisten)</span>
+                                                @else
+                                                    <span class="text-xs text-amber-600">(Tidak Konsisten)</span>
+                                                @endif
+                                            </span>
+                                        </div>
+                                        
+                                        <div>
+                                            <span class="text-xs text-gray-500">Dihitung pada:</span>
+                                            <span class="text-xs text-gray-600 ml-1">{{ \Carbon\Carbon::parse($recommendation->ahpResult->calculated_at)->format('d M Y, H:i') }}</span>
+                                        </div>
+                                        
+                                        @if(isset($recommendation->ahpResult->calculation_details) && is_array(json_decode($recommendation->ahpResult->calculation_details, true)))
+                                            <div class="mt-2">
+                                                <button class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center" 
+                                                        onclick="document.getElementById('ahp-details').classList.toggle('hidden')">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Lihat Detail Perhitungan
+                                                </button>
+                                                
+                                                <div id="ahp-details" class="hidden mt-2 bg-white p-2 rounded border border-gray-200 text-xs">
+                                                    <pre class="whitespace-pre-wrap text-xs text-gray-600">{{ json_encode(json_decode($recommendation->ahpResult->calculation_details), JSON_PRETTY_PRINT) }}</pre>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="text-xs text-gray-500 italic">Tidak ada data perhitungan AHP</div>
+                                @endif
                             </div>
-                            <span class="{{ $scoreColor }} text-lg font-medium">{{ $score }}%</span>
+                            
+                            <!-- WP Result -->
+                            <div class="bg-gray-50 p-3 rounded-lg">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                                    </svg>
+                                    Weighted Product (WP)
+                                </h5>
+                                
+                                @if($recommendation->wp_result_id)
+                                    <div class="space-y-2">
+                                        <div>
+                                            <span class="text-xs text-gray-500">Vector S:</span>
+                                            <span class="text-sm font-medium text-green-700 ml-1">{{ number_format($recommendation->wpResult->vector_s, 4) }}</span>
+                                        </div>
+                                        
+                                        <div>
+                                            <span class="text-xs text-gray-500">Vector V:</span>
+                                            <span class="text-sm font-medium text-green-700 ml-1">{{ number_format($recommendation->wpResult->vector_v, 4) }}</span>
+                                        </div>
+                                        
+                                        <div>
+                                            <span class="text-xs text-gray-500">Preferensi Relatif:</span>
+                                            <span class="text-sm font-medium text-green-700 ml-1">{{ number_format($recommendation->wpResult->relative_preference * 100, 2) }}%</span>
+                                        </div>
+                                        
+                                        <div>
+                                            <span class="text-xs text-gray-500">Peringkat:</span>
+                                            <span class="text-sm font-medium text-green-700 ml-1">#{{ $recommendation->wpResult->rank }}</span>
+                                        </div>
+                                        
+                                        <div>
+                                            <span class="text-xs text-gray-500">Dihitung pada:</span>
+                                            <span class="text-xs text-gray-600 ml-1">{{ \Carbon\Carbon::parse($recommendation->wpResult->calculated_at)->format('d M Y, H:i') }}</span>
+                                        </div>
+                                        
+                                        @if(isset($recommendation->wpResult->calculation_details) && is_array(json_decode($recommendation->wpResult->calculation_details, true)))
+                                            <div class="mt-2">
+                                                <button class="text-xs text-green-600 hover:text-green-800 flex items-center" 
+                                                        onclick="document.getElementById('wp-details').classList.toggle('hidden')">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Lihat Detail Perhitungan
+                                                </button>
+                                                
+                                                <div id="wp-details" class="hidden mt-2 bg-white p-2 rounded border border-gray-200 text-xs">
+                                                    <pre class="whitespace-pre-wrap text-xs text-gray-600">{{ json_encode(json_decode($recommendation->wpResult->calculation_details), JSON_PRETTY_PRINT) }}</pre>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="text-xs text-gray-500 italic">Tidak ada data perhitungan WP</div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -160,6 +269,18 @@
                         </div>
                     </div>
                     
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-1">Bidang Minat</h4>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                            @foreach($recommendation->competition->interests as $interest)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ $interest->name }} 
+                                    <span class="ml-1 text-blue-600">({{ $interest->pivot->relevance_score }})</span>
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                    
                     <div class="pt-2">
                         <a href="{{ $recommendation->competition->registration_link }}" target="_blank" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -197,126 +318,53 @@
                 </div>
                 
                 <div class="border-t border-gray-200 pt-4 mt-4">
+                    <h4 class="text-sm font-medium text-gray-500 mb-2">Minat</h4>
+                    <div class="flex flex-wrap gap-2">
+                        @forelse($recommendation->user->interests as $interest)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ $interest->name }} 
+                                <span class="ml-1 text-green-600">({{ $interest->pivot->interest_level }}/5)</span>
+                            </span>
+                        @empty
+                            <span class="text-sm text-gray-500">Belum ada minat yang ditambahkan</span>
+                        @endforelse
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4 mt-4">
                     <h4 class="text-sm font-medium text-gray-500 mb-2">Prestasi</h4>
-                    @if(count($achievements) > 0)
+                    @if($recommendation->user->achievements && $recommendation->user->achievements->count() > 0)
                         <div class="space-y-3">
-                            @foreach($achievements as $achievement)
-                                <div class="bg-gray-50 rounded-md p-3">
-                                    <h5 class="text-sm font-medium text-gray-900">{{ $achievement->title }}</h5>
-                                    <p class="text-xs text-gray-500">{{ $achievement->competition_name }}</p>
-                                    <div class="mt-1 flex items-center">
+                            @foreach($recommendation->user->achievements->take(3) as $achievement)
+                                <div class="bg-gray-50 p-2 rounded-md">
+                                    <div class="text-sm font-medium text-gray-800">{{ $achievement->title }}</div>
+                                    <div class="text-xs text-gray-500">{{ $achievement->organizer }} • {{ \Carbon\Carbon::parse($achievement->date)->format('M Y') }}</div>
+                                    <div class="mt-1">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $achievement->level === 'international' ? 'bg-purple-100 text-purple-800' : ($achievement->level === 'national' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
                                             {{ ucfirst($achievement->level) }}
                                         </span>
-                                        <span class="text-xs text-gray-500 ml-2">{{ \Carbon\Carbon::parse($achievement->date)->format('M Y') }}</span>
                                     </div>
                                 </div>
                             @endforeach
+                            
+                            @if($recommendation->user->achievements->count() > 3)
+                                <div class="text-xs text-center text-indigo-600">
+                                    + {{ $recommendation->user->achievements->count() - 3 }} prestasi lainnya
+                                </div>
+                            @endif
                         </div>
                     @else
-                        <p class="text-sm text-gray-500">Belum ada prestasi yang direkam</p>
+                        <div class="text-sm text-gray-500">Belum ada prestasi yang ditambahkan</div>
                     @endif
                 </div>
                 
                 <div class="border-t border-gray-200 pt-4 mt-4">
-                    <h4 class="text-sm font-medium text-gray-500 mb-2">Pengalaman Kompetisi</h4>
-                    @if(count($participations) > 0)
-                        <div class="space-y-3">
-                            @foreach($participations as $participation)
-                                <div class="bg-gray-50 rounded-md p-3">
-                                    <h5 class="text-sm font-medium text-gray-900">{{ $participation->competition->name }}</h5>
-                                    <p class="text-xs text-gray-500">{{ $participation->competition->organizer }}</p>
-                                    <div class="mt-1 flex items-center">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $participation->status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
-                                            {{ ucfirst($participation->status) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="text-sm text-gray-500">Belum pernah berpartisipasi dalam kompetisi</p>
-                    @endif
-                </div>
-                
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                    <a href="{{ route('admin.users.show', $recommendation->user->id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1" />
+                    <a href="{{ route('admin.users.show', $recommendation->user->id) }}" class="inline-flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                         Lihat Profil Lengkap
                     </a>
-                </div>
-            @endcomponent
-            
-            <!-- Match Analysis -->
-            @component('admin.components.cards.card', ['title' => 'Analisis Kecocokan'])
-                <div class="space-y-4">
-                    <p class="text-sm text-gray-600">
-                        Analisis berikut menunjukkan tingkat kecocokan antara profil mahasiswa dan kebutuhan kompetisi.
-                    </p>
-                    
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">Keterampilan</span>
-                            <span class="text-sm font-medium text-gray-700">{{ $match_factors['skills'] ?? '0' }}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $match_factors['skills'] ?? '0' }}%"></div>
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Kecocokan antara keterampilan mahasiswa dan keterampilan yang dibutuhkan untuk kompetisi
-                        </p>
-                    </div>
-                    
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">Prestasi Terkait</span>
-                            <span class="text-sm font-medium text-gray-700">{{ $match_factors['achievements'] ?? '0' }}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-green-600 h-2 rounded-full" style="width: {{ $match_factors['achievements'] ?? '0' }}%"></div>
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Pengalaman/prestasi mahasiswa dalam kategori kompetisi yang sama
-                        </p>
-                    </div>
-                    
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">Prestasi Akademik</span>
-                            <span class="text-sm font-medium text-gray-700">{{ $match_factors['academic'] ?? '0' }}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-amber-600 h-2 rounded-full" style="width: {{ $match_factors['academic'] ?? '0' }}%"></div>
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Kesesuaian prestasi akademik dengan jenis kompetisi
-                        </p>
-                    </div>
-                    
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">Pengalaman Kompetisi</span>
-                            <span class="text-sm font-medium text-gray-700">{{ $match_factors['experience'] ?? '0' }}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-purple-600 h-2 rounded-full" style="width: {{ $match_factors['experience'] ?? '0' }}%"></div>
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Riwayat partisipasi dalam kompetisi serupa
-                        </p>
-                    </div>
-                    
-                    <div class="pt-2 border-t border-gray-200 mt-2">
-                        <div class="flex justify-between mb-1">
-                            <span class="text-sm font-medium text-gray-700">Skor Keseluruhan</span>
-                            <span class="text-sm font-medium text-gray-700">{{ $recommendation->match_score }}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ $recommendation->match_score }}%"></div>
-                        </div>
-                    </div>
                 </div>
             @endcomponent
         </div>

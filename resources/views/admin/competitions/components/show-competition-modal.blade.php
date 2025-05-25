@@ -70,12 +70,6 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
                 <div id="competition-description" class="bg-gray-50 px-3 py-3 rounded-md border border-gray-300 text-gray-700 min-h-[100px]"></div>
             </div>
-
-            <!-- Requirements -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Persyaratan</label>
-                <div id="competition-requirements" class="bg-gray-50 px-3 py-3 rounded-md border border-gray-300 text-gray-700 min-h-[100px]"></div>
-            </div>
             
             <div class="flex items-center justify-between pt-5 border-t border-gray-200 mt-6">
                 <div class="flex items-center text-gray-500 text-sm">

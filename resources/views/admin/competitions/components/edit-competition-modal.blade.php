@@ -175,13 +175,6 @@
                         <textarea id="edit-description" name="description" rows="4" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Masukkan deskripsi kompetisi"></textarea>
                         <p id="edit-description-error" class="hidden mt-1 text-sm text-red-600"></p>
                     </div>
-
-                    <!-- Requirements -->
-                    <div class="form-group md:col-span-2">
-                        <label for="edit-requirements" class="block text-sm font-medium text-gray-700">Persyaratan</label>
-                        <textarea id="edit-requirements" name="requirements" rows="4" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Masukkan persyaratan kompetisi"></textarea>
-                        <p id="edit-requirements-error" class="hidden mt-1 text-sm text-red-600"></p>
-                    </div>
                 </div>
                 
                 <!-- Form Actions -->
