@@ -7,12 +7,13 @@
     'currentFilter' => null,
     'statuses' => [],
     'levels' => [],
+    'addButton' => null
 ])
 
 <div class="mb-6">
     <div class="flex flex-col md:flex-row gap-4 w-full">
         <!-- Search -->
-        <div class="w-full md:w-3/4">
+        <div class="w-full {{ $addButton ? 'md:w-2/3' : 'md:w-3/4' }}">
             <form action="{{ $searchRoute }}" method="GET" id="search-form">
                 <div class="form-control">
                     <div class="relative">
@@ -33,6 +34,34 @@
                 </div>
             </form>
         </div>
+
+        <!-- Add Button -->
+        @if($addButton)
+        <div class="w-full md:w-1/3 flex justify-end">
+            @if(isset($addButton['action']))
+                <button 
+                    type="button" 
+                    onclick="{{ $addButton['action'] }}"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    {{ $addButton['text'] }}
+                </button>
+            @else
+                <a 
+                    href="{{ $addButton['route'] }}"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    {{ $addButton['text'] }}
+                </a>
+            @endif
+        </div>
+        @endif
 
         <!-- Status Filter -->
         @if(count($statuses))

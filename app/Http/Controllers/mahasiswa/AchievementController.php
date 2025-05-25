@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AchievementController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Function to display a listing of the achievements
     public function index(Request $request)
     {
         $query = AchievementModel::with('competition')
@@ -55,9 +53,7 @@ class AchievementController extends Controller
         return view('Mahasiswa.achievements.index', compact('achievements', 'statuses', 'no'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Function to show the form for creating a new achievement
     public function create()
     {
         $competitions = CompetitionModel::all()->pluck('name', 'id')->toArray();
@@ -66,12 +62,9 @@ class AchievementController extends Controller
         return view('Mahasiswa.achievements.components.add-achievement', compact('competitions',  'user_id'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Function to store a newly created achievement in storage
     public function store(Request $request)
     {
-        // Validasi data
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'competition_name' => 'required|string|max:255',
@@ -85,7 +78,6 @@ class AchievementController extends Controller
         ]);
 
         try {
-            // Simpan achievement
             $achievement = new AchievementModel();
             $achievement->user_id = auth()->id();
             $achievement->status = 'pending';
@@ -97,7 +89,6 @@ class AchievementController extends Controller
 
             $achievement_id = $achievement->id;
 
-            // Simpan lampiran jika ada
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
                     $fileName = time() . '_' . $file->getClientOriginalName();
@@ -121,38 +112,58 @@ class AchievementController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
+    // Function to display the specified achievement
     public function show(string $id)
     {
         $achievement = AchievementModel::where('user_id', auth()->id())
             ->with(['competition', 'attachments'])
             ->findOrFail($id);
 
+        if (request()->ajax() || request()->wantsJson()) {
+            $achievement->attachments->each(function ($attachment) {
+                $attachment->url = asset('storage/' . $attachment->file_path);
+                $attachment->filename = $attachment->file_name;
+                $attachment->mime_type = $this->getMimeType($attachment->file_type);
+            });
+            
+            return response()->json([
+                'success' => true,
+                'achievement' => $achievement
+            ]);
+        }
+
         return view('Mahasiswa.achievements.components.show-achievement', compact('achievement'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    // Function to show the form for editing the specified achievement
     public function edit(string $id)
     {
-        $competitions = CompetitionModel::all()->pluck('name', 'id')->toArray();
+        $competitions = CompetitionModel::all();
 
         $achievement = AchievementModel::where('user_id', auth()->id())
             ->with(['competition', 'attachments'])
             ->findOrFail($id);
             
+        if (request()->ajax() || request()->wantsJson()) {
+            $achievement->attachments->each(function ($attachment) {
+                $attachment->url = asset('storage/' . $attachment->file_path);
+                $attachment->filename = $attachment->file_name;
+                $attachment->mime_type = $this->getMimeType($attachment->file_type);
+            });
+            
+            return response()->json([
+                'success' => true,
+                'achievement' => $achievement,
+                'competitions' => $competitions
+            ]);
+        }
+
         return view('Mahasiswa.achievements.components.edit-achievement', compact('achievement', 'competitions'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    // Function to update the specified achievement in storage
     public function update(Request $request, string $id)
     {
-        // Validasi data
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'competition_name' => 'required|string|max:255',
@@ -161,24 +172,18 @@ class AchievementController extends Controller
             'date' => 'required|date',
             'description' => 'required|string',
             'competition_id' => 'nullable|exists:competitions,id',
-            'attachments' => 'required',
+            'attachments' => 'nullable',
             'attachments.*' => 'mimes:pdf,jpg,jpeg,png|max:2300',
         ]);
 
         try {
-            // Simpan achievement
-            $achievement = new AchievementModel();
-            $achievement->user_id = auth()->id();
-            $achievement->status = 'pending';
+            $achievement = AchievementModel::where('user_id', auth()->id())->findOrFail($id);
             $achievement->fill($validatedData);
 
             if (!$achievement->save()) {
-                throw new \Exception('Gagal menyimpan achievement.');
+                throw new \Exception('Gagal menyimpan perubahan.');
             }
 
-            $achievement_id = $achievement->id;
-
-            // Simpan lampiran jika ada
             if ($request->hasFile('attachments')) {
                 foreach ($request->file('attachments') as $file) {
                     $fileName = time() . '_' . $file->getClientOriginalName();
@@ -187,7 +192,7 @@ class AchievementController extends Controller
                     $fileSize = $file->getSize();
 
                     AttachmentModel::create([
-                        'achievement_id' => $achievement_id,
+                        'achievement_id' => $achievement->id,
                         'file_name' => $fileName,
                         'file_path' => $filePath,
                         'file_type' => $fileType,
@@ -196,28 +201,73 @@ class AchievementController extends Controller
                 }
             }
 
-            return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil diubah!');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Prestasi berhasil diperbarui'
+                ]);
+            }
+
+            return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil diperbarui!');
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal mengubah prestasi: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return redirect()->back()->with('error', 'Gagal mengubah prestasi: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    // Function to remove the specified achievement from storage
     public function destroy(string $id)
     {
-        $achievement = AchievementModel::where('user_id', auth()->id())->findOrFail($id);
+        try {
+            $achievement = AchievementModel::where('user_id', auth()->id())->findOrFail($id);
 
-        // Hapus lampiran terkait jika ada
-        if ($achievement->attachments) {
-            foreach ($achievement->attachments as $attachment) {
-                Storage::disk('public')->delete($attachment->file_path);
-                $attachment->delete();
+            if ($achievement->attachments) {
+                foreach ($achievement->attachments as $attachment) {
+                    Storage::disk('public')->delete($attachment->file_path);
+                    $attachment->delete();
+                }
             }
-        }
 
-        $achievement->delete();
-        return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil dihapus!');
+            $achievement->delete();
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Prestasi berhasil dihapus'
+                ]);
+            }
+            
+            return redirect()->route('Mahasiswa.achievements.index')->with('status', 'Prestasi berhasil dihapus!');
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus prestasi: ' . $e->getMessage()
+                ], 422);
+            }
+            
+            return redirect()->route('Mahasiswa.achievements.index')->with('error', 'Gagal menghapus prestasi: ' . $e->getMessage());
+        }
+    }
+
+    // Function to get MIME type from file extension
+    private function getMimeType($fileType)
+    {
+        $mimeTypes = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        
+        return $mimeTypes[$fileType] ?? 'application/octet-stream';
     }
 }
