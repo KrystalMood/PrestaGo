@@ -110,9 +110,14 @@ class  CompetitionContoller extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(CompetitionModel $competition, Request $request)
     {
-        //
+        $competition->load(['addedBy', 'period']);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $competition->append(['requirements_html', 'level_formatted']),
+        ]);
     }
 
     /**

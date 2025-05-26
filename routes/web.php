@@ -154,6 +154,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', [App\Http\Controllers\mahasiswa\CompetitionContoller::class, 'index'])->name('index');
+            Route::get('/show/{competition}', [App\Http\Controllers\mahasiswa\CompetitionContoller::class, 'show'])->name('show');
 
             Route::get('/create', function () {
                 return view('Mahasiswa.competitions.create');

@@ -77,18 +77,13 @@
 
     
     <!-- JavaScript Variables and Setup -->
-    {{-- <script>
-        window.achievementRoutes = {
+    <script>
+        window.competitionRoutes = {
             index: "{{ route('Mahasiswa.competitions.index') }}",
-            create: "{{ route('Mahasiswa.competitions.create') }}",
-            store: "{{ route('Mahasiswa.competitions.store') }}",
-            show: "{{ route('Mahasiswa.competitions.show', ['id' => '__ID__']) }}",
-            edit: "{{ route('Mahasiswa.competitions.edit', ['id' => '__ID__']) }}",
-            update: "{{ route('Mahasiswa.competitions.update', ['id' => '__ID__']) }}",
-            delete: "{{ route('Mahasiswa.competitions.destroy', ['id' => '__ID__']) }}"
+            show: "{{ route('Mahasiswa.competitions.show', ['competition' => '__id__']) }}",
         };
         window.csrfToken = "{{ csrf_token() }}";
-    </script> --}}
+    </script>
     
     @vite('resources/js/mahasiswa/competitions.js')
 @endcomponent
