@@ -36,7 +36,7 @@ class AuthUser
                 return redirect()->route('Mahasiswa.dashboard')
                     ->with('error', 'Anda tidak memiliki izin untuk mengakses halaman tersebut.');
             case 'DSN':
-                return redirect()->route('Dosen.dashboard')
+                return redirect()->route('lecturer.dashboard')
                     ->with('error', 'Anda tidak memiliki izin untuk mengakses halaman tersebut.');
             default:
                 return redirect()->route('login')
