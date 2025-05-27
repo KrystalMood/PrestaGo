@@ -49,8 +49,10 @@ class AchievementController extends Controller
                 'pagination' => $paginationView
             ]);
         }
+        $competitions = CompetitionModel::all()->pluck('name', 'id')->toArray();
+        $user_id = auth()->id();
 
-        return view('Mahasiswa.achievements.index', compact('achievements', 'statuses', 'no'));
+        return view('Mahasiswa.achievements.index', compact('achievements', 'statuses', 'no','competitions'));
     }
 
     // Function to show the form for creating a new achievement
