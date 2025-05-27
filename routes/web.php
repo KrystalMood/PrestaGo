@@ -166,6 +166,11 @@ Route::middleware(['auth'])->group(function () {
                 return view('Mahasiswa.profile.index');
             })->name('index');
         });
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', function () {
+                return view('Mahasiswa.settings.index');
+            })->name('index');
+        });
     });
 
     // Lecturer routes
