@@ -55,12 +55,12 @@
 
     <div class="flex min-h-screen">
         <!-- Desktop Sidebar -->
-        <x-sidebar.Mahasiswa />
+        <x-sidebar.lecturer />
 
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden"></div>
 
         <!-- Mobile Sidebar -->
-        <x-sidebar.mobile.Mahasiswa />
+        <x-sidebar.mobile.lecturer />
 
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
@@ -108,5 +108,3 @@
 
     @stack('scripts')
 </body>
-
-</html>

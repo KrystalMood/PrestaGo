@@ -10,7 +10,7 @@ class AttachmentModel extends Model
     use HasFactory;
 
     protected $table = 'attachments';
-    protected $primaryKey = 'attachment_id';
+    protected $primaryKey = 'id';
     
     protected $fillable = [
         'achievement_id',
@@ -22,6 +22,6 @@ class AttachmentModel extends Model
 
     public function achievement()
     {
-        return $this->belongsTo(AchievementModel::class, 'achievement_id', 'achievement_id');
+        return $this->belongsTo(AchievementModel::class, 'achievement_id', 'id');
     }
 } 

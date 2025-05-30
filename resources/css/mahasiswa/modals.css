@@ -1,0 +1,49 @@
+@keyframes modalAppear {
+    from { opacity: 0; transform: translateY(-1rem); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modalDisappear {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-1rem); }
+}
+
+.animate-modal-appear {
+    animation: modalAppear 0.3s ease-out forwards;
+}
+
+.animate-modal-disappear {
+    animation: modalDisappear 0.3s ease-in forwards;
+}
+
+/* Modal Container Styles */
+.modal-container {
+    @apply bg-white rounded-lg shadow-lg max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto;
+}
+
+.modal-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.modal-title {
+    @apply text-xl font-bold text-gray-900;
+}
+
+.modal-close-btn {
+    @apply text-gray-400 hover:text-gray-500 transition-colors;
+}
+
+/* Form Error Display */
+.form-error-container {
+    @apply bg-red-50 border-l-4 border-red-500 p-4 mb-6 hidden;
+}
+
+/* Modal Actions */
+.modal-actions {
+    @apply flex items-center justify-end space-x-3 pt-5 border-t border-gray-200 mt-6;
+}
+
+/* Delete Modal Specific */
+.delete-icon-container {
+    @apply mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-5;
+} 

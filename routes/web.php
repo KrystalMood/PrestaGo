@@ -146,23 +146,32 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('dashboard');
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
-            Route::get('/', function () {
-                return view('Mahasiswa.achievements.index');
-            })->name('index');
-            Route::get('/create', function () {
-                return view('Mahasiswa.achievements.create');
-            })->name('create');
+            Route::get('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\mahasiswa\AchievementController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\mahasiswa\AchievementController::class, 'store'])->name('store');
+            Route::get('/show/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'show'])->name('show');
+            Route::get('/edit/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\mahasiswa\AchievementController::class, 'destroy'])->name('destroy');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
-            Route::get('/', function () {
-                return view('Mahasiswa.competitions.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\mahasiswa\CompetitionContoller::class, 'index'])->name('index');
+            Route::get('/show/{competition}', [App\Http\Controllers\mahasiswa\CompetitionContoller::class, 'show'])->name('show');
+
+            Route::get('/create', function () {
+                return view('Mahasiswa.competitions.create');
+            })->name('create');
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', function () {
                 return view('Mahasiswa.profile.index');
+            })->name('index');
+        });
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', function () {
+                return view('Mahasiswa.settings.index');
             })->name('index');
         });
     });
