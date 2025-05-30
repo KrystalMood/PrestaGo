@@ -107,14 +107,12 @@ class CompetitionController extends Controller
             'name' => 'required|string|max:255',
             'organizer' => 'required|string|max:255',
             'level' => 'required|string|in:international,national,regional,provincial,university',
-            'type' => 'required|string|in:individual,team,both',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'registration_start' => 'nullable|date',
             'registration_end' => 'nullable|date|after_or_equal:registration_start',
             'competition_date' => 'required|date',
             'description' => 'nullable|string',
-            'requirements' => 'nullable|string',
             'status' => 'required|string|in:upcoming,active,completed,cancelled',
             'period_id' => 'required|exists:periods,id',
         ]);
@@ -142,7 +140,7 @@ class CompetitionController extends Controller
         
         return response()->json([
             'success' => true,
-            'data' => $competition->append(['requirements_html', 'level_formatted']),
+            'data' => $competition->append(['level_formatted']),
         ]);
     }
 
@@ -152,14 +150,12 @@ class CompetitionController extends Controller
             'name' => 'required|string|max:255',
             'organizer' => 'required|string|max:255',
             'level' => 'required|string|in:international,national,regional,provincial,university',
-            'type' => 'required|string|in:individual,team,both',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'registration_start' => 'nullable|date',
             'registration_end' => 'nullable|date|after_or_equal:registration_start',
             'competition_date' => 'required|date',
             'description' => 'nullable|string',
-            'requirements' => 'nullable|string',
             'status' => 'required|string|in:upcoming,active,completed,cancelled',
             'period_id' => 'required|exists:periods,id',
         ]);
@@ -219,7 +215,7 @@ class CompetitionController extends Controller
         $competition->load(['participants', 'participants.user']);
         
         $students = UserModel::where('role', 'MHS')
-            ->whereNotIn('id', $competition->participants->pluck('user_id')) // Exclude already participating students
+            ->whereNotIn('id', $competition->participants->pluck('user_id'))
             ->orderBy('name')
             ->get();
         
@@ -230,29 +226,42 @@ class CompetitionController extends Controller
     {
         $validated = $request->validate([
             'student_id' => 'required|exists:users,id',
-            'team_name' => 'nullable|string|max:255',
             'status' => 'required|in:registered,pending',
         ]);
         
         $exists = $competition->participants()->where('user_id', $validated['student_id'])->exists();
         
         if ($exists) {
-            return back()->with('error', 'Mahasiswa ini sudah terdaftar pada kompetisi ini.');
+            return back()->with('error', 'Mahasiswa ini sudah terdaftar minat pada kompetisi ini.');
         }
         
         $competition->participants()->create([
             'user_id' => $validated['student_id'],
-            'team_name' => $validated['team_name'],
             'status' => $validated['status'],
+            'notes' => 'Pendaftaran minat untuk kompetisi utama'
         ]);
         
-        return back()->with('success', 'Peserta berhasil ditambahkan.');
+        return back()->with('success', 'Pendaftaran minat berhasil ditambahkan.');
     }
     
     public function removeParticipant(CompetitionModel $competition, $participant)
     {
+        $hasSubCompetitionRegistrations = $competition->subCompetitions()
+            ->whereHas('participants', function($query) use ($participant) {
+                $query->where('user_id', function($subQuery) use ($participant) {
+                    $subQuery->select('user_id')
+                        ->from('competition_participants')
+                        ->where('id', $participant);
+                });
+            })
+            ->exists();
+
+        if ($hasSubCompetitionRegistrations) {
+            return back()->with('error', 'Tidak dapat menghapus pendaftaran minat karena mahasiswa sudah terdaftar di sub-kompetisi.');
+        }
+
         $competition->participants()->findOrFail($participant)->delete();
         
-        return back()->with('success', 'Peserta berhasil dihapus.');
+        return back()->with('success', 'Pendaftaran minat berhasil dihapus.');
     }
 } 

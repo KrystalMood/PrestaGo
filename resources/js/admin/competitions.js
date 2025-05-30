@@ -149,40 +149,34 @@ document.addEventListener('DOMContentLoaded', function() {
             
             resetFieldErrors();
             
-            if (!name.value.trim()) {
+            if (name && !name.value.trim()) {
                 isValid = false;
                 errorMessage += '<li>Nama Kompetisi wajib diisi</li>';
                 showFieldError(name, 'Nama Kompetisi wajib diisi');
             }
             
-            if (!organizer.value.trim()) {
+            if (organizer && !organizer.value.trim()) {
                 isValid = false;
                 errorMessage += '<li>Penyelenggara wajib diisi</li>';
                 showFieldError(organizer, 'Penyelenggara wajib diisi');
             }
             
-            if (!category.value) {
+            if (category && !category.value) {
                 isValid = false;
                 errorMessage += '<li>Kategori wajib dipilih</li>';
                 showFieldError(category, 'Kategori wajib dipilih');
             }
             
-            if (!period.value) {
+            if (period && !period.value) {
                 isValid = false;
                 errorMessage += '<li>Periode wajib dipilih</li>';
                 showFieldError(period, 'Periode wajib dipilih');
             }
             
-            if (!status.value) {
+            if (status && !status.value) {
                 isValid = false;
                 errorMessage += '<li>Status wajib dipilih</li>';
                 showFieldError(status, 'Status wajib dipilih');
-            }
-            
-            if (!type.value) {
-                isValid = false;
-                errorMessage += '<li>Tipe Kompetisi wajib dipilih</li>';
-                showFieldError(type, 'Tipe Kompetisi wajib dipilih');
             }
             
             if (!isValid) {
@@ -438,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit-category').value = competition.category_id || '';
             document.getElementById('edit-period').value = competition.period_id || '';
             document.getElementById('edit-level').value = competition.level || '';
-            document.getElementById('edit-status').value = competition.status;
+            document.getElementById('edit-status').value = competition.status || '';
             document.getElementById('edit-type').value = competition.type || 'individual';
             
             if (competition.start_date) {
@@ -462,8 +456,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             document.getElementById('edit-description').value = competition.description || '';
-            
-            document.getElementById('edit-requirements').value = competition.requirements || '';
+            document.getElementById('edit-competition-date').value = competition.competition_date || '';
+            document.getElementById('edit-period').value = competition.period_id || '';
+            document.getElementById('edit-level').value = competition.level || '';
+            document.getElementById('edit-status').value = competition.status || '';
             
             const submitEditBtn = document.getElementById('submit-edit-competition');
             if (submitEditBtn) {
@@ -530,18 +526,14 @@ document.addEventListener('DOMContentLoaded', function() {
             statusElement.textContent = getStatusText(competition.status);
             statusElement.className = 'px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + getStatusClass(competition.status);
             
-            document.getElementById('competition-description').textContent = competition.description || 'Tidak ada deskripsi tersedia';
-            
-            document.getElementById('competition-requirements').innerHTML = competition.requirements_html || '<p class="text-gray-500">Tidak ada persyaratan khusus.</p>';
-
-            document.getElementById('show-competition-updated-at').textContent = competition.updated_at ? new Date(competition.updated_at).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : '-';
+            document.getElementById('competition-description').innerHTML = competition.description || '<p class="text-gray-500">Tidak ada deskripsi.</p>';
+            document.getElementById('show-competition-updated-at').textContent = competition.updated_at ? new Date(competition.updated_at).toLocaleString() : '-';
 
             const editButton = document.getElementById('edit-from-show');
             if (editButton) {
                 editButton.setAttribute('data-competition-id', competition.id);
             }
             
-            // Update level icon
             updateLevelIcon(competition.level);
             
             showModal.classList.remove('hidden');

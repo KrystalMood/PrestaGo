@@ -24,7 +24,6 @@ class CompetitionModel extends Model
         'registration_end',
         'competition_date',
         'registration_link',
-        'requirements',
         'status',
         'verified',
         'added_by',
@@ -102,29 +101,6 @@ class CompetitionModel extends Model
         return $query->where('verified', true);
     }
 
-    public function getRequirementsHtmlAttribute()
-    {
-        if (empty($this->requirements)) {
-            return null;
-        }
-        
-        $lines = explode("\n", $this->requirements);
-        $htmlLines = [];
-        
-        foreach ($lines as $line) {
-            $trimmedLine = trim($line);
-            if (!empty($trimmedLine)) {
-                $htmlLines[] = "<li>{$trimmedLine}</li>";
-            }
-        }
-        
-        if (empty($htmlLines)) {
-            return null;
-        }
-        
-        return '<ul class="list-disc pl-5 space-y-1">' . implode('', $htmlLines) . '</ul>';
-    }
-    
     public function getLevelFormattedAttribute()
     {
         if (empty($this->level)) {

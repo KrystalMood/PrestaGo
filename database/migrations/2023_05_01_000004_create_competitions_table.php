@@ -24,7 +24,6 @@ return new class extends Migration
             $table->date('registration_end');
             $table->date('competition_date');
             $table->string('registration_link', 255)->nullable();
-            $table->text('requirements');
             $table->string('status', 20);
             $table->boolean('verified')->default(false);
             $table->unsignedBigInteger('added_by');

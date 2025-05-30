@@ -122,9 +122,12 @@ Route::middleware(['auth'])->group(function () {
 
         // Settings Management Routes
         Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.settings.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('index');
+            Route::get('/general', [App\Http\Controllers\Admin\SettingsController::class, 'general'])->name('general');
+            Route::post('/general', [App\Http\Controllers\Admin\SettingsController::class, 'updateGeneral'])->name('general.update');
+            Route::get('/email', [App\Http\Controllers\Admin\SettingsController::class, 'email'])->name('email');
+            Route::get('/security', [App\Http\Controllers\Admin\SettingsController::class, 'security'])->name('security');
+            Route::get('/display', [App\Http\Controllers\Admin\SettingsController::class, 'display'])->name('display');
         });
 
         // Achievement Verification Routes

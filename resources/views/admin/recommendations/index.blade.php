@@ -1,7 +1,7 @@
 @component('layouts.admin', ['title' => 'Rekomendasi Kompetisi'])
     @include('admin.components.ui.page-header', [
         'title' => 'Rekomendasi Kompetisi',
-        'description' => 'Kelola dan pantau rekomendasi kompetisi untuk mahasiswa berdasarkan prestasi, keterampilan, dan profil mereka.'
+        'description' => 'Kelola dan pantau rekomendasi kompetisi untuk mahasiswa berdasarkan metode DSS gabungan AHP-WP.'
     ])
 
     <div class="mb-6 flex justify-between items-center">
@@ -36,6 +36,9 @@
             ['value' => 'high_match', 'label' => 'Skor: Tinggi (>80%)'],
             ['value' => 'medium_match', 'label' => 'Skor: Sedang (50-80%)'],
             ['value' => 'low_match', 'label' => 'Skor: Rendah (<50%)'],
+            ['value' => 'ahp_consistent', 'label' => 'AHP: Konsisten'],
+            ['value' => 'ahp_inconsistent', 'label' => 'AHP: Tidak Konsisten'],
+            ['value' => 'wp_high', 'label' => 'WP: Preferensi Tinggi'],
         ],
         'filterName' => 'filter',
         'filterLabel' => 'Filter Rekomendasi',
@@ -49,7 +52,8 @@
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mahasiswa</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kompetisi</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor Kecocokan</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor AHP</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skor WP</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Direkomendasikan Oleh</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
@@ -81,17 +85,50 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    @php
-                                        $score = $recommendation->match_score;
-                                        $scoreColor = $score >= 80 ? 'text-green-600' : ($score >= 50 ? 'text-amber-600' : 'text-red-600');
-                                        $bgColor = $score >= 80 ? 'bg-green-100' : ($score >= 50 ? 'bg-amber-100' : 'bg-red-100');
-                                    @endphp
-                                    <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                        <div class="{{ $bgColor }} h-2.5 rounded-full" style="width: {{ $score }}%"></div>
+                                @if($recommendation->ahp_result_id)
+                                    <div class="flex items-center">
+                                        @php
+                                            $ahpScore = $recommendation->ahpResult->final_score * 100;
+                                            $ahpScoreColor = $ahpScore >= 80 ? 'text-green-600' : ($ahpScore >= 50 ? 'text-amber-600' : 'text-red-600');
+                                            $ahpBgColor = $ahpScore >= 80 ? 'bg-green-100' : ($ahpScore >= 50 ? 'bg-amber-100' : 'bg-red-100');
+                                        @endphp
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="{{ $ahpBgColor }} h-2.5 rounded-full" style="width: {{ $ahpScore }}%"></div>
+                                        </div>
+                                        <span class="{{ $ahpScoreColor }} text-sm font-medium">{{ number_format($ahpScore, 1) }}%</span>
                                     </div>
-                                    <span class="{{ $scoreColor }} text-sm font-medium">{{ $score }}%</span>
-                                </div>
+                                    @if($recommendation->ahpResult->is_consistent)
+                                        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            Konsisten
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            CR: {{ number_format($recommendation->ahpResult->consistency_ratio, 3) }}
+                                        </span>
+                                    @endif
+                                @else
+                                    <span class="text-gray-400 text-sm">-</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($recommendation->wp_result_id)
+                                    <div class="flex items-center">
+                                        @php
+                                            $wpScore = $recommendation->wpResult->relative_preference * 100;
+                                            $wpScoreColor = $wpScore >= 80 ? 'text-green-600' : ($wpScore >= 50 ? 'text-amber-600' : 'text-red-600');
+                                            $wpBgColor = $wpScore >= 80 ? 'bg-green-100' : ($wpScore >= 50 ? 'bg-amber-100' : 'bg-red-100');
+                                        @endphp
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                                            <div class="{{ $wpBgColor }} h-2.5 rounded-full" style="width: {{ $wpScore }}%"></div>
+                                        </div>
+                                        <span class="{{ $wpScoreColor }} text-sm font-medium">{{ number_format($wpScore, 1) }}%</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        Rank: {{ $recommendation->wpResult->rank }}
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-sm">-</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -171,7 +208,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                                 Tidak ada data rekomendasi yang tersedia saat ini.
                             </td>
                         </tr>
