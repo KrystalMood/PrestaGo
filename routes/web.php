@@ -196,7 +196,29 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', function () {
                 return view('Dosen.profile.index');
             })->name('index');
+            Route::get('/update', function () {
+                return view('Dosen.profile.update');
+            })->name('update');
         });
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', function () {
+                return view('Dosen.settings.index');
+            })->name('index');
+        });
+
+        Route::prefix('akademik')->name('akademik.')->group(function () {
+            Route::get('/', function () {
+                return view('Dosen.akademik.index');
+            })->name('index');
+        });
+
+        Route::prefix('penelitian')->name('penelitian.')->group(function () {
+            Route::get('/', function () {
+                return view('Dosen.penelitian.index');
+            })->name('index');
+        });
+
     });
 
     // Admin Reports Routes

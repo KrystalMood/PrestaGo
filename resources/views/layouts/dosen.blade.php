@@ -7,7 +7,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ? "$title | Admin" . config('app.name', 'SIM Prestasi') : "Admin | " . config('app.name', 'SIM Prestasi') }}</title>
+
+    <title>
+        {{ $title ? "$title | Admin " . config('app.name', 'SIM Prestasi') : "Admin | " . config('app.name', 'SIM Prestasi') }}
+    </title>
 
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}?v={{ time() }}" type="image/x-icon">
@@ -20,6 +23,7 @@
     <!-- DaisyUI and Tailwind -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -54,15 +58,16 @@
     <x-ui.toast />
 
     <div class="flex min-h-screen">
-        <!-- Desktop Sidebar -->
+        <!-- Sidebar Desktop -->
         <x-sidebar.lecturer />
 
+        <!-- Sidebar Overlay Mobile -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden"></div>
 
-        <!-- Mobile Sidebar -->
+        <!-- Sidebar Mobile -->
         <x-sidebar.mobile.lecturer />
 
-        <!-- Main content -->
+        <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Navbar -->
             <x-shared.navbar :title="$title" :user="$user ?? auth()->user()" />
@@ -80,13 +85,13 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const toggleSidebar = document.getElementById('toggle-sidebar');
             const sidebar = document.getElementById('mobile-sidebar');
             const overlay = document.getElementById('sidebar-overlay');
 
             if (toggleSidebar && sidebar && overlay) {
-                toggleSidebar.addEventListener('click', function() {
+                toggleSidebar.addEventListener('click', function () {
                     sidebar.classList.remove('-translate-x-full');
                     overlay.classList.remove('hidden');
                 });
@@ -97,7 +102,7 @@
                 }
 
                 overlay.addEventListener('click', closeMobileSidebar);
-                
+
                 const closeButton = document.querySelector('#close-sidebar, .close-sidebar-btn');
                 if (closeButton) {
                     closeButton.addEventListener('click', closeMobileSidebar);
@@ -108,3 +113,4 @@
 
     @stack('scripts')
 </body>
+</html>
