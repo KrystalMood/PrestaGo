@@ -1,8 +1,8 @@
-@component('layouts.dosen', ['title' => 'prestasi mahasiswa'])
+@component('layouts.dosen', ['title' => 'Prestasi Mahasiswa'])
 
 <div class="bg-white rounded-lg shadow-custom p-6">
     <div class="mb-6">
-        @include('admin.components.ui.page-header', [
+        @include('Dosen.components.ui.page-header', [
             'subtitle' => 'Halaman ini menampilkan daftar prestasi mahasiswa.',
         ])
     </div>
@@ -10,93 +10,68 @@
     @php
         $stats = [
             [
-                'title' => 'Total Pengguna',
-                'value' => $totalUsers ?? 0,
+                'title' => 'Total Mahasiswa Terdaftar',
+                'value' => $totalAchievements ?? 0,
                 'icon' => 'user',
-                'key' => 'totalUsers'
+                'key' => 'totalAchievements'
             ],
             [
-                'title' => 'Pengguna Baru',
-                'value' => $newUsers ?? 0,
-                'icon' => 'user-plus',
-                'key' => 'newUsers'
+                'title' => 'Total Prestasi Terdata',
+                'value' => $newAchievements ?? 0,
+                'icon' => 'star',
+                'key' => 'newAchievements'
             ],
             [
-                'title' => 'Total Pengguna Aktif',
-                'value' => $activeUsers ?? 0,
-                'icon' => 'user-check',
-                'key' => 'activeUsers'
+                'title' => 'Prestasi Tingkat Nasional / Internasional',
+                'value' => $verifiedAchievements ?? 0,
+                'icon' => 'check-circle',
+                'key' => 'verifiedAchievements'
             ],
         ];
     @endphp
-    @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
+    @component('Dosen.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
     @endcomponent
-
-    <div class="mt-4 mb-6 flex justify-end space-x-3">
-        <button type="button" id="open-add-user-modal" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-            </svg>
-            Tambah Pengguna
-        </button>
-        
-        <x-admin.buttons.action-button
-            route="{{ route('admin.users.export') }}"
-            text="Ekspor Data"
-            icon="download"
-            color="green"
-        />
-    </div>
 
     @php
         $filterOptions = [];
-        foreach ($roles ?? [] as $role) {
+        foreach ($types ?? [] as $type) {
             $filterOptions[] = [
-                'value' => $role->level_kode,
-                'label' => $role->level_nama
+                'value' => $type->type_code,
+                'label' => $type->type_name
             ];
         }
     @endphp
 
-    @component('admin.components.ui.search-and-filter', [
-        'searchRoute' => route('admin.users.index'),
-        'searchPlaceholder' => 'Cari pengguna berdasarkan nama atau email...',
-        'filterOptions' => $filterOptions,
-        'filterName' => 'role',
-        'filterLabel' => 'Semua Peran',
-        'currentFilter' => request('role')
+    @component('Dosen.components.ui.search-and-filter', [
+        'searchRoute' => route('lecturer.profile.index'),
+        'searchPlaceholder' => 'Cari prestasi berdasarkan judul atau nama mahasiswa...',
     ])
     @endcomponent
 
-    <div id="users-table-container">
-        @component('admin.users.components.tables')
-        @slot('users', $users ?? collect())
+    
+    <div id="achievements-table-container">
+        @component('Dosen.achievements.components.tables')
+        @slot('achievements', $achievements ?? collect())
         @endcomponent
     </div>
 
     <div id="pagination-container">
-        @component('admin.components.tables.pagination', ['data' => $users ?? collect()])
+        @component('Dosen.components.tables.pagination', ['data' => $achievements ?? collect()])
         @endcomponent
     </div>
 </div>
 
-<!-- Include modals -->
-@include('admin.users.components.add-user-modal')
-@include('admin.users.components.edit-user-modal')
-@include('admin.users.components.show-user-modal')
-@include('admin.users.components.delete-user-modal')
 
 <!-- JavaScript Variables and Setup -->
 <script>
-    window.userRoutes = {
-        index: "{{ route('admin.users.index') }}",
-        store: "{{ route('admin.users.store') }}"
+    window.achievementRoutes = {
+        index: "{{ route('lecturer.profile.index') }}",
     };
     window.csrfToken = "{{ csrf_token() }}";
-    window.defaultAvatarUrl = "{{ asset('images/avatar.png') }}";
+    window.defaultCertificateUrl = "{{ asset('images/certificate.png') }}";
 </script>
 
 <!-- Load External JS -->
-@vite('resources/js/admin/users.js')
+@vite('resources/js/dosen/achievements.js')
 
 @endcomponent

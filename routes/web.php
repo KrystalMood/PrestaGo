@@ -198,9 +198,8 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
-            Route::get('/', function () {
-                return view('Dosen.achievements.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\dosen\AchievementController::class, 'index'])->name('index');
+            Route::get('/{id}', [App\Http\Controllers\dosen\AchievementController::class, 'show'])->name('show');
         });
         
         Route::prefix('competitions')->name('competitions.')->group(function () {
