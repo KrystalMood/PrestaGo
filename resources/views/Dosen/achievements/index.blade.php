@@ -1,9 +1,9 @@
-@component('layouts.dosen', ['title' => 'Mahasiswa yang diampu'])
+@component('layouts.dosen', ['title' => 'prestasi mahasiswa'])
 
 <div class="bg-white rounded-lg shadow-custom p-6">
     <div class="mb-6">
         @include('admin.components.ui.page-header', [
-            'subtitle' => 'Halaman ini menampilkan daftar semua pengguna sistem dan memungkinkan Anda untuk menambah, mengubah, atau menghapus data pengguna.',
+            'subtitle' => 'Halaman ini menampilkan daftar prestasi mahasiswa.',
         ])
     </div>
     

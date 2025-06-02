@@ -18,7 +18,7 @@
         <div class="border border-gray-100 rounded-lg p-5 hover:bg-gray-50 transition-colors">
             <h3 class="font-medium text-gray-800 mb-3">Informasi Akun</h3>
             <p class="text-sm text-gray-600 mb-4">Atur nama, email, dan foto profil Anda.</p>
-            <a href="{{ route('lecturer.profile.profile') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md">
+            <a href="{{ route('lecturer.profile.index') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md">
                 Kelola Akun
             </a>
         </div>

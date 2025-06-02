@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Support\Facades\Storage;
 
-class SettingController extends Controller
+class ProfileController extends Controller
 {
     public function index(){
         return view("Dosen.settings.index");
