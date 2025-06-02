@@ -211,7 +211,9 @@ Route::middleware(['auth'])->group(function () {
         
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', [App\Http\Controllers\dosen\ProfileController::class, 'index'])->name('index');
-            Route::put('/{id}', [App\Http\Controllers\dosen\ProfileController::class, 'updateProfile'])->name('updateProfile');
+            Route::put('/update', [App\Http\Controllers\dosen\ProfileController::class, 'update'])->name('update');
+            Route::post('/skills', [App\Http\Controllers\dosen\ProfileController::class, 'updateSkills'])->name('skills.update');
+            Route::post('/interests', [App\Http\Controllers\dosen\ProfileController::class, 'updateInterests'])->name('interests.update');
         });
         
         

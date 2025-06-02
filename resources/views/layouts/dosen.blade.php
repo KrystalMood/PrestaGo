@@ -74,6 +74,10 @@
                     </div>
 
                     {{ $slot }}
+
+                    <div class="mt-6">
+                        @include('partials.footer')
+                    </div>
                 </div>
             </main>
         </div>
