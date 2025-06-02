@@ -21,16 +21,10 @@ class PeriodController extends Controller
             });
         }
         
-        if ($request->has('status') && $request->status != '') {
-            $query->where('is_active', $request->status === 'active');
-        }
-        
         $periods = $query->latest()->paginate(10);
         
         $totalPeriods = PeriodModel::count();
-        $activePeriods = PeriodModel::where('is_active', true)->count();
         
-        // Handle AJAX request
         if ($request->ajax() || $request->has('ajax')) {
             $table = View::make('admin.periods.components.tables', compact('periods'))->render();
             $pagination = View::make('admin.components.tables.pagination', ['data' => $periods])->render();
@@ -40,12 +34,11 @@ class PeriodController extends Controller
                 'pagination' => $pagination,
                 'stats' => [
                     'totalPeriods' => $totalPeriods,
-                    'activePeriods' => $activePeriods
                 ]
             ]);
         }
         
-        return view('admin.periods.index', compact('periods', 'totalPeriods', 'activePeriods'));
+        return view('admin.periods.index', compact('periods', 'totalPeriods'));
     }
 
     public function create()
@@ -59,13 +52,26 @@ class PeriodController extends Controller
             'name' => 'required|string|max:255|unique:periods',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'is_active' => 'sometimes|boolean',
-            'description' => 'nullable|string|max:1000',
         ]);
-
-        // If this period is active, deactivate all other periods
-        if (isset($validated['is_active']) && $validated['is_active']) {
-            PeriodModel::where('is_active', true)->update(['is_active' => false]);
+        
+        $overlappingPeriod = PeriodModel::where(function($query) use ($request) {
+            $query->where('start_date', '<=', $request->start_date)
+                  ->where('end_date', '>=', $request->start_date);
+        })->orWhere(function($query) use ($request) {
+            $query->where('start_date', '<=', $request->end_date)
+                  ->where('end_date', '>=', $request->end_date);
+        })->orWhere(function($query) use ($request) {
+            $query->where('start_date', '>=', $request->start_date)
+                  ->where('end_date', '<=', $request->end_date);
+        })->first();
+        
+        if ($overlappingPeriod) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'date_overlap' => ['Periode baru tidak dapat bertabrakan dengan periode yang sudah ada. Periode "' . $overlappingPeriod->name . '" sudah ada pada rentang tanggal tersebut.']
+                ]
+            ], 422);
         }
 
         $period = PeriodModel::create($validated);
@@ -102,13 +108,29 @@ class PeriodController extends Controller
             ],
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'is_active' => 'sometimes|boolean',
-            'description' => 'nullable|string|max:1000',
         ]);
-
-        // If this period is active, deactivate all other periods
-        if (isset($validated['is_active']) && $validated['is_active']) {
-            PeriodModel::where('id', '!=', $id)->where('is_active', true)->update(['is_active' => false]);
+        
+        $overlappingPeriod = PeriodModel::where('id', '!=', $id)
+            ->where(function($query) use ($request) {
+                $query->where('start_date', '<=', $request->start_date)
+                      ->where('end_date', '>=', $request->start_date);
+            })->orWhere(function($query) use ($request, $id) {
+                $query->where('id', '!=', $id)
+                      ->where('start_date', '<=', $request->end_date)
+                      ->where('end_date', '>=', $request->end_date);
+            })->orWhere(function($query) use ($request, $id) {
+                $query->where('id', '!=', $id)
+                      ->where('start_date', '>=', $request->start_date)
+                      ->where('end_date', '<=', $request->end_date);
+            })->first();
+        
+        if ($overlappingPeriod) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'date_overlap' => ['Periode tidak dapat bertabrakan dengan periode yang sudah ada. Periode "' . $overlappingPeriod->name . '" sudah ada pada rentang tanggal tersebut.']
+                ]
+            ], 422);
         }
 
         $period->update($validated);
@@ -130,17 +152,26 @@ class PeriodController extends Controller
         $period = PeriodModel::with('competitions')->findOrFail($id);
         
         if (request()->ajax() || request()->wantsJson()) {
+            $now = now();
+            $status = 'upcoming';
+            
+            if ($period->start_date <= $now && $period->end_date >= $now) {
+                $status = 'active';
+            } elseif ($period->end_date < $now) {
+                $status = 'completed';
+            }
+            
             return response()->json([
                 'id' => $period->id,
                 'name' => $period->name,
                 'start_date' => $period->start_date->format('d M Y'),
                 'end_date' => $period->end_date->format('d M Y'),
-                'start_date_raw' => $period->start_date,
-                'end_date_raw' => $period->end_date,
-                'is_active' => $period->is_active,
-                'description' => $period->description,
+                'start_date_raw' => $period->start_date->format('Y-m-d'),
+                'end_date_raw' => $period->end_date->format('Y-m-d'),
                 'competitions_count' => $period->competitions->count(),
                 'created_at' => $period->created_at->format('d M Y, H:i'),
+                'updated_at' => $period->updated_at->format('d M Y, H:i'),
+                'status' => $status,
             ]);
         }
         
@@ -176,30 +207,6 @@ class PeriodController extends Controller
             ->with('success', 'Periode berhasil dihapus!');
     }
 
-    public function toggleActive(string $id)
-    {
-        $period = PeriodModel::findOrFail($id);
-        
-        if (!$period->is_active) {
-            PeriodModel::where('id', '!=', $id)->update(['is_active' => false]);
-        }
-        
-        $period->update(['is_active' => !$period->is_active]);
-        
-        $status = $period->is_active ? 'diaktifkan' : 'dinonaktifkan';
-        
-        if (request()->ajax() || request()->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Periode berhasil $status!",
-                'is_active' => $period->is_active
-            ]);
-        }
-        
-        return redirect()->route('admin.periods.index')
-            ->with('success', "Periode berhasil $status!");
-    }
-    
     public function export()
     {
         // Example export functionality

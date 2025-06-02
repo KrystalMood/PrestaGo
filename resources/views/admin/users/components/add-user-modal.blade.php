@@ -91,6 +91,48 @@
                             />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="level-id-error"></p>
                         </div>
+                        
+                        <!-- Study Program field - visible for all users -->
+                        @php
+                            $studyProgramOptions = [];
+                            foreach(App\Models\StudyProgramModel::all() as $program) {
+                                $studyProgramOptions[$program->id] = $program->name . ' (' . $program->code . ')';
+                            }
+                        @endphp
+
+                        <div class="form-group">
+                            <x-ui.form-select
+                                name="program_studi_id"
+                                id="add-program-studi-id"
+                                label="Program Studi"
+                                :options="$studyProgramOptions"
+                                :selected="''"
+                                placeholder="Pilih Program Studi"
+                            />
+                            <p class="text-sm text-red-600 error-message hidden mt-1" id="program-studi-id-error"></p>
+                        </div>
+                        
+                        <!-- NIM field - only visible for students -->
+                        <div class="form-group student-field" style="display: none;">
+                            <x-ui.form-input
+                                name="nim"
+                                id="add-nim"
+                                label="NIM (Nomor Induk Mahasiswa)"
+                                placeholder="Masukkan NIM"
+                            />
+                            <p class="text-sm text-red-600 error-message hidden mt-1" id="nim-error"></p>
+                        </div>
+
+                        <!-- NIP field - only visible for lecturers -->
+                        <div class="form-group lecturer-field" style="display: none;">
+                            <x-ui.form-input
+                                name="nip"
+                                id="add-nip"
+                                label="NIP (Nomor Induk Pegawai)"
+                                placeholder="Masukkan NIP"
+                            />
+                            <p class="text-sm text-red-600 error-message hidden mt-1" id="nip-error"></p>
+                        </div>
                     </div>
                 </div>
 

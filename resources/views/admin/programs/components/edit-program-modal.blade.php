@@ -119,15 +119,6 @@
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-description-error"></p>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <x-ui.form-toggle
-                            name="is_active"
-                            id="edit-is-active"
-                            label="Status Aktif"
-                        />
-                        <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-is-active-error"></p>
-                    </div>
                 </div>
 
                 <!-- Form Actions -->

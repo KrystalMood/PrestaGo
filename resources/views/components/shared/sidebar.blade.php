@@ -1,7 +1,23 @@
 @props(['user' => null])
 
 @php
-    $userRole = auth()->user()->level->level_nama;
+    $userRoleFromFileNames = auth()->user()->level->level_nama;
+    $routeRoleName = '';
+
+    switch ($userRoleFromFileNames) {
+        case 'Mahasiswa':
+            $routeRoleName = 'student';
+            break;
+        case 'Admin':
+            $routeRoleName = 'admin';
+            break;
+        case 'Dosen':
+            $routeRoleName = 'lecturer';
+            break;
+        default:
+            $routeRoleName = strtolower($userRoleFromFileNames);
+            break;
+    }
 @endphp
 
 <aside class="w-64 shadow-custom bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden hidden lg:block h-screen sticky top-0">
@@ -13,7 +29,7 @@
     <div class="p-4 overflow-y-auto max-h-[calc(100vh-4rem)]">
         <ul class="space-y-1">
             <li>
-                <a href="{{ route($userRole . '.dashboard') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.dashboard') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
+                <a href="{{ route($routeRoleName . '.dashboard') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($routeRoleName . '.dashboard') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
@@ -21,14 +37,14 @@
                 </a>
             </li>
 
-            @include('components.sidebar.' . $userRole)
+            @include('components.sidebar.' . $userRoleFromFileNames)
 
             <div class="py-2 mt-2 border-t border-gray-100">
                 <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Akun</span>
             </div>
 
             <li>
-                <a href="#" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
+                <a href="{{ route($routeRoleName . '.profile.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($routeRoleName . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -36,7 +52,7 @@
                 </a>
             </li>
 
-            @if($userRole == 'admin')
+            @if($routeRoleName == 'admin')
                 <li>
                     <a href="{{ route('admin.settings.index') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs('admin.settings.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -68,7 +84,7 @@
     <div class="p-4 overflow-y-auto">
         <ul class="space-y-1">
             <li>
-                <a href="{{ route($userRole . '.dashboard') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.dashboard') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
+                <a href="{{ route($routeRoleName . '.dashboard') }}" class="flex items-center p-3 rounded-lg {{ request()->routeIs($routeRoleName . '.dashboard') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
@@ -76,14 +92,14 @@
                 </a>
             </li>
 
-            @include('components.sidebar.mobile.' . $userRole)
+            @include('components.sidebar.mobile.' . $userRoleFromFileNames)
 
             <div class="py-2 mt-2 border-t border-gray-100">
                 <span class="px-3 text-xs font-semibold text-gray-400 uppercase">Akun</span>
             </div>
 
             <li>
-                <a href="#" class="flex items-center p-3 rounded-lg {{ request()->routeIs($userRole . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
+                <a href="#" class="flex items-center p-3 rounded-lg {{ request()->routeIs($routeRoleName . '.profile.*') ? 'bg-brand-light bg-opacity-10 text-brand' : 'hover:bg-gray-100 text-gray-700' }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>

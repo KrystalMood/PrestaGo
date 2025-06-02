@@ -26,8 +26,23 @@ class SkillModel extends Model
 
     public function competitions()
     {
-        return $this->belongsToMany(CompetitionModel::class, 'competition_skills', 'skill_id', 'competition_id')
-            ->withPivot('importance_level')
+        return $this->hasManyThrough(
+            CompetitionModel::class,
+            SubCompetitionModel::class,
+            'skill_id', 
+            'id', 
+            'id', 
+            'competition_id' 
+        )->distinct()
+          ->join('sub_competition_skills', 'sub_competition_skills.skill_id', '=', 'skills.id')
+          ->join('sub_competitions', 'sub_competitions.id', '=', 'sub_competition_skills.sub_competition_id')
+          ->where('skills.id', '=', $this->id);
+    }
+    
+    public function subCompetitions()
+    {
+        return $this->belongsToMany(SubCompetitionModel::class, 'sub_competition_skills', 'skill_id', 'sub_competition_id')
+            ->withPivot('importance_level', 'weight_value', 'criterion_type', 'ahp_priority')
             ->withTimestamps();
     }
 } 

@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         setupAddUserForm();
+        setupRoleFieldsVisibility();
         attachEditButtonListeners();
         attachShowButtonListeners();
     }
@@ -574,70 +575,89 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fetches user data by ID and populates the edit user form.
     function loadUserForEdit(userId) {
-        fetch(`${userRoutes.index}/${userId}/details`)
-            .then(response => response.json())
-            .then(response => {
-                if (!response.success) {
-                    throw new Error('Error fetching user details');
-                }
-                
-                const userData = response.data;
-                const editForm = document.getElementById('edit-user-form');
-                
-                resetForm(editForm);
-                
-                editForm.querySelector('#edit-name').value = userData.name;
-                editForm.querySelector('#edit-email').value = userData.email;
-                
-                const levelSelect = editForm.querySelector('#edit-level-id');
-                if (levelSelect) {
-                    if (levelSelect.tagName === 'SELECT') {
-                        Array.from(levelSelect.options).forEach(option => {
-                            option.selected = option.value == userData.level_id;
-                        });
-                    } 
-                    else {
-                        const hiddenInput = editForm.querySelector('input[name="level_id"]');
-                        if (hiddenInput) {
-                            hiddenInput.value = userData.level_id;
-                        }
-                        
-                        const displayElement = levelSelect.querySelector('.selected-option') || 
-                                             levelSelect.nextElementSibling.querySelector('.selected-option');
-                        if (displayElement) {
-                            displayElement.textContent = Array.from(document.querySelectorAll('#edit-level-id option'))
-                                .find(opt => opt.value == userData.level_id)?.textContent || userData.role;
-                        }
-                    }
-                }
-                
-                editForm.setAttribute('action', `${userRoutes.index}/${userData.id}`);
-                
-                const idField = editForm.querySelector('input[name="user_id"]');
-                if (idField) {
-                    idField.value = userData.id;
-                }
-                
-                const passwordToggle = document.getElementById('update-password-toggle');
-                const passwordFields = document.getElementById('password-fields');
-                if (passwordToggle && passwordFields) {
-                    passwordToggle.checked = false;
-                    passwordFields.classList.add('hidden');
-                }
-                
-                const currentPhotoPreview = document.getElementById('current-photo-preview');
-                if (currentPhotoPreview) {
-                    currentPhotoPreview.src = userData.photo || defaultAvatarUrl;
-                }
-                
-                if (window.editUserModal) {
-                    window.editUserModal.classList.remove('hidden');
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching user details:', error);
-                alert('Error fetching user details: ' + error.message);
-            });
+        if (!userId) return;
+        
+        const editForm = document.getElementById('edit-user-form');
+        const editUserIdField = document.getElementById('edit-user-id');
+        
+        if (!editForm || !editUserIdField) return;
+        
+        fetch(`${userRoutes.index}/${userId}/details`, {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to load user details');
+            }
+            
+            const user = data.data;
+            
+            // Set the user ID and display the edit modal
+            editUserIdField.value = user.id;
+            
+            // Set the form action with the correct user ID
+            editForm.setAttribute('action', `${userRoutes.index}/${user.id}`);
+            
+            // Populate form fields
+            document.getElementById('edit-name').value = user.name || '';
+            document.getElementById('edit-email').value = user.email || '';
+            
+            // Set role
+            const levelIdSelect = document.getElementById('edit-level-id');
+            if (levelIdSelect) {
+                levelIdSelect.value = user.level_id || '';
+            }
+            
+            // Set program studi if available
+            const programStudiSelect = document.getElementById('edit-program-studi-id');
+            if (programStudiSelect && user.program_studi_id) {
+                programStudiSelect.value = user.program_studi_id;
+            }
+            
+            // Set NIM or NIP based on role
+            if (user.nim) {
+                document.getElementById('edit-nim').value = user.nim;
+            }
+            
+            if (user.nip) {
+                document.getElementById('edit-nip').value = user.nip;
+            }
+            
+            // Show/hide fields based on role
+            const roleCode = user.role_code;
+            const studentFields = document.querySelectorAll('#edit-user-form .student-field');
+            const lecturerFields = document.querySelectorAll('#edit-user-form .lecturer-field');
+            
+            // Hide all role-specific fields first
+            studentFields.forEach(field => field.style.display = 'none');
+            lecturerFields.forEach(field => field.style.display = 'none');
+            
+            // Show fields based on role
+            if (roleCode === 'MHS') {
+                studentFields.forEach(field => field.style.display = 'block');
+            } else if (roleCode === 'DSN') {
+                lecturerFields.forEach(field => field.style.display = 'block');
+            }
+            
+            // Show profile photo
+            const photoPreview = document.getElementById('current-photo-preview');
+            if (photoPreview) {
+                photoPreview.src = user.photo || defaultAvatarUrl;
+            }
+            
+            // Show the edit modal
+            window.editUserModal.classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error loading user for edit:', error);
+            showNotification(error.message || 'Gagal memuat data pengguna. Silakan coba lagi.', 'error');
+        });
     }
 
     // Fetches user data by ID and populates the show user detail modal.
@@ -654,12 +674,54 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 document.getElementById('show-id').textContent = userData.id;
                 document.getElementById('show-name').textContent = userData.name;
-                document.getElementById('show-email').textContent = userData.email;
-                document.getElementById('show-created-at').textContent = userData.created_at;
+                document.getElementById('show-email').textContent = userData.email || '-';
+                document.getElementById('show-role').textContent = userData.role ? userData.role.charAt(0).toUpperCase() + userData.role.slice(1) : '-';
+                document.getElementById('show-created-at').textContent = userData.created_at ? new Date(userData.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+                document.getElementById('show-user-updated-at').textContent = userData.updated_at ? new Date(userData.updated_at).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : '-';
+                
+                // Handle program studi display
+                if (userData.program_studi_id) {
+                    // Fetch program studi name using the JSON endpoint
+                    fetch(`/admin/programs/${userData.program_studi_id}/json`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(programData => {
+                        if (programData.success && programData.data) {
+                            document.getElementById('show-program-studi').textContent = 
+                                programData.data.name + ' (' + programData.data.code + ')';
+                        } else {
+                            document.getElementById('show-program-studi').textContent = 'Program Studi #' + userData.program_studi_id;
+                        }
+                    })
+                    .catch(() => {
+                        document.getElementById('show-program-studi').textContent = 'Program Studi #' + userData.program_studi_id;
+                    });
+                } else {
+                    document.getElementById('show-program-studi').textContent = '-';
+                }
+                
+                // Handle NIM/NIP display based on role
+                const nimContainer = document.getElementById('nim-container');
+                const nipContainer = document.getElementById('nip-container');
+                
+                // Hide both containers initially
+                if (nimContainer) nimContainer.style.display = 'none';
+                if (nipContainer) nipContainer.style.display = 'none';
+                
+                // Show the appropriate container based on role_code
+                if (userData.role_code === 'MHS' && nimContainer) {
+                    nimContainer.style.display = 'block';
+                    document.getElementById('show-nim').textContent = userData.nim || '-';
+                } else if (userData.role_code === 'DSN' && nipContainer) {
+                    nipContainer.style.display = 'block';
+                    document.getElementById('show-nip').textContent = userData.nip || '-';
+                }
                 
                 const roleElement = document.getElementById('show-role');
-                roleElement.textContent = userData.role;
-                
                 if (userData.role_code === 'admin') {
                     roleElement.className = 'px-3 py-1 text-sm font-semibold rounded-full bg-purple-100 text-purple-800';
                 } else if (userData.role_code === 'user') {
@@ -1093,7 +1155,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     formData.append('_token', csrfToken);
                 }
                 
-                const action = editUserForm.getAttribute('action');
+                const userId = document.getElementById('edit-user-id').value;
+                const action = editUserForm.getAttribute('action') || `${userRoutes.index}/${userId}`;
                 
                 const response = await fetch(action, {
                     method: 'POST', 
@@ -1196,6 +1259,55 @@ document.addEventListener('DOMContentLoaded', function() {
                     showNotification('Terjadi kesalahan saat menghapus pengguna.', 'error');
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalButtonText;
+                }
+            });
+        }
+    }
+
+    // Handle showing/hiding NIM and NIP fields based on selected role
+    function setupRoleFieldsVisibility() {
+        // For Add User form
+        const addLevelSelect = document.getElementById('add-level-id');
+        if (addLevelSelect) {
+            addLevelSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const levelText = selectedOption.text.toLowerCase();
+                
+                const studentFields = document.querySelectorAll('.student-field');
+                const lecturerFields = document.querySelectorAll('.lecturer-field');
+                
+                // Hide all role-specific fields first
+                studentFields.forEach(field => field.style.display = 'none');
+                lecturerFields.forEach(field => field.style.display = 'none');
+                
+                // Show fields based on selected role
+                if (levelText.includes('mahasiswa')) {
+                    studentFields.forEach(field => field.style.display = 'block');
+                } else if (levelText.includes('dosen')) {
+                    lecturerFields.forEach(field => field.style.display = 'block');
+                }
+            });
+        }
+        
+        // For Edit User form
+        const editLevelSelect = document.getElementById('edit-level-id');
+        if (editLevelSelect) {
+            editLevelSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const levelText = selectedOption.text.toLowerCase();
+                
+                const studentFields = document.querySelectorAll('#edit-user-form .student-field');
+                const lecturerFields = document.querySelectorAll('#edit-user-form .lecturer-field');
+                
+                // Hide all role-specific fields first
+                studentFields.forEach(field => field.style.display = 'none');
+                lecturerFields.forEach(field => field.style.display = 'none');
+                
+                // Show fields based on selected role
+                if (levelText.includes('mahasiswa')) {
+                    studentFields.forEach(field => field.style.display = 'block');
+                } else if (levelText.includes('dosen')) {
+                    lecturerFields.forEach(field => field.style.display = 'block');
                 }
             });
         }

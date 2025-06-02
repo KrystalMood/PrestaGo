@@ -1,6 +1,6 @@
 @component('layouts.app', ['title' => $title ?? 'Authentication', 'bodyClass' => 'h-[100dvh] flex flex-col justify-center items-center bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden'])
-    <div class="w-full sm:max-w-4xl bg-white shadow-custom overflow-hidden sm:rounded-lg grid grid-cols-1 md:grid-cols-2 max-h-[90dvh]">
-        <div class="hidden md:flex p-4 md:p-6 bg-gray-100 flex-col justify-start border-r border-gray-200 overflow-y-auto">
+    <div class="w-full sm:max-w-4xl bg-white shadow-custom overflow-hidden sm:rounded-lg grid grid-cols-1 md:grid-cols-2">
+        <div class="hidden md:flex p-4 md:p-6 bg-gray-100 flex-col justify-start border-r border-gray-200">
             <div class="flex items-center mb-4">
                 <img src="{{ asset('images/logo.png') }}" alt="Logo Polinema" class="w-10 h-10 mr-3">
                 <span class="text-xl font-bold text-gray-800">{{ config('app.name') }}</span>
@@ -67,3 +67,5 @@
         &copy; {{ date('Y') }} Politeknik Negeri Malang. Hak Cipta Dilindungi.
     </div>
 @endcomponent
+
+

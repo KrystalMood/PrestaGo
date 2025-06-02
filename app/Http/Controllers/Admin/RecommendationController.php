@@ -13,12 +13,23 @@ use App\Models\SkillModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Services\RecommendationService;
+use App\Models\Competition;
+use App\Models\ProgramStudi;
+use App\Models\Recommendation;
 
 class RecommendationController extends Controller
 {
+    protected $recommendationService;
+    
+    public function __construct(RecommendationService $recommendationService)
+    {
+        $this->recommendationService = $recommendationService;
+    }
+
     public function index(Request $request)
     {
-        $query = RecommendationModel::with(['user', 'user.program_studi', 'competition'])
+        $query = RecommendationModel::with(['user', 'user.programStudi', 'competition'])
             ->orderBy('created_at', 'desc');
             
         if ($request->has('search') && $request->search) {
@@ -118,7 +129,7 @@ class RecommendationController extends Controller
         $recommendation = RecommendationModel::with([
             'user', 
             'user.skills', 
-            'user.program_studi', 
+            'user.programStudi', 
             'competition',
             'competition.skills'
         ])->findOrFail($id);
@@ -173,24 +184,16 @@ class RecommendationController extends Controller
 
     public function automatic()
     {
-        $competitions = CompetitionModel::where(function($query) {
-            $query->where('status', 'upcoming')
-                  ->orWhere('status', 'active');
-        })->orderBy('name')->get();
-        
-        $programs = StudyProgramModel::orderBy('name')->get();
+        $competitions = CompetitionModel::all();
+            
+        $programs = StudyProgramModel::all();
         
         $latest_recommendations = RecommendationModel::with(['user', 'competition'])
-            ->where('recommended_by', 'system')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
-            
-        return view('admin.recommendations.automatic', compact(
-            'competitions', 
-            'programs', 
-            'latest_recommendations'
-        ));
+        
+        return view('admin.recommendations.automatic', compact('competitions', 'programs', 'latest_recommendations'));
     }
 
     public function generate(Request $request)
@@ -199,89 +202,38 @@ class RecommendationController extends Controller
             'competition_id' => 'nullable|exists:competitions,id',
             'program_studi_id' => 'nullable|exists:study_programs,id',
             'threshold' => 'required|numeric|min:0|max:100',
-            'max_recommendations' => 'required|numeric|min:1|max:10',
-            'weight_skills' => 'required|numeric|min:0|max:100',
-            'weight_achievements' => 'required|numeric|min:0|max:100',
-            'weight_academic' => 'required|numeric|min:0|max:100',
-            'weight_experience' => 'required|numeric|min:0|max:100',
+            'max_recommendations' => 'required|integer|min:1|max:10',
+            'dss_method' => 'required|in:ahp',
+            'ahp_consistency_threshold' => 'required|numeric|min:0|max:0.2',
+            'ahp_priority_skills' => 'required|integer|min:1|max:9',
+            'ahp_priority_achievements' => 'required|integer|min:1|max:9',
+            'ahp_priority_interests' => 'required|integer|min:1|max:9',
         ]);
         
-        $totalWeight = $validated['weight_skills'] + $validated['weight_achievements'] + 
-                      $validated['weight_academic'] + $validated['weight_experience'];
-                      
-        if ($totalWeight != 100) {
-            return back()->with('error', 'Bobot faktor harus berjumlah 100%!');
-        }
-        
-        $studentsQuery = UserModel::whereHas('level', function($query) {
-            $query->where('level_kode', 'MHS');
-        });
-        
-        if (!empty($validated['program_studi_id'])) {
-            $studentsQuery->where('program_studi_id', $validated['program_studi_id']);
-        }
-        
-        $students = $studentsQuery->get();
-        
-        $competitionsQuery = CompetitionModel::where(function($query) {
-            $query->where('status', 'upcoming')
-                  ->orWhere('status', 'active');
-        });
-        
-        if (!empty($validated['competition_id'])) {
-            $competitionsQuery->where('id', $validated['competition_id']);
-        }
-        
-        $competitions = $competitionsQuery->get();
-        
-        $generatedRecommendations = [];
-        
-        foreach ($students as $student) {
-            $studentRecommendations = [];
+        try {
+            DB::beginTransaction();
             
-            foreach ($competitions as $competition) {
-                $matchFactors = $this->calculateMatchFactors($student, $competition);
-                
-                $weightedScore = 
-                    ($matchFactors['skills'] * $validated['weight_skills'] / 100) +
-                    ($matchFactors['achievements'] * $validated['weight_achievements'] / 100) +
-                    ($matchFactors['academic'] * $validated['weight_academic'] / 100) +
-                    ($matchFactors['experience'] * $validated['weight_experience'] / 100);
-                
-                if ($weightedScore >= $validated['threshold']) {
-                    $studentRecommendations[] = [
-                        'student_id' => $student->id,
-                        'student_name' => $student->name,
-                        'student_nim' => $student->nim ?? 'N/A',
-                        'program_name' => $student->program_studi->name ?? 'Program Studi tidak tersedia',
-                        'competition_id' => $competition->id,
-                        'competition_name' => $competition->name,
-                        'competition_organizer' => $competition->organizer,
-                        'competition_level' => $competition->level,
-                        'match_score' => round($weightedScore),
-                        'factors' => $matchFactors
-                    ];
-                }
+            // Generate recommendations using the service
+            $recommendations = $this->recommendationService->generateRecommendations($validated);
+            
+            // Save all recommendations
+            foreach ($recommendations as $recommendation) {
+                $recommendation->save();
             }
             
-            if (!empty($studentRecommendations)) {
-                usort($studentRecommendations, function($a, $b) {
-                    return $b['match_score'] - $a['match_score'];
-                });
+            DB::commit();
+            
+            return redirect()
+                ->route('admin.recommendations.index')
+                ->with('success', 'Berhasil menghasilkan ' . $recommendations->count() . ' rekomendasi baru.');
                 
-                $studentRecommendations = array_slice($studentRecommendations, 0, $validated['max_recommendations']);
-                $generatedRecommendations = array_merge($generatedRecommendations, $studentRecommendations);
-            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menghasilkan rekomendasi: ' . $e->getMessage());
         }
-        
-        usort($generatedRecommendations, function($a, $b) {
-            return $b['match_score'] - $a['match_score'];
-        });
-        
-        $request->session()->put('generated_recommendations', $generatedRecommendations);
-        
-        return redirect()->route('admin.recommendations.automatic')
-            ->with('success', count($generatedRecommendations) . ' rekomendasi telah dihasilkan!');
     }
 
     public function saveGenerated(Request $request)
@@ -464,10 +416,6 @@ class RecommendationController extends Controller
             
             foreach ($achievements as $achievement) {
                 $relevance = 0.5; 
-                
-                if (isset($achievement->type) && isset($competition->type) && $achievement->type === $competition->type) {
-                    $relevance = 1.0; 
-                }
                 
                 $levelMultiplier = 1.0;
                 

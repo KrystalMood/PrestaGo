@@ -62,15 +62,6 @@
             <a class="text-xs text-brand-light hover:underline" href="">
                 {{ __('Lupa Kata Sandi?') }}
             </a>
-
-            @if (Route::has('register'))
-                <span class="text-xs text-gray-500">
-                    Belum punya akun?
-                    <a href="{{ route('register') }}" class="text-brand-light hover:underline font-medium">
-                        Daftar
-                    </a>
-                </span>
-            @endif
         </div>
     </form>
 @endsection

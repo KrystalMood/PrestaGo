@@ -16,15 +16,13 @@ return new class extends Migration
             $table->string('name', 255);
             $table->text('description');
             $table->string('organizer', 255);
-            $table->string('level', 50);
-            $table->string('type', 50);
+            $table->string('level');
             $table->date('start_date');
             $table->date('end_date');
             $table->date('registration_start');
             $table->date('registration_end');
             $table->date('competition_date');
             $table->string('registration_link', 255)->nullable();
-            $table->text('requirements');
             $table->string('status', 20);
             $table->boolean('verified')->default(false);
             $table->unsignedBigInteger('added_by');

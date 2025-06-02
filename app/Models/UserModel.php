@@ -17,6 +17,9 @@ class UserModel extends Authenticatable
         'photo',
         'level_id',
         'password',
+        'nim',
+        'nip',
+        'program_studi_id',
     ];
 
     protected $hidden = [
@@ -47,5 +50,29 @@ class UserModel extends Authenticatable
     public function getRole()
     {
         return $this->level->level_kode;
+    }
+    
+    public function skills()
+    {
+        return $this->belongsToMany(SkillModel::class, 'user_skills', 'user_id', 'skill_id')
+                    ->withPivot('proficiency_level')
+                    ->withTimestamps();
+    }
+    
+    public function interests()
+    {
+        return $this->belongsToMany(InterestAreaModel::class, 'user_interests', 'user_id', 'interest_area_id')
+                    ->withPivot('interest_level', 'normalized_score', 'self_assessment')
+                    ->withTimestamps();
+    }
+
+    public function programStudi()
+    {
+        return $this->belongsTo(StudyProgramModel::class, 'program_studi_id', 'id');
+    }
+
+    public function internships()
+    {
+        return $this->hasMany(Internship::class, 'user_id', 'id');
     }
 }

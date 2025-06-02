@@ -73,19 +73,6 @@
 
                         <div class="form-group">
                             <x-ui.form-select
-                                name="category_id"
-                                id="add-category"
-                                label="Kategori"
-                                :options="collect($categories ?? [])->pluck('name', 'id')->toArray()"
-                                :selected="''"
-                                required
-                                placeholder="Pilih Kategori"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="category-id-error"></p>
-                        </div>
-
-                        <div class="form-group">
-                            <x-ui.form-select
                                 name="period_id"
                                 id="add-period"
                                 label="Periode"
@@ -107,7 +94,8 @@
                                     'national' => 'Nasional',
                                     'regional' => 'Regional',
                                     'provincial' => 'Provinsi',
-                                    'university' => 'Universitas'
+                                    'university' => 'Universitas',
+                                    'internal' => 'Internal'
                                 ]"
                                 :selected="''"
                                 required
@@ -116,40 +104,7 @@
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="level-error"></p>
                         </div>
 
-                        <div class="form-group">
-                            <x-ui.form-select
-                                name="type"
-                                id="add-type"
-                                label="Tipe Kompetisi"
-                                :options="[
-                                    'individual' => 'Individual',
-                                    'team' => 'Tim',
-                                    'both' => 'Keduanya'
-                                ]"
-                                :selected="'individual'"
-                                required
-                                placeholder="Pilih Tipe Kompetisi"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="type-error"></p>
-                        </div>
-
-                        <div class="form-group">
-                            <x-ui.form-select
-                                name="status"
-                                id="add-status"
-                                label="Status"
-                                :options="[
-                                    'upcoming' => 'Akan Datang',
-                                    'active' => 'Aktif',
-                                    'completed' => 'Selesai',
-                                    'cancelled' => 'Dibatalkan'
-                                ]"
-                                :selected="''"
-                                required
-                                placeholder="Pilih Status"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="status-error"></p>
-                        </div>
+                        <!-- Status field moved to step 2 -->
                     </div>
                 </div>
 
@@ -209,16 +164,29 @@
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="competition-date-error"></p>
                         </div>
 
+                        <!-- Status field moved from step 1 to step 2 -->
+                        <div class="form-group md:col-span-2">
+                            <x-ui.form-select
+                                name="status"
+                                id="add-status"
+                                label="Status"
+                                :options="[
+                                    'upcoming' => 'Akan Datang',
+                                    'active' => 'Aktif',
+                                    'completed' => 'Selesai',
+                                    'cancelled' => 'Dibatalkan'
+                                ]"
+                                :selected="''"
+                                required
+                                placeholder="Pilih Status"
+                            />
+                            <p class="text-sm text-red-600 error-message hidden mt-1" id="status-error"></p>
+                        </div>
+
                         <div class="form-group md:col-span-2">
                             <label for="add-description" class="block text-sm font-medium text-gray-700">Deskripsi</label>
                             <textarea id="add-description" name="description" rows="4" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Masukkan deskripsi kompetisi"></textarea>
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="description-error"></p>
-                        </div>
-
-                        <div class="form-group md:col-span-2">
-                            <label for="add-requirements" class="block text-sm font-medium text-gray-700">Persyaratan</label>
-                            <textarea id="add-requirements" name="requirements" rows="4" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Masukkan persyaratan kompetisi"></textarea>
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="requirements-error"></p>
                         </div>
                     </div>
                 </div>

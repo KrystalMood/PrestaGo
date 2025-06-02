@@ -26,10 +26,6 @@ function initializeModals() {
         document.getElementById('show-period-modal').classList.add('hidden');
     });
 
-    document.getElementById('close-toggle-status')?.addEventListener('click', function() {
-        document.getElementById('toggle-status-modal').classList.add('hidden');
-    });
-
     document.getElementById('cancel-add-period')?.addEventListener('click', function() {
         document.getElementById('add-period-modal').classList.add('hidden');
     });
@@ -40,10 +36,6 @@ function initializeModals() {
 
     document.getElementById('cancel-show-period')?.addEventListener('click', function() {
         document.getElementById('show-period-modal').classList.add('hidden');
-    });
-
-    document.getElementById('cancel-toggle-status')?.addEventListener('click', function() {
-        document.getElementById('toggle-status-modal').classList.add('hidden');
     });
 
     const modals = document.querySelectorAll('.fixed.inset-0');
@@ -86,11 +78,120 @@ function initializeFormHandlers() {
     }
 }
 
+// Function to check if a date range overlaps with existing periods
+async function checkPeriodOverlap(startDate, endDate, periodId = null) {
+    try {
+        const response = await fetch('/admin/periods', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch periods');
+        }
+        
+        const data = await response.json();
+        if (!data.table) {
+            return null; // No periods to check against
+        }
+        
+        // Parse the HTML table to extract period data
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data.table;
+        
+        // Extract period data from the table rows
+        const rows = tempDiv.querySelectorAll('tbody tr');
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        
+        for (const row of rows) {
+            const idCell = row.querySelector('td:first-child');
+            const nameCell = row.querySelector('td:nth-child(2)');
+            const dateCell = row.querySelector('td:nth-child(3)');
+            
+            if (idCell && dateCell) {
+                const id = idCell.textContent.trim();
+                const name = nameCell.textContent.trim();
+                
+                // Skip checking against the current period (for edit mode)
+                if (periodId && id === periodId.toString()) {
+                    continue;
+                }
+                
+                const dateRange = dateCell.textContent.trim();
+                const [startDateStr, endDateStr] = dateRange.split(' - ');
+                
+                // Parse dates (assuming format is DD MMM YYYY)
+                const existingStartDate = parseCustomDate(startDateStr);
+                const existingEndDate = parseCustomDate(endDateStr);
+                
+                if (!existingStartDate || !existingEndDate) continue;
+                
+                // Check for overlap
+                const hasOverlap = (
+                    // New period starts during existing period
+                    (startDateObj >= existingStartDate && startDateObj <= existingEndDate) ||
+                    // New period ends during existing period
+                    (endDateObj >= existingStartDate && endDateObj <= existingEndDate) ||
+                    // New period completely contains existing period
+                    (startDateObj <= existingStartDate && endDateObj >= existingEndDate)
+                );
+                
+                if (hasOverlap) {
+                    return { id, name, startDate: startDateStr, endDate: endDateStr };
+                }
+            }
+        }
+        
+        return null; // No overlap found
+    } catch (error) {
+        console.error('Error checking period overlap:', error);
+        return null; // Return null on error to allow form submission to proceed
+    }
+}
+
+// Helper function to parse date in DD MMM YYYY format
+function parseCustomDate(dateStr) {
+    const parts = dateStr.trim().split(' ');
+    if (parts.length !== 3) return null;
+    
+    const day = parseInt(parts[0], 10);
+    const monthMap = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11,
+        'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
+        'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+    };
+    
+    const month = monthMap[parts[1]];
+    const year = parseInt(parts[2], 10);
+    
+    if (isNaN(day) || month === undefined || isNaN(year)) return null;
+    
+    return new Date(year, month, day);
+}
+
 // Function to handle the submission of the add period form
 async function submitAddPeriodForm() {
     clearErrors('add-period-error');
     const form = document.getElementById('add-period-form');
     const formData = new FormData(form);
+    
+    // Get start and end dates for overlap check
+    const startDate = document.getElementById('add-start-date').value;
+    const endDate = document.getElementById('add-end-date').value;
+    
+    // Check for date overlap before submitting
+    const overlappingPeriod = await checkPeriodOverlap(startDate, endDate);
+    if (overlappingPeriod) {
+        displayErrors('add-period-error', 'add-period-error-count', 'add-period-error-list', {
+            'date_overlap': [`Periode baru tidak dapat bertabrakan dengan periode yang sudah ada. Periode "${overlappingPeriod.name}" sudah ada pada rentang tanggal ${overlappingPeriod.startDate} - ${overlappingPeriod.endDate}.`]
+        });
+        return;
+    }
 
     try {
         const response = await fetch(window.periodRoutes.store, {
@@ -126,6 +227,19 @@ async function submitEditPeriodForm() {
     const form = document.getElementById('edit-period-form');
     const formData = new FormData(form);
     const periodId = document.getElementById('edit-period-id').value;
+    
+    // Get start and end dates for overlap check
+    const startDate = document.getElementById('edit-start-date').value;
+    const endDate = document.getElementById('edit-end-date').value;
+    
+    // Check for date overlap before submitting
+    const overlappingPeriod = await checkPeriodOverlap(startDate, endDate, periodId);
+    if (overlappingPeriod) {
+        displayErrors('edit-period-error', 'edit-period-error-count', 'edit-period-error-list', {
+            'date_overlap': [`Periode tidak dapat bertabrakan dengan periode yang sudah ada. Periode "${overlappingPeriod.name}" sudah ada pada rentang tanggal ${overlappingPeriod.startDate} - ${overlappingPeriod.endDate}.`]
+        });
+        return;
+    }
 
     try {
         const response = await fetch(window.periodRoutes.update(periodId), {
@@ -283,32 +397,6 @@ function addTableButtonListeners() {
             document.dispatchEvent(new CustomEvent('delete-modal:show'));
         });
     });
-
-    document.querySelectorAll('.toggle-status-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const periodId = this.getAttribute('data-id');
-            const currentStatus = this.getAttribute('data-status');
-            const periodName = this.getAttribute('data-name');
-            
-            const modal = document.getElementById('toggle-status-modal');
-            modal.setAttribute('data-period-id', periodId);
-            
-            const statusText = currentStatus === '1' ? 'nonaktifkan' : 'aktifkan';
-            document.getElementById('period-status-action').textContent = statusText;
-            document.getElementById('period-status-name').textContent = periodName;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            const confirmBtn = document.getElementById('confirm-toggle-status');
-            const newConfirmBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-            
-            newConfirmBtn.addEventListener('click', function() {
-                togglePeriodStatus(periodId);
-            });
-        });
-    });
 }
 
 // Function to load and display the details of a specific period in a modal
@@ -316,7 +404,6 @@ async function loadAndShowPeriodDetails(periodId) {
     try {
         const response = await fetch(window.periodRoutes.show(periodId), {
             headers: {
-                'X-CSRF-TOKEN': window.csrfToken,
                 'Accept': 'application/json'
             }
         });
@@ -327,17 +414,22 @@ async function loadAndShowPeriodDetails(periodId) {
 
         const period = await response.json();
         
-        console.log('Period data received:', period);
+        console.log('Period data received (show):', period);
 
         document.getElementById('period-detail-name').textContent = period.name || '-';
-        document.getElementById('period-detail-start-date').textContent = period.start_date_formatted || period.formatted_start_date || formatDateDisplay(period.start_date) || '-';
-        document.getElementById('period-detail-end-date').textContent = period.end_date_formatted || period.formatted_end_date || formatDateDisplay(period.end_date) || '-';
-        document.getElementById('period-detail-status').textContent = period.is_active ? 'Aktif' : 'Tidak Aktif';
-        document.getElementById('period-detail-status').className = period.is_active 
-            ? 'px-2 py-1 text-xs rounded-full bg-green-100 text-green-800' 
-            : 'px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800';
-        document.getElementById('period-detail-description').textContent = period.description || '-';
+        document.getElementById('period-detail-start-date').textContent = period.start_date ? formatDate(period.start_date) : '-';
+        document.getElementById('period-detail-end-date').textContent = period.end_date ? formatDate(period.end_date) : '-';
+        document.getElementById('show-period-description').textContent = period.description || 'Tidak ada keterangan.';
 
+        const statusElement = document.getElementById('period-detail-status');
+        statusElement.textContent = period.status === 'active' ? 'Aktif' : (period.status === 'upcoming' ? 'Akan Datang' : 'Selesai');
+        statusElement.className = `px-2 py-1 text-xs rounded-full ${
+            period.status === 'active' ? 'bg-green-100 text-green-800' :
+            (period.status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')
+        }`;
+        
+        document.getElementById('show-period-updated-at').textContent = period.updated_at ? new Date(period.updated_at).toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }) : '-';
+        
         document.getElementById('show-period-modal').classList.remove('hidden');
         document.getElementById('show-period-modal').classList.add('flex');
 
@@ -347,22 +439,18 @@ async function loadAndShowPeriodDetails(periodId) {
     }
 }
 
-// Function to format a date string for display purposes (DD/MM/YYYY)
-function formatDateDisplay(dateString) {
-    if (!dateString) return null;
-    
+// Function to format a date string for display purposes (DD MMMM YYYY)
+function formatDate(dateString) {
+    if (!dateString) return '-';
     try {
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return null;
-        
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        
-        return `${day}/${month}/${year}`;
-    } catch (error) {
-        console.error('Error formatting date for display:', error);
-        return null;
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    } catch (e) {
+        console.error('Error formatting date:', e);
+        return dateString; // Return original if formatting fails
     }
 }
 
@@ -383,14 +471,13 @@ async function loadAndShowPeriodEdit(periodId) {
         }
 
         const period = await response.json();
+        console.log('Period data received (edit):', period);
 
         document.getElementById('edit-period-id').value = period.id;
         document.getElementById('edit-name').value = period.name || '';
-        document.getElementById('edit-start-date').value = formatDateForInput(period.start_date);
-        document.getElementById('edit-end-date').value = formatDateForInput(period.end_date);
-        document.getElementById('edit-is-active').checked = period.is_active ? true : false;
-        document.getElementById('edit-description').value = period.description || '';
-
+        document.getElementById('edit-start-date').value = formatDateForInput(period.start_date_raw);
+        document.getElementById('edit-end-date').value = formatDateForInput(period.end_date_raw);
+        
         document.getElementById('edit-period-modal').classList.remove('hidden');
         document.getElementById('edit-period-modal').classList.add('flex');
 
@@ -473,30 +560,4 @@ function clearErrors(errorContainerId) {
     document.querySelectorAll('input, select, textarea').forEach(element => {
         element.classList.remove('border-red-500');
     });
-}
-
-// Function to toggle the active status of a period
-async function togglePeriodStatus(periodId) {
-    try {
-        const response = await fetch(window.periodRoutes.toggleStatus(periodId), {
-            method: 'PATCH',
-            headers: {
-                'X-CSRF-TOKEN': window.csrfToken,
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const result = await response.json();
-            throw new Error(result.message || 'Failed to update period status');
-        }
-
-        await refreshTable();
-        document.getElementById('toggle-status-modal').classList.add('hidden');
-        showNotification('Status periode berhasil diperbarui', 'success');
-    } catch (error) {
-        console.error('Error toggling period status:', error);
-        showNotification('Terjadi kesalahan saat mengubah status periode', 'error');
-    }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Auth\LoginUserAction;
-use App\Actions\Auth\RegisterUserAction;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,16 +11,13 @@ class AuthController extends Controller
 {
     protected $authService;
     protected $loginAction;
-    protected $registerAction;
 
     public function __construct(
         AuthService $authService,
-        LoginUserAction $loginAction,
-        RegisterUserAction $registerAction
+        LoginUserAction $loginAction
     ) {
         $this->authService = $authService;
         $this->loginAction = $loginAction;
-        $this->registerAction = $registerAction;
     }
 
     public function login()
@@ -45,26 +41,6 @@ class AuthController extends Controller
             ->with('error', 'Login gagal! Silakan periksa kembali email dan kata sandi Anda.');
     }
 
-    public function register()
-    {
-        return view('auth.register');
-    }
-
-    public function postregister(Request $request)
-    {
-        $result = $this->registerAction->execute($request);
-
-        if ($result['success']) {
-            return redirect()->route('login')
-                ->with('success', 'Registrasi berhasil! Silakan masuk.');
-        }
-
-        return back()
-            ->withErrors($result['errors'] ?? ['email' => 'Registrasi gagal.'])
-            ->withInput($request->except('password'))
-            ->with('error', 'Registrasi Gagal');
-    }
-
     /**
      * Redirect user based on their role
      *
@@ -73,9 +49,19 @@ class AuthController extends Controller
      */
     protected function redirectBasedOnRole($user)
     {
-
+        $role = $user->getRole();
+        
+        switch ($role) {
+            case 'ADM':
                 return redirect()->route('admin.dashboard');
-
+            case 'MHS':
+                return redirect()->route('student.dashboard');
+            case 'DSN':
+                return redirect()->route('lecturer.dashboard');
+            default:
+                return redirect()->route('login')
+                    ->with('error', 'Akun Anda tidak memiliki peran yang valid. Silakan hubungi administrator.');
+        }
     }
 
     public function adminDashboard()
@@ -112,6 +98,12 @@ class AuthController extends Controller
         
         $newCompetitionsThisMonth = \App\Models\CompetitionModel::whereDate('created_at', '>=', now()->startOfMonth())->count();
 
+        // Ambil aktivitas terbaru dari database
+        $activities = \App\Services\ActivityService::getLatest(5);
+        
+        // Ambil data statistik prestasi dari database
+        $achievementStats = \App\Services\AchievementStatisticsService::getStatisticsData();
+
         $stats = [
             [
                 'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>',
@@ -139,17 +131,17 @@ class AuthController extends Controller
             ]
         ];
 
-        return view('admin.dashboard', compact('stats', 'totalUsers', 'newUsers', 'activeUsers'));
+        return view('admin.dashboard', compact('stats', 'totalUsers', 'newUsers', 'activeUsers', 'activities', 'achievementStats'));
     }
 
     public function studentDashboard()
     {
-        return view('Mahasiswa.dashboard');
+        return view('student.dashboard');
     }
 
     public function lecturerDashboard()
     {
-        return view('Dosen.dashboard');
+        return view('lecturer.dashboard');
     }
 
     public function logout(Request $request)

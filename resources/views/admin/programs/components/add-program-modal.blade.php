@@ -139,16 +139,6 @@
                                 <p class="text-sm text-red-600 error-message hidden mt-1" id="description-error"></p>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <x-ui.form-toggle
-                                name="is_active"
-                                id="add-is-active"
-                                label="Status Aktif"
-                                :checked="true"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="is-active-error"></p>
-                        </div>
                     </div>
                 </div>
 

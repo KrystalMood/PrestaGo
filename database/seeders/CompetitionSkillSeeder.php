@@ -8,14 +8,16 @@ use App\Models\CompetitionModel;
 use App\Models\SkillModel;
 use App\Models\CompetitionSkillModel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CompetitionSkillSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        if (!Schema::hasTable('competition_skills')) {
+            return;
+        }
+        
         DB::table('competition_skills')->truncate();
 
         $competitions = CompetitionModel::all();

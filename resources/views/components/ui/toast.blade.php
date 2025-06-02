@@ -29,19 +29,19 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         @if (session('success'))
-            window.toast.success("{{ session('success') }}");
+            window.toast.success({!! json_encode(session('success')) !!});
         @endif
         
         @if (session('error'))
-            window.toast.error("{{ session('error') }}");
+            window.toast.error({!! json_encode(session('error')) !!});
         @endif
         
         @if (session('info'))
-            window.toast.info("{{ session('info') }}");
+            window.toast.info({!! json_encode(session('info')) !!});
         @endif
         
         @if (session('warning'))
-            window.toast.warning("{{ session('warning') }}");
+            window.toast.warning({!! json_encode(session('warning')) !!});
         @endif
     });
 </script>

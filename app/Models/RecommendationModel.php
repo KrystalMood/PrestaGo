@@ -14,9 +14,22 @@ class RecommendationModel extends Model
     protected $fillable = [
         'user_id',
         'competition_id',
-        'recommendation_score',
+        'match_score',
         'status',
-        'notes',
+        'recommended_by',
+        'ahp_result_id',
+        'wp_result_id',
+        'recommendation_reason',
+        'notified',
+        'notified_at',
+        'match_factors'
+    ];
+    
+    protected $casts = [
+        'match_score' => 'float',
+        'notified' => 'boolean',
+        'notified_at' => 'datetime',
+        'match_factors' => 'json',
     ];
 
     public function user()
@@ -27,5 +40,15 @@ class RecommendationModel extends Model
     public function competition()
     {
         return $this->belongsTo(CompetitionModel::class, 'competition_id', 'id');
+    }
+    
+    public function ahpResult()
+    {
+        return $this->belongsTo(AHPResultModel::class, 'ahp_result_id');
+    }
+    
+    public function wpResult()
+    {
+        return $this->belongsTo(WPResultModel::class, 'wp_result_id');
     }
 } 

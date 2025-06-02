@@ -31,6 +31,7 @@ class VerificationController extends Controller
         $totalVerifications = VerificationModel::count();
         $pendingVerifications = VerificationModel::where('status', 'pending')->count();
         $approvedVerifications = VerificationModel::where('status', 'approved')->count();
+        $rejectedVerifications = VerificationModel::where('status', 'rejected')->count();
         
         if ($request->ajax()) {
             if ($request->has('ajax') && $request->ajax == 1) {
@@ -50,50 +51,47 @@ class VerificationController extends Controller
                     'totalVerifications' => $totalVerifications,
                     'pendingVerifications' => $pendingVerifications,
                     'approvedVerifications' => $approvedVerifications,
+                    'rejectedVerifications' => $rejectedVerifications,
                 ]
             ]);
         }
         
-        return view('admin.verification.index', compact('verifications', 'totalVerifications', 'pendingVerifications', 'approvedVerifications'));
+        $activeQueryStatus = $request->query('status', 'all');
+
+        return view('admin.verification.index', compact(
+            'verifications',
+            'totalVerifications',
+            'pendingVerifications',
+            'approvedVerifications',
+            'rejectedVerifications',
+            'activeQueryStatus'
+        ));
     }
 
     public function show($id)
     {
         try {
-            $verification = VerificationModel::with('user', 'documents')->findOrFail($id);
+            $verification = VerificationModel::with(['user', 'verifier', 'documents'])->findOrFail($id);
             
-            return response()->json([
-                'success' => true,
-                'verification' => [
-                    'id' => $verification->id,
-                    'user' => [
-                        'id' => $verification->user->id,
-                        'name' => $verification->user->name,
-                        'email' => $verification->user->email,
-                        'photo' => $verification->user->photo 
-                            ? asset('storage/' . $verification->user->photo) 
-                            : 'https://ui-avatars.com/api/?name=' . urlencode($verification->user->name) . '&background=4338ca&color=fff',
-                    ],
-                    'status' => $verification->status,
-                    'notes' => $verification->notes,
-                    'rejection_reason' => $verification->rejection_reason,
-                    'created_at' => $verification->created_at,
-                    'updated_at' => $verification->updated_at,
-                    'documents' => $verification->documents->map(function ($doc) {
-                        return [
-                            'id' => $doc->id,
-                            'name' => $doc->name,
-                            'path' => $doc->path,
-                            'url' => asset('storage/' . $doc->path)
-                        ];
-                    })
-                ]
-            ]);
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'verification' => $verification
+                ]);
+            }
+            
+            return view('admin.verification.show', compact('verification'));
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal memuat detail verifikasi: ' . $e->getMessage()
-            ], 500);
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Verification not found',
+                    'error' => $e->getMessage()
+                ], 404);
+            }
+            
+            return redirect()->route('admin.verification.index')
+                ->with('error', 'Verification not found');
         }
     }
 
@@ -154,12 +152,13 @@ class VerificationController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal memperbarui status verifikasi: ' . $e->getMessage()
+                    'message' => 'Terjadi kesalahan saat memperbarui verifikasi',
+                    'error' => $e->getMessage()
                 ], 500);
             }
             
-            return redirect()->route('admin.verification.show', $id)
-                ->with('error', 'Gagal memperbarui status verifikasi: ' . $e->getMessage());
+            return redirect()->route('admin.verification.index')
+                ->with('error', 'Terjadi kesalahan saat memperbarui verifikasi: ' . $e->getMessage());
         }
     }
 } 

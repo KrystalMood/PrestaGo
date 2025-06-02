@@ -15,22 +15,15 @@ class PeriodModel extends Model
         'name',
         'start_date',
         'end_date',
-        'is_active',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
-        'is_active' => 'boolean',
     ];
 
     public function competitions()
     {
         return $this->hasMany(CompetitionModel::class, 'period_id', 'id');
-    }
-
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
     }
 } 

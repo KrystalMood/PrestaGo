@@ -20,7 +20,6 @@
 
         <div class="mb-6">
             @include('admin.periods.components.page-header', [
-                'title' => 'Manajemen Periode',
                 'subtitle' => 'Halaman ini menampilkan daftar periode semester yang tersedia dan memungkinkan Anda untuk menambah, mengubah, atau menghapus data periode.',
             ])
         </div>
@@ -34,12 +33,6 @@
                     'key' => 'totalPeriods'
                 ],
                 [
-                    'title' => 'Periode Aktif',
-                    'value' => $activePeriods,
-                    'icon' => 'check-circle',
-                    'key' => 'activePeriods'
-                ],
-                [
                     'title' => 'Tahun Akademik',
                     'value' => date('Y') . '/' . (date('Y')+1),
                     'icon' => 'clock',
@@ -49,7 +42,7 @@
         @endphp
         
         <div class="mb-4">
-            @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
+            @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 2])
             @endcomponent
         </div>
 
@@ -72,13 +65,9 @@
         @component('admin.components.ui.search-and-filter', [
             'searchRoute' => route('admin.periods.index'),
             'searchPlaceholder' => 'Cari nama periode...',
-            'filterOptions' => [
-                ['value' => 'active', 'label' => 'Aktif'],
-                ['value' => 'inactive', 'label' => 'Tidak Aktif']
-            ],
-            'filterName' => 'status',
-            'filterLabel' => 'Semua Status',
-            'currentFilter' => request('status')
+            'filterName' => '',
+            'filterLabel' => '',
+            'currentFilter' => ''
         ])
         @endcomponent
 
@@ -99,7 +88,6 @@
     @include('admin.periods.components.edit-period-modal')
     @include('admin.periods.components.show-period-modal')
     @include('admin.periods.components.delete-period-modal')
-    @include('admin.periods.components.toggle-status-modal')
 
     <!-- JavaScript Variables and Setup -->
     <script>
@@ -109,7 +97,6 @@
             show: (id) => `{{ url('admin/periods') }}/${id}`,
             update: (id) => `{{ url('admin/periods') }}/${id}`,
             destroy: (id) => `{{ url('admin/periods') }}/${id}`,
-            toggleStatus: (id) => `{{ url('admin/periods') }}/${id}/toggle-status`
         };
         window.csrfToken = "{{ csrf_token() }}";
     </script>

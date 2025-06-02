@@ -95,5 +95,5 @@
     </script>
 
     <!-- Load External JS -->
-    @vite('resources/js/admin/competitions.js')
+    @vite(['resources/js/admin/competitions.js'])
 @endcomponent 

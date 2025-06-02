@@ -17,8 +17,18 @@ class AchievementVerificationController extends Controller
     {
         $query = AchievementModel::with(['user', 'verifier', 'attachments']);
         
+        $activeQueryStatus = 'pending';
+
         if ($request->has('status')) {
-            $query->where('status', $request->status);
+            $statusFromRequest = $request->status;
+            if ($statusFromRequest != 'all') {
+                $query->where('status', $statusFromRequest);
+                $activeQueryStatus = $statusFromRequest;
+            } else {
+                $activeQueryStatus = 'all';
+            }
+        } else {
+            $query->where('status', 'pending');
         }
         
         if ($request->has('type')) {
@@ -41,9 +51,9 @@ class AchievementVerificationController extends Controller
         }
         
         $total = AchievementModel::count();
-        $pending = AchievementModel::where('status', 'pending')->count();
-        $verified = AchievementModel::where('status', 'verified')->count();
-        $rejected = AchievementModel::where('status', 'rejected')->count();
+        $pending = AchievementModel::pending()->count();
+        $verified = AchievementModel::verified()->count();
+        $rejected = AchievementModel::rejected()->count();
         
         $stats = [
             [
@@ -71,16 +81,90 @@ class AchievementVerificationController extends Controller
         $categories = AchievementModel::select('type')->distinct()->pluck('type');
         $levels = AchievementModel::select('level')->distinct()->pluck('level');
         
-        // Get achievements with pagination
         $achievements = $query->orderBy('created_at', 'desc')->paginate(10);
         
-        return view('admin.verification.index', compact('achievements', 'stats', 'categories', 'levels'));
+        $totalVerifications = $total;
+        $pendingVerifications = $pending;
+        $approvedVerifications = $verified;
+        $rejectedVerifications = $rejected;
+        $verifications = $achievements;
+        
+        if ($request->ajax()) {
+            $tableHtml = view('admin.verification.components.tables', compact('verifications'))->render();
+            $paginationHtml = view('admin.components.tables.pagination', ['data' => $verifications])->render();
+            
+            return response()->json([
+                'tableHtml' => $tableHtml,
+                'paginationHtml' => $paginationHtml
+            ]);
+        }
+        
+        return view('admin.verification.index', compact(
+            'achievements', 
+            'verifications', 
+            'stats', 
+            'categories', 
+            'levels',
+            'totalVerifications',
+            'pendingVerifications',
+            'approvedVerifications',
+            'rejectedVerifications',
+            'activeQueryStatus'
+        ));
     }
 
     public function show($id)
     {
         $achievement = AchievementModel::with(['user', 'verifier', 'attachments'])->findOrFail($id);
+        
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'achievement' => $achievement
+            ]);
+        }
+        
         return view('admin.verification.show', compact('achievement'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $achievement = AchievementModel::findOrFail($id);
+        
+        if ($request->status === 'verified') {
+            $achievement->status = 'verified';
+            $achievement->verified_by = Auth::id();
+            $achievement->verified_at = Carbon::now();
+            
+            if ($request->has('reason')) {
+                $achievement->verification_note = $request->reason;
+            }
+            
+            $message = 'Prestasi berhasil diverifikasi.';
+        } elseif ($request->status === 'rejected') {
+            $achievement->status = 'rejected';
+            $achievement->verified_by = Auth::id();
+            $achievement->verified_at = Carbon::now();
+            $achievement->rejected_reason = $request->reason;
+            
+            $message = 'Prestasi ditolak dengan alasan yang diberikan.';
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Status tidak valid.'
+            ]);
+        }
+        
+        $achievement->save();
+        
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message
+            ]);
+        }
+        
+        return redirect()->route('admin.verification.index')
+            ->with('success', $message);
     }
 
     public function approve(Request $request, $id)
@@ -120,4 +204,4 @@ class AchievementVerificationController extends Controller
         
         return Storage::download($attachment->file_path, $attachment->file_name);
     }
-} 
+}

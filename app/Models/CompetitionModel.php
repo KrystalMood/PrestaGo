@@ -17,19 +17,16 @@ class CompetitionModel extends Model
         'description',
         'organizer',
         'level',
-        'type',
         'start_date',
         'end_date',
         'registration_start',
         'registration_end',
         'competition_date',
         'registration_link',
-        'requirements',
         'status',
         'verified',
         'added_by',
         'period_id',
-        'category_id',
     ];
 
     protected $casts = [
@@ -51,16 +48,19 @@ class CompetitionModel extends Model
         return $this->belongsTo(PeriodModel::class, 'period_id', 'id');
     }
     
-    public function category()
-    {
-        return $this->belongsTo(CategoryModel::class, 'category_id', 'id');
-    }
-
     public function skills()
     {
-        return $this->belongsToMany(SkillModel::class, 'competition_skills', 'competition_id', 'skill_id')
-            ->withPivot('importance_level')
-            ->withTimestamps();
+        return $this->hasManyThrough(
+            SkillModel::class,
+            SubCompetitionModel::class,
+            'competition_id', 
+            'id', 
+            'id', 
+            'id' 
+        )->distinct()
+          ->join('sub_competition_skills', 'skills.id', '=', 'sub_competition_skills.skill_id')
+          ->where('sub_competitions.competition_id', '=', $this->id)
+          ->select('skills.*', 'sub_competition_skills.importance_level');
     }
 
     public function participants()
@@ -68,9 +68,21 @@ class CompetitionModel extends Model
         return $this->hasMany(CompetitionParticipantModel::class, 'competition_id', 'id');
     }
 
+    public function subCompetitions()
+    {
+        return $this->hasMany(SubCompetitionModel::class, 'competition_id', 'id');
+    }
+
     public function recommendations()
     {
         return $this->hasMany(RecommendationModel::class, 'competition_id', 'id');
+    }
+
+    public function interests()
+    {
+        return $this->belongsToMany(InterestAreaModel::class, 'competition_interests', 'competition_id', 'interest_area_id')
+                    ->withPivot('relevance_score', 'importance_factor', 'is_mandatory', 'minimum_level')
+                    ->withTimestamps();
     }
 
     public function mentorships()
@@ -101,5 +113,41 @@ class CompetitionModel extends Model
     public function scopeVerified($query)
     {
         return $query->where('verified', true);
+    }
+
+    public function getLevelFormattedAttribute()
+    {
+        if (empty($this->level)) {
+            return null;
+        }
+        
+        $levels = [
+            'international' => 'Internasional',
+            'national' => 'Nasional',
+            'regional' => 'Regional',
+            'provincial' => 'Provinsi',
+            'university' => 'Universitas',
+            'internal' => 'Internal'
+        ];
+        
+        return $levels[$this->level] ?? ucfirst($this->level);
+    }
+
+    public function getStatusIndonesianAttribute()
+    {
+        if (empty($this->status)) {
+            return null;
+        }
+        
+        $statuses = [
+            'active' => 'Aktif',
+            'open' => 'Aktif',
+            'upcoming' => 'Akan Datang',
+            'completed' => 'Selesai',
+            'ongoing' => 'Sedang Berlangsung',
+            'closed' => 'Ditutup'
+        ];
+        
+        return $statuses[$this->status] ?? ucfirst($this->status);
     }
 } 

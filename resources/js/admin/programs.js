@@ -384,22 +384,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit-year-established').value = program.year_established || '';
             document.getElementById('edit-description').value = program.description || '';
 
-            const isActiveToggle = document.getElementById('edit-is-active');
-            if (isActiveToggle) {
-                isActiveToggle.checked = program.is_active;
-
-                const toggleVisual = document.querySelector(`label[for="edit-is-active"] .toggle-visual`);
-                if (toggleVisual) {
-                    if (program.is_active) {
-                        toggleVisual.classList.add('bg-blue-600');
-                        toggleVisual.classList.remove('bg-gray-200');
-                    } else {
-                        toggleVisual.classList.remove('bg-blue-600');
-                        toggleVisual.classList.add('bg-gray-200');
-                    }
-                }
-            }
-
             resetFormErrors('edit-program-form');
             window.editProgramModal.classList.remove('hidden');
 
@@ -447,14 +431,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('show-program-year-established').textContent = program.year_established || '-';
             document.getElementById('show-program-description').textContent = program.description || '-';
 
+            // Hide status since is_active field is no longer used
             const statusSpan = document.getElementById('show-program-status');
-            statusSpan.textContent = program.is_active ? 'Aktif' : 'Tidak Aktif';
-            if (program.is_active) {
-                statusSpan.classList.remove('bg-gray-100', 'text-gray-800');
-                statusSpan.classList.add('bg-green-100', 'text-green-800');
-            } else {
-                statusSpan.classList.remove('bg-green-100', 'text-green-800');
-                statusSpan.classList.add('bg-gray-100', 'text-gray-800');
+            if (statusSpan) {
+                statusSpan.style.display = 'none';
             }
 
             document.getElementById('show-program-updated-at').textContent = program.updated_at_formatted || '-';

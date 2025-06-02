@@ -10,7 +10,11 @@ export default defineConfig({
                 'resources/js/admin/users.js',
                 'resources/js/admin/competitions.js',
                 'resources/js/admin/periods.js',
-                'resources/js/admin/programs.js'
+                'resources/js/admin/programs.js',
+                'resources/js/admin/verification.js',
+                'resources/js/admin/sub-competitions.js',
+                'resources/js/admin/sub-competition-skills.js',
+                'resources/js/admin/add-skill-modal.js'
             ],
             refresh: true,
         }),

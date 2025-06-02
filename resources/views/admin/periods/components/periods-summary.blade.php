@@ -1,10 +1,11 @@
 @php
-    // Get the active period
-    $activePeriod = \App\Models\PeriodModel::where('is_active', true)->first();
+    // Get the current period (whose date range includes today)
+    $currentPeriod = \App\Models\PeriodModel::where('start_date', '<=', now())
+                      ->where('end_date', '>=', now())
+                      ->first();
     
-    // Get upcoming periods (not active, start date in the future)
-    $upcomingPeriods = \App\Models\PeriodModel::where('is_active', false)
-                        ->where('start_date', '>', now())
+    // Get upcoming periods (start date in the future)
+    $upcomingPeriods = \App\Models\PeriodModel::where('start_date', '>', now())
                         ->orderBy('start_date', 'asc')
                         ->take(2)
                         ->get();
@@ -13,8 +14,8 @@
 @component('admin.components.cards.card', ['title' => 'Periode Akademik'])
     <div class="space-y-4">
         <div>
-            <h3 class="text-sm font-medium text-gray-500">PERIODE AKTIF</h3>
-            @if($activePeriod)
+            <h3 class="text-sm font-medium text-gray-500">PERIODE SAAT INI</h3>
+            @if($currentPeriod)
                 <div class="mt-2 p-3 bg-green-50 border border-green-100 rounded-lg">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
@@ -26,18 +27,18 @@
                                 </span>
                             </div>
                             <div>
-                                <p class="text-base font-medium text-gray-900">{{ $activePeriod->name }}</p>
-                                <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($activePeriod->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($activePeriod->end_date)->format('d M Y') }}</p>
+                                <p class="text-base font-medium text-gray-900">{{ $currentPeriod->name }}</p>
+                                <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($currentPeriod->start_date)->format('d M Y') }} - {{ \Carbon\Carbon::parse($currentPeriod->end_date)->format('d M Y') }}</p>
                             </div>
                         </div>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Aktif
+                            Saat Ini
                         </span>
                     </div>
                 </div>
             @else
                 <div class="mt-2 p-3 bg-gray-50 border border-gray-100 rounded-lg">
-                    <p class="text-sm text-gray-500">Tidak ada periode aktif saat ini</p>
+                    <p class="text-sm text-gray-500">Tidak ada periode saat ini</p>
                 </div>
             @endif
         </div>

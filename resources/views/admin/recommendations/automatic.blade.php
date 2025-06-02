@@ -1,7 +1,7 @@
 @component('layouts.admin', ['title' => 'Rekomendasi Otomatis'])
     @include('admin.components.ui.page-header', [
         'title' => 'Rekomendasi Otomatis',
-        'description' => 'Gunakan sistem DSS untuk menghasilkan rekomendasi kompetisi yang sesuai dengan profil mahasiswa secara otomatis.'
+        'description' => 'Gunakan sistem DSS gabungan AHP-WP untuk menghasilkan rekomendasi kompetisi yang sesuai dengan profil mahasiswa secara otomatis.'
     ])
 
     <div class="mb-6 flex justify-between items-center">
@@ -31,6 +31,16 @@
                             </select>
                             <p class="mt-1 text-xs text-gray-500">
                                 Pilih kompetisi spesifik, atau biarkan kosong untuk menghasilkan rekomendasi untuk semua kompetisi aktif
+                            </p>
+                        </div>
+                        
+                        <div id="sub-competition-container">
+                            <label for="sub_competition_id" class="block text-sm font-medium text-gray-700 mb-1">Sub Kompetisi</label>
+                            <select id="sub_competition_id" name="sub_competition_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                <option value="">-- Semua Sub Kompetisi --</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Pilih sub kompetisi spesifik, atau biarkan kosong untuk semua sub kompetisi dari kompetisi yang dipilih
                             </p>
                         </div>
                         
@@ -69,51 +79,66 @@
                             </p>
                         </div>
                         
-                        <div>
-                            <fieldset>
-                                <legend class="text-sm font-medium text-gray-700">Bobot Faktor Rekomendasi</legend>
-                                <div class="mt-2 space-y-4">
+                        <div class="border-t border-gray-200 pt-4">
+                            <h3 class="text-sm font-medium text-gray-700 mb-3">Metode DSS</h3>
+                            <div class="flex flex-col space-y-3">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" class="form-radio" name="dss_method" value="ahp" checked>
+                                    <span class="ml-2">AHP (Analytical Hierarchy Process)</span>
+                                    <span class="ml-2 text-xs px-2 py-1 bg-indigo-100 text-indigo-800 rounded-full">Untuk Mahasiswa</span>
+                                </label>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">
+                                Metode AHP digunakan untuk perhitungan rekomendasi mahasiswa
+                            </p>
+                        </div>
+
+                        <!-- AHP Configuration Section -->
+                        <div id="ahp-config-section" class="border-t border-gray-200 pt-4">
+                            <h3 class="text-sm font-medium text-gray-700 mb-3">Konfigurasi AHP (Untuk Rekomendasi Mahasiswa)</h3>
+                            
+                            <div class="mb-4">
+                                <label for="ahp_consistency_threshold" class="block text-sm font-medium text-gray-700 mb-1">Batas Rasio Konsistensi</label>
+                                <div class="flex items-center">
+                                    <input type="range" id="ahp_consistency_threshold" name="ahp_consistency_threshold" min="0" max="0.2" step="0.01" value="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <span id="ahp_consistency_threshold_value" class="ml-2 text-sm text-gray-600 w-10">0.1</span>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Nilai maksimum rasio konsistensi yang diterima (standar: 0.1)
+                                </p>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas Kriteria AHP</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label for="weight_skills" class="flex justify-between items-center text-sm text-gray-700">
+                                        <label for="ahp_priority_skills" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Keterampilan</span>
-                                            <span id="weight_skills_value">30%</span>
+                                            <span id="ahp_priority_skills_value">5</span>
                                         </label>
-                                        <input type="range" id="weight_skills" name="weight_skills" min="0" max="100" value="30" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_skills" name="ahp_priority_skills" min="1" max="9" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
-                                        <label for="weight_achievements" class="flex justify-between items-center text-sm text-gray-700">
-                                            <span>Prestasi Sebelumnya</span>
-                                            <span id="weight_achievements_value">25%</span>
+                                        <label for="ahp_priority_achievements" class="flex justify-between items-center text-sm text-gray-700">
+                                            <span>Prestasi</span>
+                                            <span id="ahp_priority_achievements_value">4</span>
                                         </label>
-                                        <input type="range" id="weight_achievements" name="weight_achievements" min="0" max="100" value="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_achievements" name="ahp_priority_achievements" min="1" max="9" value="4" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
-                                        <label for="weight_academic" class="flex justify-between items-center text-sm text-gray-700">
-                                            <span>Prestasi Akademik</span>
-                                            <span id="weight_academic_value">25%</span>
+                                        <label for="ahp_priority_interests" class="flex justify-between items-center text-sm text-gray-700">
+                                            <span>Minat</span>
+                                            <span id="ahp_priority_interests_value">4</span>
                                         </label>
-                                        <input type="range" id="weight_academic" name="weight_academic" min="0" max="100" value="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                                    </div>
-                                    
-                                    <div>
-                                        <label for="weight_experience" class="flex justify-between items-center text-sm text-gray-700">
-                                            <span>Pengalaman Lomba</span>
-                                            <span id="weight_experience_value">20%</span>
-                                        </label>
-                                        <input type="range" id="weight_experience" name="weight_experience" min="0" max="100" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_interests" name="ahp_priority_interests" min="1" max="9" value="4" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                 </div>
-                                <div class="mt-2">
-                                    <div class="text-xs text-amber-600 flex items-center" id="weight-warning" style="display: none;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>
-                                        Total bobot harus berjumlah 100%
-                                    </div>
-                                </div>
-                            </fieldset>
+                                <p class="mt-1 text-xs text-gray-500">
+                                    Tingkat kepentingan relatif antar kriteria (skala 1-9)
+                                </p>
+                            </div>
                         </div>
                         
                         <div class="flex justify-end">
@@ -127,65 +152,15 @@
                     </div>
                 </form>
                 
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Threshold slider
-                        const thresholdSlider = document.getElementById('threshold');
-                        const thresholdValue = document.getElementById('threshold-value');
-                        
-                        thresholdSlider.addEventListener('input', function() {
-                            thresholdValue.textContent = this.value + '%';
-                        });
-                        
-                        // Weight sliders
-                        const weightSliders = [
-                            document.getElementById('weight_skills'),
-                            document.getElementById('weight_achievements'),
-                            document.getElementById('weight_academic'),
-                            document.getElementById('weight_experience')
-                        ];
-                        
-                        const weightValues = [
-                            document.getElementById('weight_skills_value'),
-                            document.getElementById('weight_achievements_value'),
-                            document.getElementById('weight_academic_value'),
-                            document.getElementById('weight_experience_value')
-                        ];
-                        
-                        const weightWarning = document.getElementById('weight-warning');
-                        
-                        function updateWeights() {
-                            let total = 0;
-                            
-                            weightSliders.forEach((slider, index) => {
-                                weightValues[index].textContent = slider.value + '%';
-                                total += parseInt(slider.value);
-                            });
-                            
-                            if (total !== 100) {
-                                weightWarning.style.display = 'flex';
-                                document.getElementById('generate-btn').disabled = true;
-                            } else {
-                                weightWarning.style.display = 'none';
-                                document.getElementById('generate-btn').disabled = false;
-                            }
-                        }
-                        
-                        weightSliders.forEach(slider => {
-                            slider.addEventListener('input', updateWeights);
-                        });
-                        
-                        // Initial check
-                        updateWeights();
-                    });
-                </script>
+                <!-- Menggunakan file JS terpisah -->
+                @vite(['resources/js/admin/recommendations.js'])
             @endcomponent
         </div>
         
         <div>
             @component('admin.components.cards.card', ['title' => 'Tentang Rekomendasi Otomatis'])
                 <div class="prose prose-sm text-gray-600">
-                    <p>Sistem ini menggunakan algoritma Decision Support System (DSS) untuk merekomendasikan mahasiswa yang paling cocok untuk kompetisi berdasarkan faktor-faktor berikut:</p>
+                    <p>Sistem ini menggunakan metode DSS AHP (Analytical Hierarchy Process) untuk merekomendasikan mahasiswa yang paling cocok untuk kompetisi berdasarkan faktor-faktor berikut:</p>
                     
                     <ul class="mt-2 space-y-1 text-sm">
                         <li class="flex items-start">
@@ -210,17 +185,38 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
-                            <span><strong>Pengalaman Lomba</strong> - Pengalaman sebelumnya dalam mengikuti kompetisi serupa</span>
+                            <span><strong>Minat</strong> - Kesesuaian minat mahasiswa dengan bidang kompetisi</span>
                         </li>
                     </ul>
                     
                     <div class="mt-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <h4 class="text-blue-800 font-medium text-sm">Tentang Metode AHP:</h4>
+                        <ul class="mt-2 text-blue-700 text-xs space-y-1">
+                            <li>• <strong>AHP (Analytical Hierarchy Process)</strong> - Metode untuk menentukan prioritas kriteria dan menghitung skor kecocokan mahasiswa dengan kompetisi</li>
+                            <li>• AHP memperhitungkan keterampilan, prestasi, dan minat mahasiswa dalam menentukan rekomendasi</li>
+                            <li>• Metode ini menerapkan perbandingan berpasangan antar kriteria untuk menghasilkan bobot yang optimal</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
                         <h4 class="text-blue-800 font-medium text-sm">Tips Penggunaan:</h4>
                         <ul class="mt-2 text-blue-700 text-xs space-y-1">
-                            <li>• Sesuaikan bobot faktor dengan jenis kompetisi</li>
-                            <li>• Untuk kompetisi teknis, tingkatkan bobot keterampilan</li>
-                            <li>• Untuk kompetisi riset, tingkatkan bobot akademik</li>
-                            <li>• Gunakan threshold lebih tinggi (70%+) untuk kompetisi tingkat nasional/internasional</li>
+                            <li class="flex items-start">
+                                <span class="inline-block bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">AHP</span> 
+                                <span>Sesuaikan prioritas kriteria AHP dengan jenis kompetisi untuk rekomendasi mahasiswa</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="inline-block bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">AHP</span> 
+                                <span>Untuk kompetisi teknis, tingkatkan prioritas keterampilan</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="inline-block bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">AHP</span> 
+                                <span>Pastikan rasio konsistensi AHP < 0.1 untuk hasil yang valid</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">Umum</span> 
+                                <span>Gunakan threshold lebih tinggi (70%+) untuk kompetisi tingkat nasional/internasional</span>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -239,9 +235,16 @@
                                     <p class="text-xs text-gray-500">{{ $recommendation->competition->name }}</p>
                                 </div>
                                 <div class="flex-shrink-0">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        {{ $recommendation->match_score }}%
-                                    </span>
+                                    @if($recommendation->ahp_result_id)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            AHP: {{ number_format($recommendation->ahpResult->final_score * 100, 1) }}%
+                                        </span>
+                                    @endif
+                                    @if($recommendation->wp_result_id)
+                                        <span class="inline-flex items-center ml-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            WP: {{ number_format($recommendation->wpResult->relative_preference * 100, 1) }}%
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
@@ -316,12 +319,8 @@
                                             <span>{{ $rec['factors']['achievements'] }}%</span>
                                         </div>
                                         <div class="flex items-center justify-between">
-                                            <span>Akademik:</span>
-                                            <span>{{ $rec['factors']['academic'] }}%</span>
-                                        </div>
-                                        <div class="flex items-center justify-between">
-                                            <span>Pengalaman:</span>
-                                            <span>{{ $rec['factors']['experience'] }}%</span>
+                                            <span>Minat:</span>
+                                            <span>{{ $rec['factors']['interests'] }}%</span>
                                         </div>
                                     </div>
                                 </td>

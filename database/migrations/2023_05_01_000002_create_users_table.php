@@ -21,6 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('level_id')->nullable(); // User level or permission level
             $table->string('photo')->nullable();
             $table->string('nim', 20)->nullable(); // Student ID number (for students)
+            $table->string('nip', 20)->nullable();
             $table->unsignedBigInteger('program_studi_id')->nullable();
             $table->string('remember_token', 100)->nullable();
             $table->timestamps();
