@@ -31,6 +31,11 @@ class UserModel extends Authenticatable
         return $this->belongsTo(LevelModel::class, 'level_id', 'id');
     }
 
+    public function program_studi()
+    {
+        return $this->belongsTo(StudyProgramModel::class, 'program_studi_id', 'id');
+    }
+
     public function getRoleName(): string
     {
         return $this->level->level_nama;

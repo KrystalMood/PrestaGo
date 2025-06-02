@@ -157,7 +157,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Lecturer routes
-    Route::prefix('lecturer')->name('lecturer.')->middleware(['auth.user:DSN'])->group(function () {
+        Route::prefix('lecturer')->name('lecturer.')->middleware(['auth.user:DSN'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'lecturerDashboard'])->name('dashboard');
 
         Route::prefix('students')->name('students.')->group(function () {
@@ -173,10 +173,26 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [App\Http\Controllers\dosen\SettingController::class, 'profile'])->name('profile');
+            Route::put('/{id}', [App\Http\Controllers\dosen\SettingController::class, 'updateProfile'])->name('updateProfile');
+        });
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [App\Http\Controllers\dosen\SettingController::class, 'index'])->name('index');
+        });
+
+        Route::prefix('akademik')->name('akademik.')->group(function () {
             Route::get('/', function () {
-                return view('Dosen.profile.index');
+                return view('Dosen.akademik.index');
             })->name('index');
         });
+
+        Route::prefix('penelitian')->name('penelitian.')->group(function () {
+            Route::get('/', function () {
+                return view('Dosen.penelitian.index');
+            })->name('index');
+        });
+
     });
 
     // Admin Reports Routes
