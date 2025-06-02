@@ -193,18 +193,12 @@ Route::middleware(['auth'])->group(function () {
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
-            Route::get('/', function () {
-                return view('Dosen.profile.index');
-            })->name('index');
-            Route::get('/update', function () {
-                return view('Dosen.profile.update');
-            })->name('update');
+            Route::get('/', [App\Http\Controllers\dosen\SettingController::class, 'profile'])->name('profile');
+            Route::put('/{id}', [App\Http\Controllers\dosen\SettingController::class, 'updateProfile'])->name('updateProfile');
         });
 
         Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', function () {
-                return view('Dosen.settings.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\dosen\SettingController::class, 'index'])->name('index');
         });
 
         Route::prefix('akademik')->name('akademik.')->group(function () {

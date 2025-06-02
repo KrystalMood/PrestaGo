@@ -15,10 +15,10 @@
                     <div class="flex flex-col items-center mb-6">
                         <div class="relative">
                             <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
-                                @if(Auth::user()->photo)
-                                    <img id="profile-photo-preview" src="{{ asset('storage/'. Auth::user()->photo) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                @if($user->photo)
+                                    <img id="profile-photo-preview" src="{{ asset('storage/'. $user->photo) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
                                 @else
-                                    <img id="profile-photo-preview" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=4338ca&color=fff" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
+                                    <img id="profile-photo-preview" src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4338ca&color=fff" alt="{{ $user->name }}" class="w-full h-full object-cover">
                                 @endif
                             </div>
                             <label for="profile-photo" class="absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 rounded-full p-2 text-white cursor-pointer shadow-lg">
@@ -27,11 +27,11 @@
                                 </svg>
                             </label>
                         </div>
-                        <h4 class="text-lg font-medium mt-3">{{ Auth::user()->name }}</h4>
-                        <p class="text-gray-500">{{ Auth::user()->email }}</p>
+                        <h4 class="text-lg font-medium mt-3">{{ $user->name }}</h4>
+                        <p class="text-gray-500">{{ $user->email }}</p>
                     </div>
 
-                    <form method="POST" action="{{ route('lecturer.profile.update') }}" class="mt-4" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('lecturer.profile.updateProfile', auth()->id()) }}" class="mt-4" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
                         <input type="file" id="profile-photo" name="photo" class="hidden" accept="image/*" onchange="previewProfilePhoto(this)">
@@ -39,33 +39,33 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-6">
                             <!-- Nama Lengkap -->
                             <div>
-                                <x-ui.form-input name="name" label="Nama Lengkap" required value="{{ old('name', Auth::user()->name) }}" />
+                                <x-ui.form-input name="name" label="Nama Lengkap" required value="{{ old('name', $user->name) }}" />
                             </div>
 
                             <!-- NIP -->
                             <div>
-                                <x-ui.form-input name="nip" label="NIP" value="{{ old('nip', Auth::user()->nip) }}" />
+                                <x-ui.form-input name="nim" label="NIP" value="{{ old('nim', $user->nim) }}" />
                             </div>
 
                             <!-- Email -->
                             <div>
-                                <x-ui.form-input type="email" name="email" label="Email" required value="{{ old('email', Auth::user()->email) }}" />
+                                <x-ui.form-input type="email" name="email" label="Email" required value="{{ old('email', $user->email) }}" />
                             </div>
 
-                            <!-- Jabatan Akademik -->
+                            {{-- <!-- Jabatan Akademik -->
                             <div>
-                                <x-ui.form-input name="jabatan_akademik" label="Jabatan Akademik" value="{{ old('jabatan_akademik', Auth::user()->jabatan_akademik) }}" />
+                                <x-ui.form-input name="jabatan_akademik" label="Jabatan Akademik" value="{{ old('jabatan_akademik', $user->jabatan_akademik) }}" />
                             </div>
 
                             <!-- Program Studi -->
                             <div>
-                                <x-ui.form-input name="program_studi" label="Program Studi" value="{{ old('program_studi', Auth::user()->program_studi) }}" />
+                                <x-ui.form-input name="program_studi" label="Program Studi" value="{{ old('program_studi', $user->program_studi) }}" />
                             </div>
 
                             <!-- Bidang Minat Penelitian -->
                             <div class="md:col-span-2">
-                                <x-ui.form-textarea name="bidang_minat" label="Bidang Minat Penelitian" placeholder="Contoh: Data Mining, AI, Software Engineering" rows="4">{{ old('bidang_minat', Auth::user()->bidang_minat) }}</x-ui.form-textarea>
-                            </div>
+                                <x-ui.form-textarea name="bidang_minat" label="Bidang Minat Penelitian" placeholder="Contoh: Data Mining, AI, Software Engineering" rows="4">{{ old('bidang_minat', $user->bidang_minat) }}</x-ui.form-textarea>
+                            </div> --}}
 
                             <!-- Password -->
                             <div class="md:col-span-2">
