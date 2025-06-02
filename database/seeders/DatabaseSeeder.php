@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,10 +19,17 @@ class DatabaseSeeder extends Seeder
             PeriodSeeder::class,
             SkillSeeder::class,
             CategorySeeder::class,
+            InterestAreaSeeder::class,
             CompetitionSeeder::class,
-            CompetitionSkillSeeder::class,
             MahasiswaSeeder::class,
+            DosenSeeder::class,
             SubCompetitionSeeder::class,
+            ActivitySeeder::class,
+            AchievementSeeder::class,
         ]);
+        
+        if (Schema::hasTable('sub_competition_skills')) {
+            $this->call(SubCompetitionSkillSeeder::class);
+        }
     }
 }

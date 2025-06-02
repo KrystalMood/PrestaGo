@@ -9,16 +9,19 @@ use App\Models\SubCompetitionModel;
 use App\Models\UserModel;
 use App\Models\SubCompetitionParticipantModel;
 use App\Models\CategoryModel;
+use App\Models\SkillModel;
+use App\Models\SubCompetitionSkillModel;
 
 class SubCompetitionController extends Controller
 {
     public function index($competitionId)
     {
         $competition = CompetitionModel::findOrFail($competitionId);
-        $subCompetitions = $competition->subCompetitions()->with('category')->get();
+        $subCompetitions = $competition->subCompetitions()->with(['category', 'skills'])->get();
         $categories = CategoryModel::all();
+        $skills = SkillModel::all();
         
-        return view('admin.competitions.sub-competitions.index', compact('competition', 'subCompetitions', 'categories'));
+        return view('admin.competitions.sub-competitions.index', compact('competition', 'subCompetitions', 'categories', 'skills'));
     }
 
     public function store(Request $request, $competitionId)
@@ -64,7 +67,7 @@ class SubCompetitionController extends Controller
     public function show($competitionId, $subCompetitionId)
     {
         $competition = CompetitionModel::findOrFail($competitionId);
-        $subCompetition = SubCompetitionModel::with('category')->findOrFail($subCompetitionId);
+        $subCompetition = SubCompetitionModel::with(['category', 'skills'])->findOrFail($subCompetitionId);
         
         return response()->json([
             'success' => true,
@@ -139,6 +142,7 @@ class SubCompetitionController extends Controller
         $request->validate([
             'student_id' => 'required|exists:users,id',
             'team_name' => 'nullable|string|max:255',
+            'advisor_name' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:20',
         ]);
 
@@ -148,6 +152,7 @@ class SubCompetitionController extends Controller
         $participant->sub_competition_id = $subCompetition->id;
         $participant->user_id = $request->student_id;
         $participant->team_name = $request->team_name;
+        $participant->advisor_name = $request->advisor_name;
         $participant->status = $request->status ?? 'registered';
         $participant->save();
 
@@ -160,5 +165,121 @@ class SubCompetitionController extends Controller
         $participant->delete();
 
         return redirect()->back()->with('success', 'Participant removed successfully');
+    }
+    
+    public function showParticipantAjax($competitionId, $subCompetitionId, $participantId)
+    {
+        $competition = CompetitionModel::findOrFail($competitionId);
+        $subCompetition = SubCompetitionModel::findOrFail($subCompetitionId);
+        $participant = SubCompetitionParticipantModel::with('user')->findOrFail($participantId);
+        
+        return response()->json([
+            'success' => true,
+            'html' => view('admin.competitions.sub-competitions.participant-detail-ajax', compact('competition', 'subCompetition', 'participant'))->render(),
+            'participant' => $participant
+        ]);
+    }
+    
+    public function updateParticipant(Request $request, $competitionId, $subCompetitionId, $participantId)
+    {
+        $request->validate([
+            'status' => 'required|in:registered,pending',
+            'team_name' => 'nullable|string|max:255',
+        ]);
+
+        $participant = SubCompetitionParticipantModel::findOrFail($participantId);
+        $participant->status = $request->status;
+        if ($request->has('team_name')) {
+            $participant->team_name = $request->team_name;
+        }
+        $participant->save();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status peserta berhasil diperbarui',
+                'participant' => $participant
+            ]);
+        }
+
+        return redirect()->route('admin.competitions.sub-competitions.participants', [
+            'competition' => $competitionId,
+            'sub_competition' => $subCompetitionId
+        ])->with('success', 'Status peserta berhasil diperbarui');
+    }
+    
+    public function skills($competitionId, $subCompetitionId)
+    {
+        $competition = CompetitionModel::findOrFail($competitionId);
+        $subCompetition = SubCompetitionModel::with('skills')->findOrFail($subCompetitionId);
+        $allSkills = SkillModel::all();
+        
+        return view('admin.competitions.sub-competitions.skills', compact('competition', 'subCompetition', 'allSkills'));
+    }
+    
+    public function addSkill(Request $request, $competitionId, $subCompetitionId)
+    {
+        $request->validate([
+            'skill_id' => 'required|exists:skills,id',
+            'importance_level' => 'required|integer|min:1|max:10',
+            'weight_value' => 'nullable|numeric',
+            'criterion_type' => 'nullable|string|in:benefit,cost',
+        ]);
+        
+        $subCompetition = SubCompetitionModel::findOrFail($subCompetitionId);
+        
+        $exists = $subCompetition->skills()->where('skill_id', $request->skill_id)->exists();
+        
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Skill already added to this sub-competition'
+            ], 422);
+        }
+        
+        $subCompetition->skills()->attach($request->skill_id, [
+            'importance_level' => $request->importance_level,
+            'weight_value' => $request->weight_value ?? 1.0,
+            'criterion_type' => $request->criterion_type ?? 'benefit',
+            'ahp_priority' => 0.0
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Skill added to sub-competition successfully'
+        ]);
+    }
+    
+    public function updateSkill(Request $request, $competitionId, $subCompetitionId, $skillId)
+    {
+        $request->validate([
+            'importance_level' => 'required|integer|min:1|max:10',
+            'weight_value' => 'nullable|numeric',
+            'criterion_type' => 'nullable|string|in:benefit,cost',
+        ]);
+        
+        $subCompetition = SubCompetitionModel::findOrFail($subCompetitionId);
+        
+        $subCompetition->skills()->updateExistingPivot($skillId, [
+            'importance_level' => $request->importance_level,
+            'weight_value' => $request->weight_value ?? 1.0,
+            'criterion_type' => $request->criterion_type ?? 'benefit',
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Skill updated successfully'
+        ]);
+    }
+    
+    public function removeSkill($competitionId, $subCompetitionId, $skillId)
+    {
+        $subCompetition = SubCompetitionModel::findOrFail($subCompetitionId);
+        $subCompetition->skills()->detach($skillId);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Skill removed from sub-competition successfully'
+        ]);
     }
 } 

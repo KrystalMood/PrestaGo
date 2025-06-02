@@ -82,14 +82,6 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="competition_type" class="block text-sm font-medium text-gray-700">Jenis Kompetisi</label>
-                                <select id="competition_type" name="competition_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    <option value="all">Semua Jenis</option>
-                                    <option value="academic">Akademik</option>
-                                    <option value="non-academic">Non-Akademik</option>
-                                </select>
-                            </div>
-                            <div>
                                 <label for="metric" class="block text-sm font-medium text-gray-700">Metrik</label>
                                 <select id="metric" name="metric" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <option value="achievements">Jumlah Prestasi</option>

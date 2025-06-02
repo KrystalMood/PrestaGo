@@ -29,8 +29,7 @@ class CompetitionSeeder extends Seeder
                 'name' => 'Gemastik XVI',
                 'description' => 'Pagelaran Mahasiswa Nasional Bidang Teknologi Informasi dan Komunikasi XVI. Gemastik merupakan ajang kompetisi IT nasional tingkat universitas yang diselenggarakan oleh Kementerian Pendidikan dan Kebudayaan.',
                 'organizer' => 'Kemendikbud',
-                'level' => 'Nasional',
-                'type' => 'Development',
+                'level' => 'National',
                 'start_date' => '2024-10-20',
                 'end_date' => '2024-10-25',
                 'registration_start' => '2024-07-15',
@@ -50,7 +49,6 @@ class CompetitionSeeder extends Seeder
                 'description' => 'Kompetisi pemrograman tingkat Politeknik Negeri Malang untuk melatih logika algoritma dan pemecahan masalah.',
                 'organizer' => 'HMTI Polinema',
                 'level' => 'Internal',
-                'type' => 'Coding',
                 'start_date' => '2024-10-15',
                 'end_date' => '2024-10-16',
                 'registration_start' => '2024-09-10',
@@ -70,7 +68,6 @@ class CompetitionSeeder extends Seeder
                 'description' => 'Kompetisi desain dan pengembangan website dengan tema "Digital Transformation in Education"',
                 'organizer' => 'Jurusan Teknologi Informasi Polinema',
                 'level' => 'Regional',
-                'type' => 'Design',
                 'start_date' => '2024-09-15',
                 'end_date' => '2024-09-17',
                 'registration_start' => '2024-08-01',
@@ -90,7 +87,6 @@ class CompetitionSeeder extends Seeder
                 'description' => 'Kompetisi pengembangan solusi IoT untuk Smart Campus dengan fokus pada efisiensi energi dan manajemen sumber daya.',
                 'organizer' => 'Jurusan Teknik Elektro Polinema',
                 'level' => 'Internal',
-                'type' => 'Development',
                 'start_date' => '2024-07-25',
                 'end_date' => '2024-07-27',
                 'registration_start' => '2024-06-10',
@@ -110,7 +106,6 @@ class CompetitionSeeder extends Seeder
                 'description' => 'Kompetisi perencanaan bisnis untuk mahasiswa dengan fokus pada inovasi dan sustainability.',
                 'organizer' => 'Jurusan Administrasi Niaga Polinema',
                 'level' => 'Internal',
-                'type' => 'Business',
                 'start_date' => '2024-10-05',
                 'end_date' => '2024-10-07',
                 'registration_start' => '2024-08-15',
@@ -129,8 +124,7 @@ class CompetitionSeeder extends Seeder
                 'name' => 'Lomba Karya Tulis Ilmiah Nasional',
                 'description' => 'Kompetisi karya tulis ilmiah dengan tema "Inovasi Teknologi untuk Pembangunan Berkelanjutan"',
                 'organizer' => 'Kemendikbud',
-                'level' => 'Nasional',
-                'type' => 'Scientific',
+                'level' => 'National',
                 'start_date' => '2024-09-10',
                 'end_date' => '2024-09-12',
                 'registration_start' => '2024-07-01',
@@ -149,8 +143,7 @@ class CompetitionSeeder extends Seeder
                 'name' => 'UI/UX Design Challenge',
                 'description' => 'Kompetisi desain antarmuka dan pengalaman pengguna untuk aplikasi mobile dengan tema "Inclusive Design"',
                 'organizer' => 'Microsoft Indonesia',
-                'level' => 'Nasional',
-                'type' => 'Design',
+                'level' => 'National',
                 'start_date' => '2024-11-15',
                 'end_date' => '2024-11-17',
                 'registration_start' => '2024-09-01',
@@ -168,21 +161,16 @@ class CompetitionSeeder extends Seeder
         ];
 
         $levelMap = [
-            'Nasional' => 'national',
-            'Regional'  => 'regional',
-            'Internal'  => 'university',
-        ];
-        $typeMap = [
-            'Development' => 'individual',
-            'Coding'      => 'individual',
-            'Design'      => 'individual',
-            'Business'    => 'individual',
-            'Scientific'  => 'individual',
+            'International' => 'international',
+            'National'      => 'national',
+            'Regional'      => 'regional',
+            'Provincial'    => 'provincial',
+            'University'    => 'university',
+            'Internal'      => 'internal',
         ];
 
         foreach ($competitions as &$competition) {
             $competition['level'] = $levelMap[$competition['level']] ?? $competition['level'];
-            $competition['type']  = $typeMap[$competition['type']]   ?? $competition['type'];
         }
         unset($competition);
 

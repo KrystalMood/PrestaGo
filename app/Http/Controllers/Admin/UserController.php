@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LevelModel;
 use App\Models\UserModel;
+use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -77,6 +78,9 @@ class UserController extends Controller
             'password' => 'required|string|min:6|confirmed',
             'level_id' => 'required|exists:level,id',
             'photo' => 'nullable|image|max:2048',
+            'nim' => 'nullable|string|max:20',
+            'nip' => 'nullable|string|max:20',
+            'program_studi_id' => 'nullable|exists:study_programs,id',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -87,6 +91,14 @@ class UserController extends Controller
         $validated['password'] = Hash::make($validated['password']);
 
         $user = UserModel::create($validated);
+        
+        ActivityService::log(
+            'green',
+            'Pengguna baru ditambahkan: ' . $user->name,
+            'create',
+            'user',
+            'admin'
+        );
 
         if ($request->ajax()) {
             return response()->json([
@@ -128,6 +140,9 @@ class UserController extends Controller
             'level_id' => 'required|exists:level,id',
             'photo' => 'nullable|image|max:2048',
             'password' => 'nullable|string|min:6|confirmed',
+            'nim' => 'nullable|string|max:20',
+            'nip' => 'nullable|string|max:20',
+            'program_studi_id' => 'nullable|exists:study_programs,id',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -146,6 +161,14 @@ class UserController extends Controller
         }
 
         $user->update($validated);
+        
+        ActivityService::log(
+            'blue',
+            'Pengguna diperbarui: ' . $user->name,
+            'update',
+            'user',
+            'admin'
+        );
 
         if ($request->ajax()) {
             return response()->json([
@@ -173,6 +196,9 @@ class UserController extends Controller
                         'email' => $user->email,
                         'role' => $user->getRoleName(),
                         'role_code' => $user->getRole(),
+                        'nim' => $user->nim,
+                        'nip' => $user->nip,
+                        'program_studi_id' => $user->program_studi_id,
                         'created_at' => $user->created_at->format('d M Y, H:i'),
                         'photo' => $user->photo 
                             ? asset('storage/' . $user->photo) 
@@ -209,6 +235,9 @@ class UserController extends Controller
                     'level_id' => $user->level_id,
                     'role' => $user->getRoleName(),
                     'role_code' => $user->getRole(),
+                    'nim' => $user->nim,
+                    'nip' => $user->nip,
+                    'program_studi_id' => $user->program_studi_id,
                     'created_at' => $user->created_at->format('d M Y, H:i'),
                     'photo' => $user->photo 
                         ? asset('storage/' . $user->photo) 
@@ -231,7 +260,17 @@ class UserController extends Controller
             Storage::disk('public')->delete($user->photo);
         }
         
+        $userName = $user->name;
+        
         $user->delete();
+        
+        ActivityService::log(
+            'red',
+            'Pengguna dihapus: ' . $userName,
+            'delete',
+            'user',
+            'admin'
+        );
 
         if (request()->ajax()) {
             return response()->json([

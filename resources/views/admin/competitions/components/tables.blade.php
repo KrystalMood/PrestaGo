@@ -72,6 +72,12 @@
                                     $iconColor = 'text-purple-600';
                                     $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />';
                                 }
+                                
+                                // Check if competition has pending registrations
+                                $pendingRegistrations = 0;
+                                foreach ($competition->subCompetitions as $subComp) {
+                                    $pendingRegistrations += $subComp->participants()->where('status', 'pending')->count();
+                                }
                             @endphp
                             <div class="flex-shrink-0 h-10 w-10 rounded-md {{ $iconBg }} flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 {{ $iconColor }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -79,8 +85,11 @@
                                 </svg>
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">
+                                <div class="text-sm font-medium text-gray-900 flex items-center">
                                     {{ $competition->name }}
+                                    @if($pendingRegistrations > 0)
+                                        <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{{ $pendingRegistrations }}</span>
+                                    @endif
                                 </div>
                                 <div class="text-sm text-gray-500">
                                     {{ ucfirst($competition->level ?? 'Umum') }}
@@ -115,14 +124,14 @@
                         {{ $competition->start_date ? $competition->start_date->format('d M Y') : '-' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <a href="{{ route('admin.competitions.participants', $competition) }}" class="group flex items-center text-sm text-gray-500 hover:text-brand transition-colors" title="Kelola Peserta">
-                            <div class="bg-blue-50 rounded-full p-1.5 mr-2 group-hover:bg-blue-100 transition-colors">
+                        <div class="group flex items-center text-sm text-gray-500">
+                            <div class="bg-blue-50 rounded-full p-1.5 mr-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                 </svg>
                             </div>
-                            <span class="font-medium">{{ $competition->participants_count ?? 0 }}</span>
-                        </a>
+                            <span class="font-medium">{{ $competition->subCompetitions->sum(function($subComp) { return $subComp->participants()->count(); }) }}</span>
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end gap-2">
@@ -170,61 +179,4 @@
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-custom max-w-md w-full mx-4">
-        <div class="p-6">
-            <div class="flex items-center justify-center mb-4">
-                <div class="bg-red-100 rounded-full p-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-            </div>
-            <h3 class="text-xl font-bold text-center text-gray-800 mb-2">Konfirmasi Hapus</h3>
-            <p class="text-gray-600 text-center mb-6 text-sm">Apakah Anda yakin ingin menghapus kompetisi <span id="competition-name-to-delete" class="font-semibold"></span>? Tindakan ini tidak dapat dibatalkan.</p>
-            
-            <div class="flex justify-center gap-4">
-                <button id="cancel-delete" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-                    Batal
-                </button>
-                
-                <form id="delete-form" method="POST" action="">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
-                        Ya, Hapus
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const deleteModal = document.getElementById('delete-modal');
-    const deleteForm = document.getElementById('delete-form');
-    const competitionNameToDelete = document.getElementById('competition-name-to-delete');
-    const cancelDelete = document.getElementById('cancel-delete');
-    
-    document.querySelectorAll('.delete-competition').forEach(button => {
-        button.addEventListener('click', () => {
-            const competitionId = button.getAttribute('data-competition-id');
-            const competitionName = button.getAttribute('data-competition-name');
-            
-            deleteForm.action = `{{ route('admin.competitions.index') }}/${competitionId}`;
-            competitionNameToDelete.textContent = competitionName;
-            deleteModal.classList.remove('hidden');
-        });
-    });
-    
-    cancelDelete.addEventListener('click', () => {
-        deleteModal.classList.add('hidden');
-    });
-    
-    deleteModal.addEventListener('click', (e) => {
-        if (e.target === deleteModal) {
-            deleteModal.classList.add('hidden');
-        }
-    });
-</script> 
+<!-- Modal hapus telah dipindahkan ke delete-competition-modal.blade.php -->

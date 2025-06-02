@@ -193,4 +193,27 @@ class StudyProgramController extends Controller
         return redirect()->route('admin.programs.index')
             ->with('success', 'Program studi berhasil dihapus.');
     }
+
+    public function getJson($id)
+    {
+        try {
+            $program = StudyProgramModel::findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $program->id,
+                    'name' => $program->name,
+                    'code' => $program->code,
+                    'faculty' => $program->faculty,
+                    'degree_level' => $program->degree_level
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Program studi tidak ditemukan: ' . $e->getMessage()
+            ], 404);
+        }
+    }
 } 

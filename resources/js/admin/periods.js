@@ -78,11 +78,120 @@ function initializeFormHandlers() {
     }
 }
 
+// Function to check if a date range overlaps with existing periods
+async function checkPeriodOverlap(startDate, endDate, periodId = null) {
+    try {
+        const response = await fetch('/admin/periods', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch periods');
+        }
+        
+        const data = await response.json();
+        if (!data.table) {
+            return null; // No periods to check against
+        }
+        
+        // Parse the HTML table to extract period data
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data.table;
+        
+        // Extract period data from the table rows
+        const rows = tempDiv.querySelectorAll('tbody tr');
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        
+        for (const row of rows) {
+            const idCell = row.querySelector('td:first-child');
+            const nameCell = row.querySelector('td:nth-child(2)');
+            const dateCell = row.querySelector('td:nth-child(3)');
+            
+            if (idCell && dateCell) {
+                const id = idCell.textContent.trim();
+                const name = nameCell.textContent.trim();
+                
+                // Skip checking against the current period (for edit mode)
+                if (periodId && id === periodId.toString()) {
+                    continue;
+                }
+                
+                const dateRange = dateCell.textContent.trim();
+                const [startDateStr, endDateStr] = dateRange.split(' - ');
+                
+                // Parse dates (assuming format is DD MMM YYYY)
+                const existingStartDate = parseCustomDate(startDateStr);
+                const existingEndDate = parseCustomDate(endDateStr);
+                
+                if (!existingStartDate || !existingEndDate) continue;
+                
+                // Check for overlap
+                const hasOverlap = (
+                    // New period starts during existing period
+                    (startDateObj >= existingStartDate && startDateObj <= existingEndDate) ||
+                    // New period ends during existing period
+                    (endDateObj >= existingStartDate && endDateObj <= existingEndDate) ||
+                    // New period completely contains existing period
+                    (startDateObj <= existingStartDate && endDateObj >= existingEndDate)
+                );
+                
+                if (hasOverlap) {
+                    return { id, name, startDate: startDateStr, endDate: endDateStr };
+                }
+            }
+        }
+        
+        return null; // No overlap found
+    } catch (error) {
+        console.error('Error checking period overlap:', error);
+        return null; // Return null on error to allow form submission to proceed
+    }
+}
+
+// Helper function to parse date in DD MMM YYYY format
+function parseCustomDate(dateStr) {
+    const parts = dateStr.trim().split(' ');
+    if (parts.length !== 3) return null;
+    
+    const day = parseInt(parts[0], 10);
+    const monthMap = {
+        'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+        'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11,
+        'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
+        'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+    };
+    
+    const month = monthMap[parts[1]];
+    const year = parseInt(parts[2], 10);
+    
+    if (isNaN(day) || month === undefined || isNaN(year)) return null;
+    
+    return new Date(year, month, day);
+}
+
 // Function to handle the submission of the add period form
 async function submitAddPeriodForm() {
     clearErrors('add-period-error');
     const form = document.getElementById('add-period-form');
     const formData = new FormData(form);
+    
+    // Get start and end dates for overlap check
+    const startDate = document.getElementById('add-start-date').value;
+    const endDate = document.getElementById('add-end-date').value;
+    
+    // Check for date overlap before submitting
+    const overlappingPeriod = await checkPeriodOverlap(startDate, endDate);
+    if (overlappingPeriod) {
+        displayErrors('add-period-error', 'add-period-error-count', 'add-period-error-list', {
+            'date_overlap': [`Periode baru tidak dapat bertabrakan dengan periode yang sudah ada. Periode "${overlappingPeriod.name}" sudah ada pada rentang tanggal ${overlappingPeriod.startDate} - ${overlappingPeriod.endDate}.`]
+        });
+        return;
+    }
 
     try {
         const response = await fetch(window.periodRoutes.store, {
@@ -118,6 +227,19 @@ async function submitEditPeriodForm() {
     const form = document.getElementById('edit-period-form');
     const formData = new FormData(form);
     const periodId = document.getElementById('edit-period-id').value;
+    
+    // Get start and end dates for overlap check
+    const startDate = document.getElementById('edit-start-date').value;
+    const endDate = document.getElementById('edit-end-date').value;
+    
+    // Check for date overlap before submitting
+    const overlappingPeriod = await checkPeriodOverlap(startDate, endDate, periodId);
+    if (overlappingPeriod) {
+        displayErrors('edit-period-error', 'edit-period-error-count', 'edit-period-error-list', {
+            'date_overlap': [`Periode tidak dapat bertabrakan dengan periode yang sudah ada. Periode "${overlappingPeriod.name}" sudah ada pada rentang tanggal ${overlappingPeriod.startDate} - ${overlappingPeriod.endDate}.`]
+        });
+        return;
+    }
 
     try {
         const response = await fetch(window.periodRoutes.update(periodId), {

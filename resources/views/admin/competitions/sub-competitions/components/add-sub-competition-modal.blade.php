@@ -89,21 +89,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <x-ui.form-select
-                                name="status"
-                                id="add-sub-status"
-                                label="Status"
-                                :options="[
-                                    'upcoming' => 'Akan Datang',
-                                    'ongoing' => 'Sedang Berlangsung',
-                                    'completed' => 'Selesai'
-                                ]"
-                                :selected="'upcoming'"
-                                placeholder="Pilih Status"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="sub-status-error"></p>
-                        </div>
+
                     </div>
                 </div>
                 
@@ -162,13 +148,29 @@
                         
                         <div class="form-group">
                             <x-ui.form-input
-                                type="url"
+                                type="text"
                                 name="registration_link"
                                 id="add-sub-registration-link"
                                 label="Link Pendaftaran"
-                                placeholder="https://example.com/daftar"
+                                placeholder="Masukkan link pendaftaran (opsional)"
                             />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="sub-registration-link-error"></p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <x-ui.form-select
+                                name="status"
+                                id="add-sub-status"
+                                label="Status"
+                                :options="[
+                                    'upcoming' => 'Akan Datang',
+                                    'ongoing' => 'Sedang Berlangsung',
+                                    'completed' => 'Selesai'
+                                ]"
+                                :selected="'upcoming'"
+                                placeholder="Pilih Status"
+                            />
+                            <p class="text-sm text-red-600 error-message hidden mt-1" id="sub-status-error"></p>
                         </div>
                         
                         <div class="md:col-span-2">
@@ -327,34 +329,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Form submission is handled by the JavaScript file (sub-competitions.js)
+        // to prevent duplicate submissions
         if (form) {
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                clearErrors();
-                
-                const formData = new FormData(form);
-                
-                fetch(`/admin/competitions/${competitionId}/sub-competitions`, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        closeModal();
-                        toastr.success('Sub-kompetisi berhasil ditambahkan!');
-                        window.location.reload();
-                    } else {
-                        displayErrors(data.errors || {});
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    toastr.error('Terjadi kesalahan. Silahkan coba lagi.');
-                });
             });
         }
         

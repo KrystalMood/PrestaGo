@@ -1,7 +1,15 @@
 @component('layouts.admin', ['title' => 'Detail Rekomendasi'])
+    @php
+        // Determine if this is for student or lecturer
+        $isForStudent = $recommendation->for_lecturer ? false : true;
+        $targetBadgeColor = $isForStudent ? 'bg-indigo-100 text-indigo-800' : 'bg-green-100 text-green-800';
+        $targetLabel = $isForStudent ? 'Rekomendasi untuk Mahasiswa' : 'Rekomendasi untuk Dosen';
+        $methodLabel = $isForStudent ? '(Metode AHP)' : '(Metode WP)';
+    @endphp
+    
     @include('admin.components.ui.page-header', [
-        'title' => 'Detail Rekomendasi',
-        'description' => 'Informasi lengkap tentang rekomendasi kompetisi untuk mahasiswa',
+        'title' => $targetLabel . ' ' . $methodLabel,
+        'description' => 'Informasi lengkap tentang rekomendasi kompetisi',
         'backUrl' => route('admin.recommendations.index'),
         'backText' => 'Kembali ke Daftar'
     ])
@@ -11,6 +19,16 @@
             <!-- Recommendation Info -->
             @component('admin.components.cards.card', ['title' => 'Informasi Rekomendasi'])
                 <div class="space-y-6">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-500">Jenis Rekomendasi:</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $targetBadgeColor }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="-ml-0.5 mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $isForStudent ? 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' : 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' }}" />
+                            </svg>
+                            {{ $targetLabel }}
+                        </span>
+                    </div>
+
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-gray-500">Status:</span>
                         @php
@@ -77,13 +95,21 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- AHP Result -->
-                            <div class="bg-gray-50 p-3 rounded-lg">
-                                <h5 class="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                    </svg>
-                                    Analytical Hierarchy Process (AHP)
-                                </h5>
+                            <div class="bg-gray-50 p-3 rounded-lg {{ $isForStudent ? 'ring-2 ring-indigo-200' : 'opacity-70' }}">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="text-sm font-medium text-gray-700 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        </svg>
+                                        Analytical Hierarchy Process (AHP)
+                                    </h5>
+                                    
+                                    @if($isForStudent)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            Untuk Mahasiswa
+                                        </span>
+                                    @endif
+                                </div>
                                 
                                 @if($recommendation->ahp_result_id)
                                     <div class="space-y-2">
@@ -131,13 +157,21 @@
                             </div>
                             
                             <!-- WP Result -->
-                            <div class="bg-gray-50 p-3 rounded-lg">
-                                <h5 class="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                                    </svg>
-                                    Weighted Product (WP)
-                                </h5>
+                            <div class="bg-gray-50 p-3 rounded-lg {{ !$isForStudent ? 'ring-2 ring-green-200' : 'opacity-70' }}">
+                                <div class="flex justify-between items-center mb-2">
+                                    <h5 class="text-sm font-medium text-gray-700 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                                        </svg>
+                                        Weighted Product (WP)
+                                    </h5>
+                                    
+                                    @if(!$isForStudent)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            Untuk Dosen
+                                        </span>
+                                    @endif
+                                </div>
                                 
                                 @if($recommendation->wp_result_id)
                                     <div class="space-y-2">
@@ -226,11 +260,8 @@
                         <h3 class="text-lg font-medium text-gray-900">{{ $recommendation->competition->name }}</h3>
                         <p class="text-sm text-gray-500">{{ $recommendation->competition->organizer }}</p>
                         <div class="mt-1">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $recommendation->competition->level === 'international' ? 'bg-purple-100 text-purple-800' : ($recommendation->competition->level === 'national' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 {{ ucfirst($recommendation->competition->level) }}
-                            </span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 ml-1">
-                                {{ ucfirst($recommendation->competition->type) }}
                             </span>
                         </div>
                     </div>
@@ -300,7 +331,7 @@
                     <img class="h-24 w-24 rounded-full mx-auto" src="{{ $recommendation->user->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($recommendation->user->name) . '&background=4338ca&color=fff&size=200' }}" alt="">
                     <h3 class="mt-2 text-lg font-medium text-gray-900">{{ $recommendation->user->name }}</h3>
                     <p class="text-sm text-gray-500">{{ $recommendation->user->nim }}</p>
-                    <p class="text-sm text-gray-500">{{ $recommendation->user->program_studi->name ?? 'Program Studi tidak tersedia' }}</p>
+                    <p class="text-sm text-gray-500">{{ $recommendation->user->programStudi->name ?? 'Program Studi tidak tersedia' }}</p>
                 </div>
                 
                 <div class="border-t border-gray-200 pt-4">

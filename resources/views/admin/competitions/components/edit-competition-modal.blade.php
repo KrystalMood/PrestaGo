@@ -30,7 +30,83 @@
                 </div>
             </div>
 
-            <form id="edit-competition-form" class="space-y-6" enctype="multipart/form-data">
+            <!-- Skeleton Loading -->
+            <div class="competition-edit-skeleton space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <!-- Competition Name Skeleton -->
+                    <div class="form-group md:col-span-2">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Nama Kompetisi</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Organizer Skeleton -->
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Penyelenggara</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Period Skeleton -->
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Periode</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Level Skeleton -->
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Level</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Status Skeleton -->
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Status</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Dates Skeleton -->
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Registration Dates Skeleton -->
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Pendaftaran</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai Pendaftaran</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Competition Date Skeleton -->
+                    <div class="form-group md:col-span-2">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Tanggal Kompetisi</div>
+                        <div class="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    <!-- Description Skeleton -->
+                    <div class="form-group md:col-span-2">
+                        <div class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</div>
+                        <div class="h-32 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions Skeleton -->
+                <div class="flex items-center justify-end space-x-3 pt-5 border-t border-gray-200 mt-6">
+                    <div class="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
+                    <div class="h-10 w-48 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+            </div>
+
+            <!-- Actual Form Content -->
+            <form id="edit-competition-form" class="competition-edit-content hidden space-y-6" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="edit-competition-id" name="id">
@@ -85,7 +161,8 @@
                                 'national' => 'Nasional',
                                 'regional' => 'Regional',
                                 'provincial' => 'Provinsi',
-                                'university' => 'Universitas'
+                                'university' => 'Universitas',
+                                'internal' => 'Internal'
                             ]"
                             :selected="''"
                             required

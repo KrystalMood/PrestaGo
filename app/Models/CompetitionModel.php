@@ -17,7 +17,6 @@ class CompetitionModel extends Model
         'description',
         'organizer',
         'level',
-        'type',
         'start_date',
         'end_date',
         'registration_start',
@@ -51,9 +50,17 @@ class CompetitionModel extends Model
     
     public function skills()
     {
-        return $this->belongsToMany(SkillModel::class, 'competition_skills', 'competition_id', 'skill_id')
-            ->withPivot('importance_level')
-            ->withTimestamps();
+        return $this->hasManyThrough(
+            SkillModel::class,
+            SubCompetitionModel::class,
+            'competition_id', 
+            'id', 
+            'id', 
+            'id' 
+        )->distinct()
+          ->join('sub_competition_skills', 'skills.id', '=', 'sub_competition_skills.skill_id')
+          ->where('sub_competitions.competition_id', '=', $this->id)
+          ->select('skills.*', 'sub_competition_skills.importance_level');
     }
 
     public function participants()
@@ -69,6 +76,13 @@ class CompetitionModel extends Model
     public function recommendations()
     {
         return $this->hasMany(RecommendationModel::class, 'competition_id', 'id');
+    }
+
+    public function interests()
+    {
+        return $this->belongsToMany(InterestAreaModel::class, 'competition_interests', 'competition_id', 'interest_area_id')
+                    ->withPivot('relevance_score', 'importance_factor', 'is_mandatory', 'minimum_level')
+                    ->withTimestamps();
     }
 
     public function mentorships()
@@ -108,13 +122,32 @@ class CompetitionModel extends Model
         }
         
         $levels = [
-            'international' => 'International',
-            'national' => 'National',
+            'international' => 'Internasional',
+            'national' => 'Nasional',
             'regional' => 'Regional',
-            'provincial' => 'Provincial',
-            'university' => 'University'
+            'provincial' => 'Provinsi',
+            'university' => 'Universitas',
+            'internal' => 'Internal'
         ];
         
         return $levels[$this->level] ?? ucfirst($this->level);
+    }
+
+    public function getStatusIndonesianAttribute()
+    {
+        if (empty($this->status)) {
+            return null;
+        }
+        
+        $statuses = [
+            'active' => 'Aktif',
+            'open' => 'Aktif',
+            'upcoming' => 'Akan Datang',
+            'completed' => 'Selesai',
+            'ongoing' => 'Sedang Berlangsung',
+            'closed' => 'Ditutup'
+        ];
+        
+        return $statuses[$this->status] ?? ucfirst($this->status);
     }
 } 

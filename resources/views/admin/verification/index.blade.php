@@ -26,16 +26,30 @@
                     'icon' => 'check-circle',
                     'key' => 'approvedVerifications'
                 ],
+                [
+                    'title' => 'Verifikasi Ditolak',
+                    'value' => $rejectedVerifications ?? 0,
+                    'icon' => 'x-circle',
+                    'key' => 'rejectedVerifications'
+                ],
             ];
         @endphp
-        @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
+        @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 4])
         @endcomponent
 
         @php
+            // Determine the current filter to be selected in the dropdown.
+            $currentSelectedFilter = 'all'; // Default for initial load or if no status is specified
+            if (isset($activeQueryStatus)) { // $activeQueryStatus is passed from controller
+                $currentSelectedFilter = $activeQueryStatus;
+            } elseif (request()->has('status')) {
+                $currentSelectedFilter = request('status');
+            }
+
             $filterOptions = [
                 ['value' => 'all', 'label' => 'Semua Status'],
                 ['value' => 'pending', 'label' => 'Menunggu'],
-                ['value' => 'approved', 'label' => 'Disetujui'],
+                ['value' => 'verified', 'label' => 'Disetujui'],
                 ['value' => 'rejected', 'label' => 'Ditolak']
             ];
         @endphp
@@ -46,12 +60,15 @@
             'filterOptions' => $filterOptions,
             'filterName' => 'status',
             'filterLabel' => 'Semua Status',
-            'currentFilter' => request('status')
+            'currentFilter' => $currentSelectedFilter // Use the determined selected filter
         ])
         @endcomponent
 
         <div id="verifications-table-container">
-            @component('admin.verification.components.tables')
+            @component('admin.verification.components.tables', [
+                'verifications' => $verifications ?? collect(),
+                'activeFilterStatus' => $currentSelectedFilter // Pass the active filter status to the table component
+            ])
             @slot('verifications', $verifications ?? collect())
             @endcomponent
         </div>
@@ -69,9 +86,26 @@
     <script>
         window.verificationRoutes = {
             index: "{{ route('admin.verification.index') }}",
+            show: "{{ route('admin.verification.show', ['id' => '__ID__']) }}",
             update: "{{ route('admin.verification.update', ['id' => '__ID__']) }}"
         };
         window.csrfToken = "{{ csrf_token() }}";
+        
+        // Add applyFilter function to ensure it's available immediately
+        function applyFilter() {
+            const status = document.getElementById('status') ? document.getElementById('status').value : null;
+            const search = document.getElementById('search') ? document.getElementById('search').value : null;
+            
+            const url = new URL(window.location.href);
+            
+            if (search) url.searchParams.set('search', search);
+            else url.searchParams.delete('search');
+            
+            if (status) url.searchParams.set('status', status);
+            else url.searchParams.delete('status');
+            
+            window.location.href = url.toString();
+        }
     </script>
 
     <!-- Load External JS -->

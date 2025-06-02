@@ -53,6 +53,26 @@ class PeriodController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
+        
+        $overlappingPeriod = PeriodModel::where(function($query) use ($request) {
+            $query->where('start_date', '<=', $request->start_date)
+                  ->where('end_date', '>=', $request->start_date);
+        })->orWhere(function($query) use ($request) {
+            $query->where('start_date', '<=', $request->end_date)
+                  ->where('end_date', '>=', $request->end_date);
+        })->orWhere(function($query) use ($request) {
+            $query->where('start_date', '>=', $request->start_date)
+                  ->where('end_date', '<=', $request->end_date);
+        })->first();
+        
+        if ($overlappingPeriod) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'date_overlap' => ['Periode baru tidak dapat bertabrakan dengan periode yang sudah ada. Periode "' . $overlappingPeriod->name . '" sudah ada pada rentang tanggal tersebut.']
+                ]
+            ], 422);
+        }
 
         $period = PeriodModel::create($validated);
 
@@ -89,6 +109,29 @@ class PeriodController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
+        
+        $overlappingPeriod = PeriodModel::where('id', '!=', $id)
+            ->where(function($query) use ($request) {
+                $query->where('start_date', '<=', $request->start_date)
+                      ->where('end_date', '>=', $request->start_date);
+            })->orWhere(function($query) use ($request, $id) {
+                $query->where('id', '!=', $id)
+                      ->where('start_date', '<=', $request->end_date)
+                      ->where('end_date', '>=', $request->end_date);
+            })->orWhere(function($query) use ($request, $id) {
+                $query->where('id', '!=', $id)
+                      ->where('start_date', '>=', $request->start_date)
+                      ->where('end_date', '<=', $request->end_date);
+            })->first();
+        
+        if ($overlappingPeriod) {
+            return response()->json([
+                'success' => false,
+                'errors' => [
+                    'date_overlap' => ['Periode tidak dapat bertabrakan dengan periode yang sudah ada. Periode "' . $overlappingPeriod->name . '" sudah ada pada rentang tanggal tersebut.']
+                ]
+            ], 422);
+        }
 
         $period->update($validated);
 
@@ -109,7 +152,6 @@ class PeriodController extends Controller
         $period = PeriodModel::with('competitions')->findOrFail($id);
         
         if (request()->ajax() || request()->wantsJson()) {
-            // Calculate status based on dates
             $now = now();
             $status = 'upcoming';
             

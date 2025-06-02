@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ? "$title | admin" . config('app.name', 'sim prestasi') : "admin | " . config('app.name', 'sim prestasi') }}</title>
+    <title>{{ $title ? "$title | " . config('app.name', 'PrestaGo') : config('app.name', 'PrestaGo') }}</title>
 
     <!-- favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}?v={{ time() }}" type="image/x-icon">
@@ -18,7 +18,7 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <!-- daisyui and tailwind -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -63,7 +63,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ? "$title | admin" . config('app.name', 'sim prestasi') : "admin | " . config('app.name', 'sim prestasi') }}</title>
+    <title>{{ $title ? "$title | " . config('app.name', 'PrestaGo') : config('app.name', 'PrestaGo') }}</title>
 
     <!-- favicon -->
     <link rel="icon" href="{{ asset('favicon.ico') }}?v={{ time() }}" type="image/x-icon">
@@ -74,7 +74,7 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <!-- daisyui and tailwind -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -134,25 +134,25 @@
         </div>
     </div>
     <script>
-        document.addeventlistener('domcontentloaded', function() {
-            const togglesidebar = document.getelementbyid('toggle-sidebar');
-            const closesidebar = document.getelementbyid('close-sidebar');
-            const sidebar = document.getelementbyid('mobile-sidebar');
-            const overlay = document.getelementbyid('sidebar-overlay');
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleSidebar = document.getElementById('toggle-sidebar');
+            const closeSidebar = document.getElementById('close-sidebar');
+            const sidebar = document.getElementById('mobile-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
 
-            if (togglesidebar && closesidebar && sidebar && overlay) {
-                togglesidebar.addeventlistener('click', function() {
-                    sidebar.classlist.remove('-translate-x-full');
-                    overlay.classlist.remove('hidden');
+            if (toggleSidebar && closeSidebar && sidebar && overlay) {
+                toggleSidebar.addEventListener('click', function() {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
                 });
 
-                function closemobilesidebar() {
-                    sidebar.classlist.add('-translate-x-full');
-                    overlay.classlist.add('hidden');
+                function closeMobileSidebar() {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
                 }
 
-                closesidebar.addeventlistener('click', closemobilesidebar);
-                overlay.addeventlistener('click', closemobilesidebar);
+                closeSidebar.addEventListener('click', closeMobileSidebar);
+                overlay.addEventListener('click', closeMobileSidebar);
             }
         });
     </script>

@@ -18,9 +18,11 @@ use App\Http\Controllers\Admin\UserController;
 Route::get('/', [AuthController::class, 'login']);
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'postlogin']);
-Route::get('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/register', [AuthController::class, 'postregister']);
 Route::get('/forgot-password', [AuthController::class, 'forgotPassword'])->name('password.request');
+
+// Debug routes
+Route::get('/debug/skills', [App\Http\Controllers\Student\ProfileController::class, 'getSkills']);
+Route::get('/api/interest-areas', [App\Http\Controllers\Student\ProfileController::class, 'getInterestAreas']);
 
 // Protected routes
 Route::middleware(['auth'])->group(function () {
@@ -44,14 +46,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/export', [UserController::class, 'export'])->name('export');
         });
 
-        // Achievement Verification Routes
-        Route::prefix('verification')->name('verification.')->group(function () {
-            Route::get('/', 'App\Http\Controllers\Admin\VerificationController@index')->name('index');
-            Route::get('/{id}', 'App\Http\Controllers\Admin\VerificationController@show')->name('show');
-            Route::put('/{id}', 'App\Http\Controllers\Admin\VerificationController@update')->name('update');
-        });
-
         // Competition Management Routes
+        Route::get('/update-competition-statuses', [App\Http\Controllers\Admin\CompetitionStatusController::class, 'updateStatuses'])->name('update-competition-statuses');
+        
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\CompetitionController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Admin\CompetitionController::class, 'create'])->name('create');
@@ -60,9 +57,6 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'update'])->name('update');
             Route::delete('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'destroy'])->name('destroy');
             Route::patch('/{competition}/toggle-verification', [App\Http\Controllers\Admin\CompetitionController::class, 'toggleVerification'])->name('toggle-verification');
-            Route::get('/{competition}/participants', [App\Http\Controllers\Admin\CompetitionController::class, 'participants'])->name('participants');
-            Route::post('/{competition}/participants', [App\Http\Controllers\Admin\CompetitionController::class, 'addParticipant'])->name('participants.store');
-            Route::delete('/{competition}/participants/{participant}', [App\Http\Controllers\Admin\CompetitionController::class, 'removeParticipant'])->name('participants.destroy');
             
             // Sub-competition routes
             Route::get('/{competition}/sub-competitions', [App\Http\Controllers\Admin\SubCompetitionController::class, 'index'])->name('sub-competitions.index');
@@ -72,7 +66,16 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{competition}/sub-competitions/{sub_competition}', [App\Http\Controllers\Admin\SubCompetitionController::class, 'destroy'])->name('sub-competitions.destroy');
             Route::get('/{competition}/sub-competitions/{sub_competition}/participants', [App\Http\Controllers\Admin\SubCompetitionController::class, 'participants'])->name('sub-competitions.participants');
             Route::post('/{competition}/sub-competitions/{sub_competition}/participants', [App\Http\Controllers\Admin\SubCompetitionController::class, 'addParticipant'])->name('sub-competitions.participants.store');
+            Route::get('/{competition}/sub-competitions/{sub_competition}/participants/{participant}/ajax', [App\Http\Controllers\Admin\SubCompetitionController::class, 'showParticipantAjax'])->name('sub-competitions.participants.show.ajax');
+            Route::put('/{competition}/sub-competitions/{sub_competition}/participants/{participant}', [App\Http\Controllers\Admin\SubCompetitionController::class, 'updateParticipant'])->name('sub-competitions.participants.update');
             Route::delete('/{competition}/sub-competitions/{sub_competition}/participants/{participant}', [App\Http\Controllers\Admin\SubCompetitionController::class, 'removeParticipant'])->name('sub-competitions.participants.destroy');
+            
+            // Sub-competition skills routes
+            Route::get('/{competition}/sub-competitions/{sub_competition}/skills/available', [App\Http\Controllers\Admin\SubCompetitionSkillController::class, 'getAvailableSkills'])->name('sub-competitions.skills.available');
+            Route::get('/{competition}/sub-competitions/{sub_competition}/skills', [App\Http\Controllers\Admin\SubCompetitionSkillController::class, 'index'])->name('sub-competitions.skills');
+            Route::post('/{competition}/sub-competitions/{sub_competition}/skills', [App\Http\Controllers\Admin\SubCompetitionSkillController::class, 'store'])->name('sub-competitions.skills.store');
+            Route::put('/{competition}/sub-competitions/{sub_competition}/skills/{skill}', [App\Http\Controllers\Admin\SubCompetitionSkillController::class, 'update'])->name('sub-competitions.skills.update');
+            Route::delete('/{competition}/sub-competitions/{sub_competition}/skills/{skill}', [App\Http\Controllers\Admin\SubCompetitionSkillController::class, 'destroy'])->name('sub-competitions.skills.destroy');
         });
 
         // Period Management Routes
@@ -97,13 +100,12 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/edit', [App\Http\Controllers\Admin\StudyProgramController::class, 'edit'])->name('edit');
             Route::put('/{id}', [App\Http\Controllers\Admin\StudyProgramController::class, 'update'])->name('update');
             Route::delete('/{id}', [App\Http\Controllers\Admin\StudyProgramController::class, 'destroy'])->name('destroy');
+            Route::get('/{id}/json', [App\Http\Controllers\Admin\StudyProgramController::class, 'getJson'])->name('json');
         });
 
         // Recommendation Management Routes
         Route::prefix('recommendations')->name('recommendations.')->group(function () {
            Route::get('/', [App\Http\Controllers\Admin\RecommendationController::class, 'index'])->name('index');
-           Route::get('/create', [App\Http\Controllers\Admin\RecommendationController::class, 'create'])->name('create');
-           Route::post('/', [App\Http\Controllers\Admin\RecommendationController::class, 'store'])->name('store');
            Route::get('/automatic', [App\Http\Controllers\Admin\RecommendationController::class, 'automatic'])->name('automatic');
            Route::post('/generate', [App\Http\Controllers\Admin\RecommendationController::class, 'generate'])->name('generate');
            Route::post('/save-generated', [App\Http\Controllers\Admin\RecommendationController::class, 'saveGenerated'])->name('save-generated');
@@ -136,34 +138,52 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}', 'App\Http\Controllers\Admin\AchievementVerificationController@show')->name('show');
             Route::post('/{id}/approve', 'App\Http\Controllers\Admin\AchievementVerificationController@approve')->name('approve');
             Route::post('/{id}/reject', 'App\Http\Controllers\Admin\AchievementVerificationController@reject')->name('reject');
+            Route::put('/{id}', 'App\Http\Controllers\Admin\AchievementVerificationController@update')->name('update');
             Route::get('/attachment/{id}/download', 'App\Http\Controllers\Admin\AchievementVerificationController@downloadAttachment')->name('download');
             Route::get('/export', 'App\Http\Controllers\Admin\AchievementVerificationController@export')->name('export');
         });
     });
 
     // Student routes
-    Route::prefix('student')->name('Mahasiswa.')->middleware(['auth.user:MHS'])->group(function () {
+    Route::prefix('student')->name('student.')->middleware(['auth.user:MHS'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'studentDashboard'])->name('dashboard');
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
-            Route::get('/', function () {
-                return view('Mahasiswa.achievements.index');
-            })->name('index');
-            Route::get('/create', function () {
-                return view('Mahasiswa.achievements.create');
-            })->name('create');
+            Route::get('/', 'App\Http\Controllers\Student\AchievementController@index')->name('index');
+            Route::get('/create', 'App\Http\Controllers\Student\AchievementController@create')->name('create');
+            Route::post('/', 'App\Http\Controllers\Student\AchievementController@store')->name('store');
+            Route::get('/{id}/edit', 'App\Http\Controllers\Student\AchievementController@edit')->name('edit');
+            Route::put('/{id}', 'App\Http\Controllers\Student\AchievementController@update')->name('update');
+            Route::delete('/{id}', 'App\Http\Controllers\Student\AchievementController@destroy')->name('destroy');
+            Route::get('/{id}', 'App\Http\Controllers\Student\AchievementController@show')->name('show');
+            Route::get('/{id}/details', 'App\Http\Controllers\Student\AchievementController@getDetails')->name('details');
         });
 
         Route::prefix('competitions')->name('competitions.')->group(function () {
-            Route::get('/', function () {
-                return view('Mahasiswa.competitions.index');
-            })->name('index');
+            Route::get('/', 'App\Http\Controllers\Student\CompetitionController@index')->name('index');
+            Route::get('/{id}', 'App\Http\Controllers\Student\CompetitionController@show')->name('show');
+            
+            // Sub-competition routes
+            Route::prefix('/{competitionId}/sub')->name('sub.')->group(function () {
+                Route::get('/{subCompetitionId}', 'App\Http\Controllers\Student\CompetitionController@showSubCompetition')->name('show');
+                Route::match(['get', 'post'], '/{subCompetitionId}/apply', 'App\Http\Controllers\Student\CompetitionController@applySubCompetition')->name('apply');
+            });
         });
 
         Route::prefix('profile')->name('profile.')->group(function () {
-            Route::get('/', function () {
-                return view('Mahasiswa.profile.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\Student\ProfileController::class, 'index'])->name('index');
+            Route::post('/update', [App\Http\Controllers\Student\ProfileController::class, 'update'])->name('update');
+            Route::post('/skills', [App\Http\Controllers\Student\ProfileController::class, 'updateSkills'])->name('skills.update');
+            Route::post('/interests', [App\Http\Controllers\Student\ProfileController::class, 'updateInterests'])->name('interests.update');
+        });
+
+        // Competition feedback routes
+        Route::prefix('feedback')->name('feedback.')->group(function () {
+            Route::get('/', 'App\Http\Controllers\Student\CompetitionFeedbackController@index')->name('index');
+            Route::post('/', 'App\Http\Controllers\Student\CompetitionFeedbackController@store')->name('store');
+            Route::get('/{id}', 'App\Http\Controllers\Student\CompetitionFeedbackController@show')->name('show');
+            Route::delete('/{id}', 'App\Http\Controllers\Student\CompetitionFeedbackController@destroy')->name('destroy');
+            Route::get('/list', 'App\Http\Controllers\Student\CompetitionFeedbackController@list')->name('list');
         });
     });
 

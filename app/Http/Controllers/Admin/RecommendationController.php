@@ -29,7 +29,7 @@ class RecommendationController extends Controller
 
     public function index(Request $request)
     {
-        $query = RecommendationModel::with(['user', 'user.program_studi', 'competition'])
+        $query = RecommendationModel::with(['user', 'user.programStudi', 'competition'])
             ->orderBy('created_at', 'desc');
             
         if ($request->has('search') && $request->search) {
@@ -129,7 +129,7 @@ class RecommendationController extends Controller
         $recommendation = RecommendationModel::with([
             'user', 
             'user.skills', 
-            'user.program_studi', 
+            'user.programStudi', 
             'competition',
             'competition.skills'
         ])->findOrFail($id);
@@ -184,33 +184,30 @@ class RecommendationController extends Controller
 
     public function automatic()
     {
-        $competitions = CompetitionModel::where(function($query) {
-            $query->where('status', 'upcoming')
-                  ->orWhere('status', 'active');
-        })->get();
+        $competitions = CompetitionModel::all();
             
         $programs = StudyProgramModel::all();
         
-        return view('admin.recommendations.automatic', compact('competitions', 'programs'));
+        $latest_recommendations = RecommendationModel::with(['user', 'competition'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+        
+        return view('admin.recommendations.automatic', compact('competitions', 'programs', 'latest_recommendations'));
     }
 
     public function generate(Request $request)
     {
         $validated = $request->validate([
             'competition_id' => 'nullable|exists:competitions,id',
-            'program_studi_id' => 'nullable|exists:program_studis,id',
+            'program_studi_id' => 'nullable|exists:study_programs,id',
             'threshold' => 'required|numeric|min:0|max:100',
             'max_recommendations' => 'required|integer|min:1|max:10',
-            'dss_method' => 'required|in:ahp,wp,combined',
-            'ahp_consistency_threshold' => 'required_if:dss_method,ahp,combined|numeric|min:0|max:0.2',
-            'ahp_priority_skills' => 'required_if:dss_method,ahp,combined|integer|min:1|max:9',
-            'ahp_priority_achievements' => 'required_if:dss_method,ahp,combined|integer|min:1|max:9',
-            'ahp_priority_academic' => 'required_if:dss_method,ahp,combined|integer|min:1|max:9',
-            'ahp_priority_interests' => 'required_if:dss_method,ahp,combined|integer|min:1|max:9',
-            'weight_skills' => 'required_if:dss_method,wp,combined|integer|min:0|max:100',
-            'weight_achievements' => 'required_if:dss_method,wp,combined|integer|min:0|max:100',
-            'weight_academic' => 'required_if:dss_method,wp,combined|integer|min:0|max:100',
-            'weight_interests' => 'required_if:dss_method,wp,combined|integer|min:0|max:100',
+            'dss_method' => 'required|in:ahp',
+            'ahp_consistency_threshold' => 'required|numeric|min:0|max:0.2',
+            'ahp_priority_skills' => 'required|integer|min:1|max:9',
+            'ahp_priority_achievements' => 'required|integer|min:1|max:9',
+            'ahp_priority_interests' => 'required|integer|min:1|max:9',
         ]);
         
         try {
@@ -419,10 +416,6 @@ class RecommendationController extends Controller
             
             foreach ($achievements as $achievement) {
                 $relevance = 0.5; 
-                
-                if (isset($achievement->type) && isset($competition->type) && $achievement->type === $competition->type) {
-                    $relevance = 1.0; 
-                }
                 
                 $levelMultiplier = 1.0;
                 

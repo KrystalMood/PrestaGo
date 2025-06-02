@@ -7,6 +7,7 @@ use App\Models\CompetitionModel;
 use App\Models\SkillModel;
 use App\Models\PeriodModel;
 use App\Models\UserModel;
+use App\Models\SubCompetitionModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,8 +17,7 @@ class CompetitionController extends Controller
 { 
     public function index(Request $request)
     {
-        $query = CompetitionModel::with(['addedBy', 'period', 'skills'])
-            ->withCount('participants')
+        $query = CompetitionModel::with(['addedBy', 'period', 'skills', 'subCompetitions.participants'])
             ->orderBy('created_at', 'desc');
             
         if ($request->has('search') && $request->search) {
@@ -42,7 +42,7 @@ class CompetitionController extends Controller
         $totalCompetitions = CompetitionModel::count();
         $activeCompetitions = CompetitionModel::where('status', 'active')->count();
         $completedCompetitions = CompetitionModel::where('status', 'completed')->count();
-        $registeredParticipants = \App\Models\CompetitionParticipantModel::count();
+        $registeredParticipants = \App\Models\SubCompetitionParticipantModel::count();
         $categories = \App\Models\CategoryModel::all();
         $skills = SkillModel::all();
         $periods = PeriodModel::all();
@@ -60,6 +60,7 @@ class CompetitionController extends Controller
             ['value' => 'regional', 'label' => 'Regional'],
             ['value' => 'provincial', 'label' => 'Provinsi'],
             ['value' => 'university', 'label' => 'Universitas'],
+            ['value' => 'internal', 'label' => 'Internal'],
         ];
         
         if ($request->ajax() || $request->has('ajax')) {
@@ -106,7 +107,7 @@ class CompetitionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'organizer' => 'required|string|max:255',
-            'level' => 'required|string|in:international,national,regional,provincial,university',
+            'level' => 'required|string|in:international,national,regional,provincial,university,internal',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'registration_start' => 'nullable|date',
@@ -149,7 +150,7 @@ class CompetitionController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'organizer' => 'required|string|max:255',
-            'level' => 'required|string|in:international,national,regional,provincial,university',
+            'level' => 'required|string|in:international,national,regional,provincial,university,internal',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'registration_start' => 'nullable|date',
@@ -186,7 +187,7 @@ class CompetitionController extends Controller
             return back()->with('error', 'Tidak dapat menghapus kompetisi yang sudah memiliki peserta.');
         }
         
-        $competition->skills()->detach();
+        $competition->subCompetitions()->delete();
         $competition->delete();
         
         if ($request->ajax()) {
@@ -205,63 +206,43 @@ class CompetitionController extends Controller
         $competition->verified = !$competition->verified;
         $competition->save();
         
-        $status = $competition->verified ? 'diverifikasi' : 'belum diverifikasi';
-        
-        return back()->with('success', "Kompetisi telah {$status}!");
+        return back()->with('success', 'Status verifikasi kompetisi telah diubah!');
     }
     
-    public function participants(CompetitionModel $competition)
+    public function getSubCompetitions($competition)
     {
-        $competition->load(['participants', 'participants.user']);
-        
-        $students = UserModel::where('role', 'MHS')
-            ->whereNotIn('id', $competition->participants->pluck('user_id'))
-            ->orderBy('name')
-            ->get();
-        
-        return view('admin.competitions.participants', compact('competition', 'students'));
-    }
-
-    public function addParticipant(Request $request, CompetitionModel $competition)
-    {
-        $validated = $request->validate([
-            'student_id' => 'required|exists:users,id',
-            'status' => 'required|in:registered,pending',
-        ]);
-        
-        $exists = $competition->participants()->where('user_id', $validated['student_id'])->exists();
-        
-        if ($exists) {
-            return back()->with('error', 'Mahasiswa ini sudah terdaftar minat pada kompetisi ini.');
+        try {
+            \Log::info('Attempting to get sub-competitions for competition ID: ' . $competition);
+            \Log::info('Executing SubCompetitionModel query for competition ID: ' . $competition);
+            $subCompetitions = SubCompetitionModel::where('competition_id', $competition)
+                ->orderBy('name')
+                ->get(['id', 'name']);
+                
+            return response()->json($subCompetitions);
+        } catch (\Exception $e) {
+            \Log::error('Error getting sub-competitions: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch sub-competitions', 'message' => $e->getMessage()], 500);
         }
-        
-        $competition->participants()->create([
-            'user_id' => $validated['student_id'],
-            'status' => $validated['status'],
-            'notes' => 'Pendaftaran minat untuk kompetisi utama'
-        ]);
-        
-        return back()->with('success', 'Pendaftaran minat berhasil ditambahkan.');
     }
     
-    public function removeParticipant(CompetitionModel $competition, $participant)
+    public function getAllSubCompetitions()
     {
-        $hasSubCompetitionRegistrations = $competition->subCompetitions()
-            ->whereHas('participants', function($query) use ($participant) {
-                $query->where('user_id', function($subQuery) use ($participant) {
-                    $subQuery->select('user_id')
-                        ->from('competition_participants')
-                        ->where('id', $participant);
+        try {
+            $subCompetitions = SubCompetitionModel::with('competition')
+                ->orderBy('name')
+                ->get()
+                ->map(function($subCompetition) {
+                    return [
+                        'id' => $subCompetition->id,
+                        'name' => $subCompetition->name,
+                        'competition_name' => $subCompetition->competition->name ?? 'Unknown Competition',
+                    ];
                 });
-            })
-            ->exists();
-
-        if ($hasSubCompetitionRegistrations) {
-            return back()->with('error', 'Tidak dapat menghapus pendaftaran minat karena mahasiswa sudah terdaftar di sub-kompetisi.');
+                
+            return response()->json($subCompetitions);
+        } catch (\Exception $e) {
+            \Log::error('Error getting all sub-competitions: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to fetch all sub-competitions', 'message' => $e->getMessage()], 500);
         }
-
-        $competition->participants()->findOrFail($participant)->delete();
-        
-        return back()->with('success', 'Pendaftaran minat berhasil dihapus.');
     }
 } 

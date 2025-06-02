@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class CompetitionSkillModel extends Model
 {
@@ -16,6 +17,16 @@ class CompetitionSkillModel extends Model
         'skill_id',
         'importance_level',
     ];
+    
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+        
+        if (!\Illuminate\Support\Facades\Schema::hasTable('competition_skills')) {
+            $this->setTable('non_existent_table'); 
+            $this->exists = false; 
+        }
+    }
 
     public function competition()
     {

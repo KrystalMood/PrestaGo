@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('name', 255);
             $table->text('description');
             $table->string('organizer', 255);
-            $table->enum('level', ['international', 'national', 'regional', 'provincial', 'university']);
-            $table->enum('type', ['individual', 'team', 'both']);
+            $table->string('level');
             $table->date('start_date');
             $table->date('end_date');
             $table->date('registration_start');

@@ -116,7 +116,6 @@ Stores information about competitions available for students.
 | description | text | Detailed description |
 | organizer | varchar(255) | Competition organizer |
 | level | varchar(50) | Competition level (international, national, regional) |
-| type | varchar(50) | Competition type/category |
 | start_date | date | Competition start date |
 | end_date | date | Competition end date |
 | registration_start | date | Registration start date |

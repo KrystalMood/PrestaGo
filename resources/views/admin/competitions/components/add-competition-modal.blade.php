@@ -94,7 +94,8 @@
                                     'national' => 'Nasional',
                                     'regional' => 'Regional',
                                     'provincial' => 'Provinsi',
-                                    'university' => 'Universitas'
+                                    'university' => 'Universitas',
+                                    'internal' => 'Internal'
                                 ]"
                                 :selected="''"
                                 required
@@ -103,23 +104,7 @@
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="level-error"></p>
                         </div>
 
-                        <div class="form-group">
-                            <x-ui.form-select
-                                name="status"
-                                id="add-status"
-                                label="Status"
-                                :options="[
-                                    'upcoming' => 'Akan Datang',
-                                    'active' => 'Aktif',
-                                    'completed' => 'Selesai',
-                                    'cancelled' => 'Dibatalkan'
-                                ]"
-                                :selected="''"
-                                required
-                                placeholder="Pilih Status"
-                            />
-                            <p class="text-sm text-red-600 error-message hidden mt-1" id="status-error"></p>
-                        </div>
+                        <!-- Status field moved to step 2 -->
                     </div>
                 </div>
 
@@ -177,6 +162,25 @@
                                 required
                             />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="competition-date-error"></p>
+                        </div>
+
+                        <!-- Status field moved from step 1 to step 2 -->
+                        <div class="form-group md:col-span-2">
+                            <x-ui.form-select
+                                name="status"
+                                id="add-status"
+                                label="Status"
+                                :options="[
+                                    'upcoming' => 'Akan Datang',
+                                    'active' => 'Aktif',
+                                    'completed' => 'Selesai',
+                                    'cancelled' => 'Dibatalkan'
+                                ]"
+                                :selected="''"
+                                required
+                                placeholder="Pilih Status"
+                            />
+                            <p class="text-sm text-red-600 error-message hidden mt-1" id="status-error"></p>
                         </div>
 
                         <div class="form-group md:col-span-2">

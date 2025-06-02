@@ -49,6 +49,13 @@ class SubCompetitionModel extends Model
     {
         return $this->hasMany(SubCompetitionParticipantModel::class, 'sub_competition_id', 'id');
     }
+    
+    public function skills()
+    {
+        return $this->belongsToMany(SkillModel::class, 'sub_competition_skills', 'sub_competition_id', 'skill_id')
+            ->withPivot('importance_level', 'weight_value', 'criterion_type', 'ahp_priority')
+            ->withTimestamps();
+    }
 
     public function getRequirementsHtmlAttribute()
     {
@@ -71,5 +78,23 @@ class SubCompetitionModel extends Model
         }
         
         return '<ul class="list-disc pl-5 space-y-1">' . implode('', $htmlLines) . '</ul>';
+    }
+    
+    public function getStatusIndonesianAttribute()
+    {
+        if (empty($this->status)) {
+            return null;
+        }
+        
+        $statuses = [
+            'active' => 'Aktif',
+            'open' => 'Aktif',
+            'upcoming' => 'Akan Datang',
+            'completed' => 'Selesai',
+            'ongoing' => 'Sedang Berlangsung',
+            'closed' => 'Ditutup'
+        ];
+        
+        return $statuses[$this->status] ?? ucfirst($this->status);
     }
 } 

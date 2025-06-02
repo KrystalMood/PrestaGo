@@ -15,12 +15,14 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('sub_competition_id');
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('mentor_id')->nullable();
             $table->string('team_name')->nullable();
             $table->string('status', 20)->default('registered');
             $table->timestamps();
             
             $table->foreign('sub_competition_id')->references('id')->on('sub_competitions')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('mentor_id')->references('id')->on('users')->onDelete('set null');
             
             // Ensure a user can only participate once in a specific sub-competition
             $table->unique(['sub_competition_id', 'user_id']);

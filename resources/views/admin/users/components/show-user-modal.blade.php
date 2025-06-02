@@ -40,6 +40,24 @@
                     <div id="show-email" class="bg-gray-50 px-3 py-2 rounded-md border border-gray-300 text-gray-700"></div>
                 </div>
 
+                <!-- Program Studi field -->
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Program Studi</label>
+                    <div id="show-program-studi" class="bg-gray-50 px-3 py-2 rounded-md border border-gray-300 text-gray-700"></div>
+                </div>
+
+                <!-- NIM field - only visible for students -->
+                <div class="form-group student-field" id="nim-container" style="display: none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIM (Nomor Induk Mahasiswa)</label>
+                    <div id="show-nim" class="bg-gray-50 px-3 py-2 rounded-md border border-gray-300 text-gray-700"></div>
+                </div>
+
+                <!-- NIP field - only visible for lecturers -->
+                <div class="form-group lecturer-field" id="nip-container" style="display: none;">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">NIP (Nomor Induk Pegawai)</label>
+                    <div id="show-nip" class="bg-gray-50 px-3 py-2 rounded-md border border-gray-300 text-gray-700"></div>
+                </div>
+
                 <div class="form-group md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Terdaftar Pada</label>
                     <div id="show-created-at" class="bg-gray-50 px-3 py-2 rounded-md border border-gray-300 text-gray-700"></div>

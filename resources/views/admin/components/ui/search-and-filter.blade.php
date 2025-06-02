@@ -45,7 +45,7 @@
             >
                 <option value="">Semua Status</option>
                 @foreach($statuses as $s)
-                    @if(($s['value'] !== '' && $s['label'] !== 'Semua Status'))
+                    @if($s['value'] !== '')
                         <option value="{{ $s['value'] }}" {{ request('status') == $s['value'] ? 'selected' : '' }}>
                             {{ $s['label'] }}
                         </option>

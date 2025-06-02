@@ -69,6 +69,45 @@
                         required
                         placeholder="Pilih Peran"
                     />
+                    
+                    <!-- Study Program field - visible for all users -->
+                    @php
+                        $studyProgramOptions = [];
+                        foreach(App\Models\StudyProgramModel::all() as $program) {
+                            $studyProgramOptions[$program->id] = $program->name . ' (' . $program->code . ')';
+                        }
+                    @endphp
+
+                    <x-ui.form-select
+                        name="program_studi_id"
+                        id="edit-program-studi-id"
+                        label="Program Studi"
+                        :options="$studyProgramOptions"
+                        :selected="''"
+                        placeholder="Pilih Program Studi"
+                    />
+                    
+                    <!-- NIM field - only visible for students -->
+                    <div class="form-group student-field" style="display: none;">
+                        <x-ui.form-input
+                            name="nim"
+                            id="edit-nim"
+                            label="NIM (Nomor Induk Mahasiswa)"
+                            placeholder="Masukkan NIM"
+                        />
+                        <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-nim-error"></p>
+                    </div>
+
+                    <!-- NIP field - only visible for lecturers -->
+                    <div class="form-group lecturer-field" style="display: none;">
+                        <x-ui.form-input
+                            name="nip"
+                            id="edit-nip"
+                            label="NIP (Nomor Induk Pegawai)"
+                            placeholder="Masukkan NIP"
+                        />
+                        <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-nip-error"></p>
+                    </div>
 
                     <div class="form-group">
                         <label for="edit-photo" class="block text-sm font-medium text-gray-700 mb-1">Foto Profil</label>

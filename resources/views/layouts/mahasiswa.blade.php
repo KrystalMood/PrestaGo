@@ -1,7 +1,11 @@
 @extends('components.shared.content')
 
 @section('content')
-{{ $slot }}
+    @if(isset($slot))
+        {{ $slot }}
+    @else
+        @yield('content')
+    @endif
 @endsection
 
 

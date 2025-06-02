@@ -23,17 +23,6 @@
                         <option value="mi">Manajemen Informatika</option>
                     </select>
                 </div>
-                <div>
-                    <label for="competition_type" class="block text-sm font-medium text-gray-700">Jenis Lomba</label>
-                    <select id="competition_type" name="competition_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                        <option value="all">Semua Jenis</option>
-                        <option value="programming">Pemrograman</option>
-                        <option value="design">Desain</option>
-                        <option value="business">Bisnis</option>
-                        <option value="research">Penelitian</option>
-                        <option value="robotics">Robotika</option>
-                    </select>
-                </div>
                 <div class="flex items-center">
                     <input id="include_participants" name="include_participants" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                     <label for="include_participants" class="ml-2 block text-sm text-gray-700">Tampilkan data peserta</label>
