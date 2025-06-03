@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\dosen;
 
 use App\Http\Controllers\Controller;
+use App\Models\CompetitionParticipantModel;
 use App\Models\InterestAreaModel;
 use App\Models\SkillModel;
 use App\Models\StudyProgramModel;
@@ -20,6 +21,7 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $countStudents = CompetitionParticipantModel::where('mentor_id', $user->id)->count();
         $skills = SkillModel::orderBy('category')->orderBy('name')->get();
         $interests = InterestAreaModel::where('is_active', true)->orderBy('display_order')->get();
         $studyPrograms = StudyProgramModel::orderBy('name')->get();
@@ -29,6 +31,7 @@ class ProfileController extends Controller
         
         return view('dosen.profile.index', compact(
             'user',
+            'countStudents',
             'skills',
             'interests',
             'studyPrograms',

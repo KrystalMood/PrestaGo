@@ -81,8 +81,8 @@
                                 <input type="hidden" name="program_studi_id" value="{{ $user->program_studi_id }}">
                             </div>
                             <div>
-                                <label for="jumlah_jurnal" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Jurnal</label>
-                                <input type="text" id="jumlah_jurnal" name="jumlah_jurnal" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" value="{{ $user->jumlah_jurnal }}">
+                                <label for="mahasiswa" class="block text-sm font-medium text-gray-700 mb-1">Jumlah mahasiswa yang dibimbing</label>
+                                <input type="text" id="mahasiswa" name="mahasiswa" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-50" value="{{ $countStudents }}" disabled>
                             </div>
                         </div>
 
