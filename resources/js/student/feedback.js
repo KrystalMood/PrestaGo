@@ -60,6 +60,21 @@ function initFeedbackFunctionality() {
     }
     
     const form = document.getElementById('feedback-form');
+    const competitionSelect = document.getElementById('competition_id');
+    const feedbackContent = document.getElementById('feedback-form-content');
+    const submitButton = document.getElementById('submit-button');
+    const feedbackExistsWarning = document.getElementById('feedback-exists-warning');
+    
+    if (competitionSelect) {
+        competitionSelect.addEventListener('change', function() {
+            const competitionId = this.value;
+            if (competitionId) {
+                checkFeedbackEligibility(competitionId);
+            } else {
+                enableFeedbackForm(true);
+            }
+        });
+    }
     
     if (form && ratingInput) {
         form.addEventListener('submit', function(e) {
@@ -72,6 +87,85 @@ function initFeedbackFunctionality() {
     }
 
     loadPreviousFeedback();
+}
+
+/**
+ * Checks if the user is eligible to provide feedback for the selected competition
+ * @param {number} competitionId - The ID of the selected competition
+ */
+function checkFeedbackEligibility(competitionId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const feedbackContent = document.getElementById('feedback-form-content');
+    const submitButton = document.getElementById('submit-button');
+    const feedbackExistsWarning = document.getElementById('feedback-exists-warning');
+    
+    // Show loading state
+    if (feedbackContent) {
+        feedbackContent.classList.add('opacity-50', 'pointer-events-none');
+    }
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+    
+    fetch('/student/feedback/check-eligibility', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({
+            competition_id: competitionId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.eligible) {
+            // User is eligible to provide feedback
+            enableFeedbackForm(true);
+            if (feedbackExistsWarning) {
+                feedbackExistsWarning.classList.add('hidden');
+            }
+        } else {
+            // User is not eligible to provide feedback
+            enableFeedbackForm(false);
+            if (feedbackExistsWarning) {
+                feedbackExistsWarning.textContent = data.message;
+                feedbackExistsWarning.classList.remove('hidden');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking feedback eligibility:', error);
+        // In case of error, enable the form to prevent blocking the user
+        enableFeedbackForm(true);
+    })
+    .finally(() => {
+        // Remove loading state
+        if (feedbackContent) {
+            feedbackContent.classList.remove('opacity-50', 'pointer-events-none');
+        }
+    });
+}
+
+/**
+ * Enables or disables the feedback form based on eligibility
+ * @param {boolean} enable - Whether to enable the form
+ */
+function enableFeedbackForm(enable) {
+    const feedbackContent = document.getElementById('feedback-form-content');
+    const submitButton = document.getElementById('submit-button');
+    
+    if (feedbackContent) {
+        if (enable) {
+            feedbackContent.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            feedbackContent.classList.add('opacity-50', 'pointer-events-none');
+        }
+    }
+    
+    if (submitButton) {
+        submitButton.disabled = !enable;
+    }
 }
 
 /**

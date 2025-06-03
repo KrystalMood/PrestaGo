@@ -51,13 +51,15 @@
                         <span class="block text-xs text-gray-500">{{ $user ? $user->email : 'user@example.com' }}</span>
                     </li>
                     <li><a class="text-sm">Profil</a></li>
-                    <li><a class="text-sm">Pengaturan</a></li>
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="w-full text-left text-sm text-red-500">Logout</button>
-                        </form>
-                    </li>
+                    <form method="POST" action="{{ route('logout') }}" class="mt-1 px-2">
+                        @csrf
+                        <button type="submit" class="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 px-3 rounded-lg flex items-center justify-center transition-all duration-200 font-medium text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Logout
+                        </button>
+                    </form>
                 </ul>
             </div>
         </div>

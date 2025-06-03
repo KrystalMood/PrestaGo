@@ -40,6 +40,61 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeEditAchievement();
         initializeDeleteAchievement();
         initializeCreateForm();
+        fetchCompetitionsForDropdowns();
+    }
+    
+    /**
+     * Fetches the list of competitions from the server to populate dropdown selects
+     */
+    function fetchCompetitionsForDropdowns() {
+        const createDropdown = document.getElementById('create-competition-id');
+        const editDropdown = document.getElementById('edit-competition-id');
+        
+        if (!createDropdown && !editDropdown) return;
+        
+        fetch('/student/api/competitions/list')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch competitions');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && Array.isArray(data.competitions)) {
+                    const competitions = data.competitions;
+                    
+                    // Populate create form dropdown
+                    if (createDropdown) {
+                        createDropdown.innerHTML = '<option value="">-- Pilih jika prestasi terkait dengan kompetisi terdaftar --</option>';
+                        
+                        competitions.forEach(competition => {
+                            const option = document.createElement('option');
+                            option.value = competition.id;
+                            option.textContent = `${competition.name} (${competition.organizer || 'Tidak ada penyelenggara'})`;
+                            createDropdown.appendChild(option);
+                        });
+                    }
+                    
+                    // Populate edit form dropdown
+                    if (editDropdown) {
+                        editDropdown.innerHTML = '<option value="">-- Pilih jika prestasi terkait dengan kompetisi terdaftar --</option>';
+                        
+                        competitions.forEach(competition => {
+                            const option = document.createElement('option');
+                            option.value = competition.id;
+                            option.textContent = `${competition.name} (${competition.organizer || 'Tidak ada penyelenggara'})`;
+                            editDropdown.appendChild(option);
+                        });
+                    }
+                    
+                    console.log('Competitions dropdown populated with', competitions.length, 'items');
+                } else {
+                    console.error('Invalid response format or empty competitions list');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching competitions:', error);
+            });
     }
     
     /**

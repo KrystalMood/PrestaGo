@@ -20,15 +20,9 @@
                 'icon' => 'user-plus',
                 'key' => 'newUsers'
             ],
-            [
-                'title' => 'Total Pengguna Aktif',
-                'value' => $activeUsers ?? 0,
-                'icon' => 'user-check',
-                'key' => 'activeUsers'
-            ],
         ];
     @endphp
-    @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
+    @component('admin.components.cards.stats-cards', ['stats' => $stats, 'columns' => 2])
     @endcomponent
 
     <div class="mt-4 mb-6 flex justify-end space-x-3">

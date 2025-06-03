@@ -27,6 +27,18 @@ class StudyProgramController extends Controller
         $totalPrograms = StudyProgramModel::count();
         $totalFaculties = StudyProgramModel::distinct('faculty')->count('faculty');
         
+        if ($request->ajax() || $request->has('ajax')) {
+            return response()->json([
+                'success' => true,
+                'table' => view('admin.programs.components.tables', compact('programs'))->render(),
+                'pagination' => view('admin.components.tables.pagination', ['data' => $programs])->render(),
+                'stats' => [
+                    'totalPrograms' => $totalPrograms,
+                    'totalFaculties' => $totalFaculties
+                ]
+            ]);
+        }
+        
         return view('admin.programs.index', compact(
             'programs',
             'totalPrograms',

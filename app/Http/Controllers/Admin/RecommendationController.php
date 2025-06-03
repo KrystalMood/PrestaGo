@@ -172,9 +172,13 @@ class RecommendationController extends Controller
             'status' => 'required|in:accepted,rejected'
         ]);
         
+        \Log::info('Updating recommendation status: ' . $request->status . ' for ID: ' . $id);
+        
         $recommendation = RecommendationModel::findOrFail($id);
         $recommendation->status = $request->status;
         $recommendation->save();
+        
+        \Log::info('Recommendation after save: ', $recommendation->toArray());
         
         $statusText = $request->status === 'accepted' ? 'diterima' : 'ditolak';
         
@@ -208,15 +212,15 @@ class RecommendationController extends Controller
             'ahp_priority_skills' => 'required|integer|min:1|max:9',
             'ahp_priority_achievements' => 'required|integer|min:1|max:9',
             'ahp_priority_interests' => 'required|integer|min:1|max:9',
+            'ahp_priority_deadline' => 'required|integer|min:1|max:9',
+            'ahp_priority_competition_level' => 'required|integer|min:1|max:9',
         ]);
         
         try {
             DB::beginTransaction();
             
-            // Generate recommendations using the service
             $recommendations = $this->recommendationService->generateRecommendations($validated);
             
-            // Save all recommendations
             foreach ($recommendations as $recommendation) {
                 $recommendation->save();
             }
@@ -444,5 +448,33 @@ class RecommendationController extends Controller
         }
         
         return $factors;
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $recommendation = RecommendationModel::findOrFail($id);
+            $recommendation->delete();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Rekomendasi berhasil dihapus!'
+                ]);
+            }
+            
+            return redirect()->route('admin.recommendations.index')
+                ->with('success', 'Rekomendasi berhasil dihapus!');
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus rekomendasi: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.recommendations.index')
+                ->with('error', 'Gagal menghapus rekomendasi: ' . $e->getMessage());
+        }
     }
 } 

@@ -1395,6 +1395,31 @@ function updateSkillProgressBar(event) {
     }
 }
 
+// Function to update the interest progress bar when interest level changes
+function updateInterestProgressBar(event) {
+    const select = event.target;
+    const level = parseInt(select.value, 10);
+    const cardElement = select.closest('div[data-interest-id]');
+    
+    if (cardElement) {
+        const progressBar = cardElement.querySelector('.interest-progress-bar');
+        
+        if (progressBar) {
+            progressBar.style.width = `${(level / 5) * 100}%`;
+            
+            const levelTextContainer = progressBar.parentElement.nextElementSibling;
+            if (levelTextContainer) {
+                levelTextContainer.textContent = `${level}/5`;
+            } else {
+                const levelText = cardElement.querySelector('.flex.items-center.mt-2 span');
+                if (levelText) {
+                    levelText.textContent = `${level}/5`;
+                }
+            }
+        }
+    }
+}
+
 // Function to initialize progress bars for skills and interests that are already on the page
 function initializeProgressBars() {
     document.querySelectorAll('.skill-level-select').forEach(select => {

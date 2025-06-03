@@ -22,13 +22,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const ahpPrioritySliders = [
         document.getElementById('ahp_priority_skills'),
         document.getElementById('ahp_priority_achievements'),
-        document.getElementById('ahp_priority_interests')
+        document.getElementById('ahp_priority_interests'),
+        document.getElementById('ahp_priority_deadline'),
+        document.getElementById('ahp_priority_competition_level')
     ];
     
     const ahpPriorityValues = [
         document.getElementById('ahp_priority_skills_value'),
         document.getElementById('ahp_priority_achievements_value'),
-        document.getElementById('ahp_priority_interests_value')
+        document.getElementById('ahp_priority_interests_value'),
+        document.getElementById('ahp_priority_deadline_value'),
+        document.getElementById('ahp_priority_competition_level_value')
     ];
     
     if (ahpPrioritySliders.length > 0 && ahpPrioritySliders[0] && ahpPriorityValues.length > 0 && ahpPriorityValues[0]) {

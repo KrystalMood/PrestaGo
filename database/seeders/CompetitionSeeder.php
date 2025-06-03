@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\CompetitionModel;
 use App\Models\PeriodModel;
 use App\Models\CategoryModel;
+use Carbon\Carbon;
 
 class CompetitionSeeder extends Seeder
 {
@@ -24,6 +25,9 @@ class CompetitionSeeder extends Seeder
         $businessId = CategoryModel::where('slug', 'bisnis-ti')->first()->id ?? null;
         $writingId = CategoryModel::where('slug', 'karya-tulis')->first()->id ?? null;
 
+        // Current date for reference
+        $now = Carbon::now();
+        
         $competitions = [
             [
                 'name' => 'Gemastik XVI',
@@ -87,11 +91,11 @@ class CompetitionSeeder extends Seeder
                 'description' => 'Kompetisi pengembangan solusi IoT untuk Smart Campus dengan fokus pada efisiensi energi dan manajemen sumber daya.',
                 'organizer' => 'Jurusan Teknik Elektro Polinema',
                 'level' => 'Internal',
-                'start_date' => '2024-07-25',
-                'end_date' => '2024-07-27',
-                'registration_start' => '2024-06-10',
-                'registration_end' => '2024-07-10',
-                'competition_date' => '2024-07-25',
+                'start_date' => $now->copy()->subMonths(3)->format('Y-m-d'),
+                'end_date' => $now->copy()->subMonths(3)->addDays(2)->format('Y-m-d'),
+                'registration_start' => $now->copy()->subMonths(4)->format('Y-m-d'),
+                'registration_end' => $now->copy()->subMonths(3)->subDays(15)->format('Y-m-d'),
+                'competition_date' => $now->copy()->subMonths(3)->format('Y-m-d'),
                 'registration_link' => 'https://elektro.polinema.ac.id/hackathon-iot',
                 'status' => 'completed',
                 'verified' => true,
@@ -106,13 +110,13 @@ class CompetitionSeeder extends Seeder
                 'description' => 'Kompetisi perencanaan bisnis untuk mahasiswa dengan fokus pada inovasi dan sustainability.',
                 'organizer' => 'Jurusan Administrasi Niaga Polinema',
                 'level' => 'Internal',
-                'start_date' => '2024-10-05',
-                'end_date' => '2024-10-07',
-                'registration_start' => '2024-08-15',
-                'registration_end' => '2024-09-15',
-                'competition_date' => '2024-10-05',
+                'start_date' => $now->copy()->subMonths(2)->format('Y-m-d'),
+                'end_date' => $now->copy()->subMonths(2)->addDays(2)->format('Y-m-d'),
+                'registration_start' => $now->copy()->subMonths(3)->format('Y-m-d'),
+                'registration_end' => $now->copy()->subMonths(2)->subDays(15)->format('Y-m-d'),
+                'competition_date' => $now->copy()->subMonths(2)->format('Y-m-d'),
                 'registration_link' => 'https://administrasi-niaga.polinema.ac.id/bisnis-plan',
-                'status' => 'upcoming',
+                'status' => 'completed',
                 'verified' => true,
                 'added_by' => 1,
                 'period_id' => $periodId,
@@ -125,13 +129,13 @@ class CompetitionSeeder extends Seeder
                 'description' => 'Kompetisi karya tulis ilmiah dengan tema "Inovasi Teknologi untuk Pembangunan Berkelanjutan"',
                 'organizer' => 'Kemendikbud',
                 'level' => 'National',
-                'start_date' => '2024-09-10',
-                'end_date' => '2024-09-12',
-                'registration_start' => '2024-07-01',
-                'registration_end' => '2024-08-01',
-                'competition_date' => '2024-09-10',
+                'start_date' => $now->copy()->subMonths(1)->format('Y-m-d'),
+                'end_date' => $now->copy()->subMonths(1)->addDays(2)->format('Y-m-d'),
+                'registration_start' => $now->copy()->subMonths(2)->format('Y-m-d'),
+                'registration_end' => $now->copy()->subMonths(1)->subDays(15)->format('Y-m-d'),
+                'competition_date' => $now->copy()->subMonths(1)->format('Y-m-d'),
                 'registration_link' => 'https://lktin.kemdikbud.go.id/',
-                'status' => 'upcoming',
+                'status' => 'completed',
                 'verified' => true,
                 'added_by' => 1,
                 'period_id' => $periodId,

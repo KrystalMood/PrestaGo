@@ -88,7 +88,7 @@
                 <option value="">{{ $filterLabel }}</option>
                 @foreach($filterOptions as $opt)
                     @if($opt['value'] !== '' && $opt['label'] !== $filterLabel)
-                        <option value="{{ $opt['value'] }}" {{ request($filterName) == $opt['value'] ? 'selected' : '' }}>
+                        <option value="{{ $opt['value'] }}" {{ $currentFilter == $opt['value'] ? 'selected' : '' }}>
                             {{ $opt['label'] }}
                         </option>
                     @endif
@@ -104,21 +104,41 @@
         const status = document.getElementById('status') ? document.getElementById('status').value : null;
         const level = document.getElementById('level') ? document.getElementById('level').value : null;
         const search = document.getElementById('search') ? document.getElementById('search').value : null;
-        const genericFilter = {{ json_encode($filterName) }} ? document.getElementById('{{ $filterName }}')?.value : null;
+        const filterName = "{{ $filterName }}";
+        const filterElement = filterName ? document.getElementById(filterName) : null;
+        const genericFilter = filterElement ? filterElement.value : null;
         
         const url = new URL(window.location.href);
         
-        if (search) url.searchParams.set('search', search);
-        else url.searchParams.delete('search');
+        if (search) {
+            url.searchParams.set('search', search);
+        } else {
+            url.searchParams.delete('search');
+        }
         
-        if (status) url.searchParams.set('status', status);
-        else url.searchParams.delete('status');
+        if (status !== null) {
+            if (status !== '') {
+                url.searchParams.set('status', status);
+            } else {
+                url.searchParams.delete('status');
+            }
+        }
         
-        if (level) url.searchParams.set('level', level);
-        else url.searchParams.delete('level');
+        if (level !== null) {
+            if (level !== '') {
+                url.searchParams.set('level', level);
+            } else {
+                url.searchParams.delete('level');
+            }
+        }
         
-        if (genericFilter) url.searchParams.set('{{ $filterName }}', genericFilter);
-        else url.searchParams.delete('{{ $filterName }}');
+        if (filterName && genericFilter !== null) {
+            if (genericFilter !== '') {
+                url.searchParams.set(filterName, genericFilter);
+            } else {
+                url.searchParams.delete(filterName);
+            }
+        }
         
         window.location.href = url.toString();
     }

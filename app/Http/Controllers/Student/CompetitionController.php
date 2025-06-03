@@ -8,6 +8,7 @@ use App\Models\CompetitionModel;
 use App\Models\CategoryModel;
 use App\Models\SubCompetitionModel;
 use App\Models\SubCompetitionParticipantModel;
+use App\Models\RecommendationModel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserModel;
@@ -138,6 +139,26 @@ class CompetitionController extends Controller
         $activeCompetitions = CompetitionModel::where('verified', true)
             ->where('status', 'active')
             ->count();
+        
+        $recommendedCompetitions = 0;
+        $recommendations = collect();
+        
+        if (Auth::check()) {
+            $userId = Auth::id();
+            
+            $recommendations = RecommendationModel::with('competition')
+                ->where('user_id', $userId)
+                ->whereNotIn('status', ['pending', 'rejected'])
+                ->orderBy('match_score', 'desc')
+                ->get();
+                
+            $recommendedCompetitions = $recommendations->count();
+            
+            \Log::info('User ID: ' . $userId . ', Found ' . $recommendedCompetitions . ' recommendations');
+            if ($recommendedCompetitions > 0) {
+                \Log::info('First recommendation status: ' . $recommendations->first()->status);
+            }
+        }
             
         $subCompetitionCategories = SubCompetitionModel::select('category_id')
             ->distinct()
@@ -161,7 +182,8 @@ class CompetitionController extends Controller
                 'stats' => [
                     'totalCompetitions' => $totalCompetitions,
                     'newCompetitions' => $newCompetitions,
-                    'activeCompetitions' => $activeCompetitions
+                    'activeCompetitions' => $activeCompetitions,
+                    'recommendedCompetitions' => $recommendedCompetitions
                 ]
             ]);
         }
@@ -171,6 +193,8 @@ class CompetitionController extends Controller
             'totalCompetitions',
             'newCompetitions',
             'activeCompetitions',
+            'recommendedCompetitions',
+            'recommendations',
             'subCompetitionCategories'
         ));
     }
@@ -179,10 +203,13 @@ class CompetitionController extends Controller
     {
         $this->updateCompetitionStatuses();
         
-        $competition = CompetitionModel::with(['skills', 'period', 'subCompetitions', 'subCompetitions.category'])
+        $competition = CompetitionModel::with(['period', 'subCompetitions', 'subCompetitions.category'])
             ->where('id', $id)
             ->where('verified', true)
             ->firstOrFail();
+            
+        // Manually load skills relationship to avoid the addEagerConstraints error
+        $competition->setRelation('skills', $competition->skills()->get());
             
         if ($competition->subCompetitions) {
             $competition->setRelation(
@@ -234,7 +261,20 @@ class CompetitionController extends Controller
         ));
     }
     
-    public function applySubCompetition($competitionId, $subCompetitionId)
+    public function getCompetitionsList()
+    {
+        $competitions = CompetitionModel::where('verified', true)
+            ->whereIn('status', ['upcoming', 'active'])
+            ->orderBy('name')
+            ->get(['id', 'name', 'organizer']);
+        
+        return response()->json([
+            'success' => true,
+            'competitions' => $competitions
+        ]);
+    }
+    
+    public function applySubCompetition(Request $request, $competitionId, $subCompetitionId)
     {
         $competition = CompetitionModel::where('id', $competitionId)
             ->where('verified', true)

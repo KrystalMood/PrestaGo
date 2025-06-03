@@ -135,10 +135,16 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end gap-2">
-                                <a href="{{ route('admin.competitions.sub-competitions.index', $competition->id) }}" class="btn btn-sm btn-ghost text-purple-600 hover:bg-purple-50 transition-colors" title="Lihat Sub-Kompetisi">
+                                <a href="{{ route('admin.competitions.sub-competitions.index', $competition->id) }}" class="btn btn-sm btn-ghost text-purple-600 hover:bg-purple-50 transition-colors relative" title="Lihat Sub-Kompetisi">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                     </svg>
+                                    @php
+                                        $subCompetitionsCount = $competition->subCompetitions->count();
+                                    @endphp
+                                    @if($subCompetitionsCount > 0)
+                                        <span class="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-purple-100 bg-purple-600 rounded-full">{{ $subCompetitionsCount }}</span>
+                                    @endif
                                 </a>
                             <button type="button" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 transition-colors show-competition" data-competition-id="{{ $competition->id }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

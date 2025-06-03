@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('competition_id');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('mentor_id')->nullable();
+            $table->string('team_name')->nullable();
             $table->string('status', 50);
             $table->text('notes')->nullable();
             $table->timestamps();

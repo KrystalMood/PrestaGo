@@ -154,23 +154,7 @@
                                 </svg>
                             </button>
                             
-                            @if($verification->status == 'pending')
-                            <button type="button" class="btn btn-sm btn-ghost text-green-600 hover:bg-green-50 transition-colors approve-verification" 
-                                data-id="{{ $verification->achievement_id ?? $verification->id ?? '' }}"
-                                data-verification-id="{{ $verification->achievement_id ?? $verification->id ?? '' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </button>
-                            
-                            <button type="button" class="btn btn-sm btn-ghost text-red-600 hover:bg-red-50 transition-colors reject-verification" 
-                                data-id="{{ $verification->achievement_id ?? $verification->id ?? '' }}"
-                                data-verification-id="{{ $verification->achievement_id ?? $verification->id ?? '' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                            @endif
+
                         </div>
                     </td>
                 </tr>

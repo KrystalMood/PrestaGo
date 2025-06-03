@@ -134,6 +134,22 @@
                                         </label>
                                         <input type="range" id="ahp_priority_interests" name="ahp_priority_interests" min="1" max="9" value="4" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
                                     </div>
+                                    
+                                    <div>
+                                        <label for="ahp_priority_deadline" class="flex justify-between items-center text-sm text-gray-700">
+                                            <span>Tenggat Waktu</span>
+                                            <span id="ahp_priority_deadline_value">3</span>
+                                        </label>
+                                        <input type="range" id="ahp_priority_deadline" name="ahp_priority_deadline" min="1" max="9" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="ahp_priority_competition_level" class="flex justify-between items-center text-sm text-gray-700">
+                                            <span>Tingkat Lomba</span>
+                                            <span id="ahp_priority_competition_level_value">6</span>
+                                        </label>
+                                        <input type="range" id="ahp_priority_competition_level" name="ahp_priority_competition_level" min="1" max="9" value="6" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    </div>
                                 </div>
                                 <p class="mt-1 text-xs text-gray-500">
                                     Tingkat kepentingan relatif antar kriteria (skala 1-9)
@@ -187,6 +203,18 @@
                             </svg>
                             <span><strong>Minat</strong> - Kesesuaian minat mahasiswa dengan bidang kompetisi</span>
                         </li>
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span><strong>Tenggat Waktu</strong> - Urgensi berdasarkan jarak waktu hingga batas pendaftaran</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span><strong>Tingkat Lomba</strong> - Tingkat kompetisi (internasional, nasional, provinsi, dll)</span>
+                        </li>
                     </ul>
                     
                     <div class="mt-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
@@ -212,6 +240,14 @@
                             <li class="flex items-start">
                                 <span class="inline-block bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">AHP</span> 
                                 <span>Pastikan rasio konsistensi AHP < 0.1 untuk hasil yang valid</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="inline-block bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">AHP</span> 
+                                <span>Tingkatkan prioritas tenggat waktu untuk kompetisi yang mendekati deadline</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="inline-block bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">AHP</span> 
+                                <span>Tingkatkan prioritas tingkat lomba untuk mendorong partisipasi di kompetisi internasional/nasional</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="inline-block bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-xs mr-1 flex-shrink-0">Umum</span> 
@@ -321,6 +357,14 @@
                                         <div class="flex items-center justify-between">
                                             <span>Minat:</span>
                                             <span>{{ $rec['factors']['interests'] }}%</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span>Tenggat:</span>
+                                            <span>{{ $rec['factors']['deadline'] ?? 'N/A' }}%</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span>Tingkat Lomba:</span>
+                                            <span>{{ $rec['factors']['competition_level'] ?? 'N/A' }}%</span>
                                         </div>
                                     </div>
                                 </td>

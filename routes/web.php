@@ -113,6 +113,7 @@ Route::middleware(['auth'])->group(function () {
            Route::get('/export', [App\Http\Controllers\Admin\RecommendationController::class, 'export'])->name('export');
            Route::get('/{id}', [App\Http\Controllers\Admin\RecommendationController::class, 'show'])->name('show');
            Route::patch('/{id}/status', [App\Http\Controllers\Admin\RecommendationController::class, 'updateStatus'])->name('update-status');
+           Route::delete('/{id}', [App\Http\Controllers\Admin\RecommendationController::class, 'destroy'])->name('destroy');
         });
 
         // Report Management Routes
@@ -125,11 +126,8 @@ Route::middleware(['auth'])->group(function () {
         // Settings Management Routes
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('index');
-            Route::get('/general', [App\Http\Controllers\Admin\SettingsController::class, 'general'])->name('general');
-            Route::post('/general', [App\Http\Controllers\Admin\SettingsController::class, 'updateGeneral'])->name('general.update');
-            Route::get('/email', [App\Http\Controllers\Admin\SettingsController::class, 'email'])->name('email');
-            Route::get('/security', [App\Http\Controllers\Admin\SettingsController::class, 'security'])->name('security');
-            Route::get('/display', [App\Http\Controllers\Admin\SettingsController::class, 'display'])->name('display');
+            Route::post('/security', [App\Http\Controllers\Admin\SettingsController::class, 'updateSecurity'])->name('security.update');
+            Route::post('/change-password', [App\Http\Controllers\Admin\SettingsController::class, 'changePassword'])->name('change-password');
         });
 
         // Achievement Verification Routes
@@ -169,6 +167,9 @@ Route::middleware(['auth'])->group(function () {
                 Route::match(['get', 'post'], '/{subCompetitionId}/apply', 'App\Http\Controllers\Student\CompetitionController@applySubCompetition')->name('apply');
             });
         });
+
+        // API for dropdown options
+        Route::get('/api/competitions/list', 'App\Http\Controllers\Student\CompetitionController@getCompetitionsList')->name('api.competitions.list');
 
         Route::prefix('profile')->name('profile.')->group(function () {
             Route::get('/', [App\Http\Controllers\Student\ProfileController::class, 'index'])->name('index');

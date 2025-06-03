@@ -15,7 +15,7 @@
     
     $variantClasses = [
         'primary' => 'border-transparent bg-brand hover:bg-brand-dark text-white focus:ring-brand',
-        'secondary' => 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:ring-brand',
+        'secondary' => 'border-gray-300 bg-white hover:bg-gray-100 text-gray-700 focus:ring-brand',
         'danger' => 'border-transparent bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
         'success' => 'border-transparent bg-green-600 hover:bg-green-700 text-white focus:ring-green-500',
         'warning' => 'border-transparent bg-yellow-500 hover:bg-yellow-600 text-white focus:ring-yellow-500',

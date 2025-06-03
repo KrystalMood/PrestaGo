@@ -17,7 +17,7 @@ class UserController extends Controller
     {
         $query = UserModel::with('level');
         
-        if ($request->has('search')) {
+        if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%$search%")
@@ -36,7 +36,6 @@ class UserController extends Controller
         
         $totalUsers = UserModel::count();
         $newUsers = UserModel::whereDate('created_at', '>=', now()->subDays(30))->count();
-        $activeUsers = $totalUsers;
         
         if ($request->ajax()) {
             if ($request->has('ajax') && $request->ajax == 1) {
@@ -56,12 +55,11 @@ class UserController extends Controller
                 'stats' => [
                     'totalUsers' => $totalUsers,
                     'newUsers' => $newUsers,
-                    'activeUsers' => $activeUsers,
                 ]
             ]);
         }
         
-        return view('admin.users.index', compact('users', 'roles', 'totalUsers', 'newUsers', 'activeUsers'));
+        return view('admin.users.index', compact('users', 'roles', 'totalUsers', 'newUsers'));
     }
 
     public function create()

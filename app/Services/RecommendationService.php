@@ -124,6 +124,8 @@ class RecommendationService
             'skills' => $params['ahp_priority_skills'] ?? 6,
             'achievements' => $params['ahp_priority_achievements'] ?? 5,
             'interests' => $params['ahp_priority_interests'] ?? 6,
+            'deadline' => $params['ahp_priority_deadline'] ?? 4,
+            'competition_level' => $params['ahp_priority_competition_level'] ?? 7,
         ];
         
         $pairwiseMatrix = $this->ahpService->createPairwiseMatrixFromPriorities($priorities);
@@ -160,7 +162,9 @@ class RecommendationService
         $factors = [
             'skills' => 0,
             'achievements' => 0,
-            'interests' => 0
+            'interests' => 0,
+            'deadline' => 0,
+            'competition_level' => 0
         ];
         
         $studentSkills = $student->skills()->get();
@@ -395,11 +399,57 @@ class RecommendationService
             $factors['interests'] = round(($interestMatchScore / $maxPossibleInterestScore) * 100);
         }
         
+        // Calculate deadline factor
+        if ($competition->registration_end) {
+            $now = Carbon::now();
+            $registrationEnd = Carbon::parse($competition->registration_end);
+            $daysUntilDeadline = $now->diffInDays($registrationEnd, false);
+            
+            Log::info("[FactorDebug] Competition {$competition->id} Days until deadline: {$daysUntilDeadline}");
+            
+            if ($daysUntilDeadline < 0) {
+                // Registration already closed
+                $factors['deadline'] = 0;
+            } else if ($daysUntilDeadline <= 7) {
+                // Urgent (less than a week)
+                $factors['deadline'] = 100;
+            } else if ($daysUntilDeadline <= 14) {
+                // Soon (1-2 weeks)
+                $factors['deadline'] = 85;
+            } else if ($daysUntilDeadline <= 30) {
+                // Medium (2-4 weeks)
+                $factors['deadline'] = 70;
+            } else if ($daysUntilDeadline <= 60) {
+                // Comfortable (1-2 months)
+                $factors['deadline'] = 50;
+            } else {
+                // Far away (more than 2 months)
+                $factors['deadline'] = 30;
+            }
+            
+            Log::info("[FactorDebug] Deadline factor: {$factors['deadline']}");
+        }
+        
+        // Calculate competition level factor
+        $levelScores = [
+            'international' => 100,
+            'national' => 85,
+            'regional' => 70,
+            'provincial' => 60,
+            'university' => 40,
+            'internal' => 30
+        ];
+        
+        $level = strtolower($competition->level ?? 'internal');
+        $factors['competition_level'] = $levelScores[$level] ?? 30;
+        
+        Log::info("[FactorDebug] Competition {$competition->id} Level: {$level}, Factor: {$factors['competition_level']}");
+        
         Log::info("RecommendationService: Calculated factors for Student ID {$student->id} & Competition ID {$competition->id}", [
             'student_id' => $student->id,
             'competition_id' => $competition->id,
             'factors' => $factors,
-            'interest_matches' => $interestMatches
+            'interest_matches' => $interestMatches ?? []
         ]);
 
         return $factors;
@@ -420,15 +470,20 @@ class RecommendationService
     
     private function getTargetCompetitions(?int $competitionId): Collection
     {
-        $query = CompetitionModel::with(['skills', 'interests']);
-        
         if ($competitionId) {
-            return $query->where('id', $competitionId)->get();
+            $competitions = CompetitionModel::where('id', $competitionId)->get();
+        } else {
+            $competitions = CompetitionModel::where(function($q) {
+                $q->where('status', 'upcoming')
+                  ->orWhere('status', 'active');
+            })->get();
         }
         
-        return $query->where(function($q) {
-            $q->where('status', 'upcoming')
-              ->orWhere('status', 'active');
-        })->get();
+        foreach ($competitions as $competition) {
+            $competition->setRelation('skills', $competition->skills()->get());
+            $competition->setRelation('interests', $competition->interests()->get());
+        }
+        
+        return $competitions;
     }
 } 

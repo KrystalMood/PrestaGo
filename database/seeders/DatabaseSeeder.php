@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             SubCompetitionSeeder::class,
             ActivitySeeder::class,
             AchievementSeeder::class,
+            CompetitionParticipantSeeder::class,
+            CompetitionFeedbackSeeder::class,
         ]);
         
         if (Schema::hasTable('sub_competition_skills')) {

@@ -12,4 +12,7 @@ Route::prefix('feedback')->name('feedback.')->middleware(['auth', 'role:student'
     
     // AJAX route to list feedback
     Route::get('/list', [CompetitionFeedbackController::class, 'list'])->name('list');
+    
+    // Check if student can provide feedback for a competition
+    Route::post('/check-eligibility', [CompetitionFeedbackController::class, 'checkFeedbackEligibility'])->name('check-eligibility');
 }); 

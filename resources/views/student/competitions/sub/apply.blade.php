@@ -4,6 +4,28 @@
 
 @component('layouts.app', ['title' => 'Daftar Kompetisi - ' . $subCompetition->name])
 
+<!-- Add Select2 CSS -->
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container {
+        width: 100% !important;
+    }
+    .select2-container--default .select2-selection--single {
+        height: 42px;
+        padding: 6px;
+        border-color: #d1d5db;
+        border-radius: 0.375rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5;
+    }
+</style>
+@endpush
+
 <div class="bg-white rounded-lg shadow-custom p-6">
     <!-- Breadcrumbs -->
     <div class="mb-4">
@@ -194,6 +216,13 @@
                         document.addEventListener('DOMContentLoaded', function() {
                             const teamMemberSelects = document.querySelectorAll('.team-member-select');
                             
+                            // Initialize Select2 for team members
+                            $('.team-member-select').select2({
+                                placeholder: "Cari dan pilih mahasiswa...",
+                                allowClear: true,
+                                width: '100%'
+                            });
+                            
                             // Update disabled options based on selected values
                             function updateDisabledOptions() {
                                 // Get all currently selected values
@@ -221,12 +250,20 @@
                                             option.classList.remove('text-gray-400');
                                         }
                                     });
+                                    
+                                    // Refresh Select2 to reflect the changes
+                                    $(select).select2('destroy');
+                                    $(select).select2({
+                                        placeholder: "Cari dan pilih mahasiswa...",
+                                        allowClear: true,
+                                        width: '100%'
+                                    });
                                 });
                             }
                             
                             // Add change event listeners to all selects
                             teamMemberSelects.forEach(select => {
-                                select.addEventListener('change', updateDisabledOptions);
+                                $(select).on('change', updateDisabledOptions);
                             });
                             
                             // Initialize on page load (for when old values are preserved)
@@ -322,6 +359,22 @@
         </form>
     </div>
 </div>
+
+<!-- Add Select2 JS -->
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for supervising lecturer
+        $('#mentor_id').select2({
+            placeholder: "Cari dan pilih dosen pendamping...",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+@endpush
 
 @endcomponent
 @endsection 

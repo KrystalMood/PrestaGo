@@ -294,11 +294,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
                 credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalButtonText;
@@ -313,6 +319,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 showNotification(data.message || 'Program added successfully', 'success');
 
+                // Go to first page when adding a new item
+                const currentUrl = new URL(window.location);
+                currentUrl.searchParams.delete('page');
+                window.history.pushState({}, '', currentUrl);
+                
                 refreshProgramsTable();
             })
             .catch(error => {
@@ -479,11 +490,17 @@ document.addEventListener('DOMContentLoaded', function() {
             body: formData,
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             },
             credentials: 'same-origin'
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             submitButton.disabled = false;
             submitButton.innerHTML = originalButtonText;
@@ -558,11 +575,17 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             credentials: 'same-origin'
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalButtonText;
@@ -592,15 +615,26 @@ document.addEventListener('DOMContentLoaded', function() {
     async function refreshProgramsTable() {
         const currentUrl = new URL(window.location);
         currentUrl.searchParams.set('ajax', 'true');
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPage = urlParams.get('page');
+        if (currentPage) {
+            currentUrl.searchParams.set('page', currentPage);
+        }
 
         try {
             const response = await fetch(currentUrl.toString(), {
                 method: 'GET',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 },
                 credentials: 'same-origin'
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
 
             const data = await response.json();
 
@@ -609,13 +643,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             document.getElementById('programs-table-container').innerHTML = data.table;
-            document.getElementById('pagination-container').innerHTML = data.pagination;
+            
+            const paginationContainer = document.getElementById('pagination-container');
+            if (paginationContainer && data.pagination) {
+                paginationContainer.innerHTML = data.pagination;
+            }
 
             if (data.stats) {
                 updateStats(data.stats);
             }
 
             attachPaginationHandlers();
+            attachEditButtonListeners();
+            attachShowButtonListeners();
+            attachDeleteButtonListeners();
 
         } catch (error) {
             console.error('Error refreshing programs table:', error);

@@ -83,12 +83,6 @@
                                     <input type="hidden" name="program_studi_id" value="{{ $user->program_studi_id }}">
                                 </div>
                             </div>
-
-                            <div>
-                                <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">Biografi Singkat</label>
-                                <textarea id="bio" name="bio" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">{{ $user->bio ?? '' }}</textarea>
-                                <p class="mt-1 text-xs text-gray-500">Ceritakan sedikit tentang diri Anda, minat, dan tujuan akademik</p>
-                            </div>
                             
                             <div class="pt-4">
                                 <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">

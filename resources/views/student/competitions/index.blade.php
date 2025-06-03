@@ -26,15 +26,56 @@
                 'key' => 'newCompetitions'
             ],
             [
-                'title' => 'Kompetisi Aktif',
-                'value' => $activeCompetitions ?? 0,
-                'icon' => 'check-circle',
-                'key' => 'activeCompetitions'
+                'title' => 'Rekomendasi Admin',
+                'value' => $recommendedCompetitions ?? 0,
+                'icon' => 'badge-check',
+                'key' => 'recommendedCompetitions'
             ],
         ];
     @endphp
     @component('student.competitions.components.stats-cards', ['stats' => $stats, 'columns' => 3])
     @endcomponent
+
+    @if(isset($recommendations) && $recommendations->count() > 0)
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Rekomendasi Kompetisi untuk Anda</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="recommendations-container">
+                @foreach($recommendations as $recommendation)
+                    @if($recommendation->competition)
+                        <div class="bg-white rounded-lg shadow-custom p-4 hover:shadow-lg transition-shadow cursor-pointer recommendation-card">
+                            <h3 class="font-semibold text-indigo-700 mb-2">{{ $recommendation->competition->name }}</h3>
+                            <div class="flex items-center text-sm text-gray-600 mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>{{ $recommendation->competition->start_date ? \Carbon\Carbon::parse($recommendation->competition->start_date)->format('d M Y') : 'TBA' }}</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600 mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span>{{ $recommendation->competition->organizer }}</span>
+                            </div>
+                            <div class="flex items-center mb-3">
+                                <div class="text-xs bg-green-100 text-green-800 rounded-full px-2 py-1 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    <span>{{ number_format($recommendation->match_score, 0) }}% Match</span>
+                                </div>
+                            </div>
+                            @if($recommendation->recommendation_reason)
+                                <p class="text-sm text-gray-600 mb-3">{{ $recommendation->recommendation_reason }}</p>
+                            @endif
+                            <a href="{{ route('student.competitions.show', $recommendation->competition->id) }}" class="block text-center border border-indigo-600 hover:bg-indigo-700 text-indigo-600 hover:text-white font-medium py-2 px-4 rounded transition-colors">
+                                Lihat Detail
+                            </a>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     @component('student.competitions.components.search-and-filter', [
         'searchRoute' => route('student.competitions.index'),
@@ -63,6 +104,11 @@
     };
     window.csrfToken = "{{ csrf_token() }}";
 </script>
+
+@push('scripts')
+    @vite('resources/js/student/recommendations.js')
+    @vite('resources/js/student/competitions.js')
+@endpush
 
 @endcomponent
 @endsection
