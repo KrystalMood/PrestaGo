@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
 use App\Models\AchievementModel;
+use App\Models\AttachmentModel;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\Auth;
 
 class AchievementController extends Controller
 {
@@ -118,6 +120,84 @@ class AchievementController extends Controller
      * @param  int  $id
      * @return \Illuminate\View\View
      */
+
+    public function getDetails($id,$userId)
+    {
+        try {
+
+            \Log::info('Achievement details request', [
+                'user_id' => $userId,
+                'achievement_id' => $id
+            ]);
+            
+            $achievement = AchievementModel::where('id', $id)
+                ->where('user_id', $userId)
+                ->first();
+                
+            if (!$achievement) {
+                \Log::warning('Achievement not found', [
+                    'achievement_id' => $id,
+                    'user_id' => $userId
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Achievement not found'
+                ], 404);
+            }
+            
+            $attachments = [];
+            try {
+                $attachmentRecords = AttachmentModel    ::where('achievement_id', $achievement->id)->get();
+                
+                foreach ($attachmentRecords as $attachment) {
+                    $attachments[] = [
+                        'file_name' => $attachment->file_name,
+                        'file_path' => $attachment->file_path,
+                        'file_size' => $attachment->file_size,
+                        'file_type' => $attachment->file_type
+                    ];
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Error loading attachments', [
+                    'achievement_id' => $id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'achievement' => [
+                    'achievement_id' => $achievement->id,
+                    'title' => $achievement->title,
+                    'competition_name' => $achievement->competition_name,
+                    'description' => $achievement->description,
+                    'type' => $achievement->type,
+                    'level' => $achievement->level,
+                    'date' => $achievement->date ? $achievement->date->format('Y-m-d') : null,
+                    'status' => $achievement->status,
+                    'competition_id' => $achievement->competition_id,
+                    'rejected_reason' => $achievement->rejected_reason
+                ],
+                'attachments' => $attachments
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error fetching achievement details', [
+                'achievement_id' => $id,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching achievement details: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
     public function show($id)
     {
         $user = UserModel::findOrFail($id);
