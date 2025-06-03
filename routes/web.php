@@ -200,6 +200,7 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('achievements')->name('achievements.')->group(function () {
             Route::get('/', [App\Http\Controllers\dosen\AchievementController::class, 'index'])->name('index');
             Route::get('/{id}', [App\Http\Controllers\dosen\AchievementController::class, 'show'])->name('show');
+            Route::get('/{id}/details/{userId}', 'App\Http\Controllers\dosen\AchievementController@getDetails')->name('details');
         });
         
         Route::prefix('competitions')->name('competitions.')->group(function () {
