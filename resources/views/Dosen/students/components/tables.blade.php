@@ -1,130 +1,91 @@
-@props(['achievements' => []])
+@props(['students' => []])
 
 <div class="bg-white rounded-lg shadow-custom overflow-hidden mb-6">
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200" id="achievements-table">
+        <table class="min-w-full divide-y divide-gray-200" id="students-table">
             <thead class="bg-gray-50">
                 <tr>
                     <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                         No
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Judul Prestasi
+                        Nama Mahasiswa
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Jenis
+                        NIM
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tingkat
+                        Program Studi
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tanggal
+                        Kompetisi
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                     </th>
-                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Aksi
                     </th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($achievements as $achievement)
-                <tr class="hover:bg-gray-50 transition-colors achievement-row" data-achievement-id="{{ $achievement->id ?? $achievement->achievement_id }}">
+                @forelse($students as $student)
+                <tr class="hover:bg-gray-50 transition-colors student-row" data-student-id="{{ $student['id'] }}">
                     <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-900">
                         <span class="bg-gray-100 text-gray-700 py-1 px-2.5 rounded-md font-medium">
-                            {{ ($achievements instanceof \Illuminate\Pagination\LengthAwarePaginator) ? (($achievements->currentPage() - 1) * $achievements->perPage() + $loop->iteration) : $loop->iteration }}
+                            {{ ($students instanceof \Illuminate\Pagination\LengthAwarePaginator) ? (($students->currentPage() - 1) * $students->perPage() + $loop->iteration) : $loop->iteration }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900">
-                            {{ $achievement->title }}
-                        </div>
-                        <div class="text-sm text-gray-500">
-                            {{ $achievement->competition_name }}
+                            {{ $student['name'] ?? 'Nama tidak tersedia' }}
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            @if($achievement->type == 'academic') 
-                                bg-blue-100 text-blue-800
-                            @elseif($achievement->type == 'technology')
-                                bg-indigo-100 text-indigo-800
-                            @elseif($achievement->type == 'arts')
-                                bg-purple-100 text-purple-800
-                            @elseif($achievement->type == 'sports')
-                                bg-green-100 text-green-800
-                            @elseif($achievement->type == 'entrepreneurship')
-                                bg-amber-100 text-amber-800
-                            @else
-                                bg-gray-100 text-gray-800
-                            @endif">
-                            {{ ucfirst($achievement->type) }}
-                        </span>
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ $student['nim'] ?? 'NIM tidak tersedia' }} <!-- Pastikan kolom nim ada di UserModel -->
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ $student['program_studi'] ?? 'Program Studi tidak tersedia' }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ $student['competition'] ?? 'Kompetisi tidak tersedia' }}
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            @if($achievement->level == 'international') 
-                                bg-red-100 text-red-800
-                            @elseif($achievement->level == 'national')
-                                bg-blue-100 text-blue-800
-                            @elseif($achievement->level == 'regional')
+                            @if($student['status'] == 'registered')
                                 bg-green-100 text-green-800
-                            @else
-                                bg-gray-100 text-gray-800
-                            @endif">
-                            {{ ucfirst($achievement->level) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $achievement->date ? \Carbon\Carbon::parse($achievement->date)->format('d M Y') : '-' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            @if($achievement->status == 'verified') 
-                                bg-green-100 text-green-800
-                            @elseif($achievement->status == 'pending')
+                            @elseif($student['status'] == 'on going')
                                 bg-amber-100 text-amber-800
-                            @elseif($achievement->status == 'rejected')
-                                bg-red-100 text-red-800
+                            @elseif($student['status'] == 'rejected')
+                                bg-red-100 text-amber-800
                             @else
                                 bg-gray-100 text-gray-800
                             @endif">
-                            @if($achievement->status == 'verified')
-                                Terverifikasi
-                            @elseif($achievement->status == 'pending')
-                                Menunggu
-                            @elseif($achievement->status == 'rejected')
+                            @if($student['status'] == 'registered')
+                                Teregristasi
+                            @elseif($student['status'] == 'on going')
+                                Sedang Berlangsung
+                            @elseif($student['status'] == 'rejected')
                                 Ditolak
                             @else
-                                {{ $achievement->status }}
+                                {{ ucfirst($student['status']) ?? 'Tidak Diketahui' }}
                             @endif
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div class="flex justify-end gap-2">
-                            <button type="button" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 transition-colors show-achievement" data-achievement-id="{{ $achievement->id ?? $achievement->achievement_id }}">
+                            <button type="button" class="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 transition-colors show-student" data-student-id="{{ $student['id'] }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                             </button>
-                            
-                            @if($achievement->status == 'pending')
-                                <button type="button" class="btn-edit btn btn-sm btn-ghost text-brand hover:bg-brand-light hover:bg-opacity-10 transition-colors" data-achievement-id="{{ $achievement->id ?? $achievement->achievement_id }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                            @endif
-                            
-                            @if($achievement->status != 'verified')
-                                <button type="button" class="btn btn-sm btn-ghost text-red-600 hover:bg-red-50 transition-colors delete-achievement" data-achievement-id="{{ $achievement->id ?? $achievement->achievement_id }}" data-achievement-title="{{ $achievement->title }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            @endif
                         </div>
                     </td>
                 </tr>
@@ -135,8 +96,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <p class="text-gray-600 font-medium">Belum ada data prestasi</p>
-                            <p class="text-gray-500 mt-1 text-sm">Silakan tambahkan prestasi baru dengan mengklik tombol "Tambah Prestasi"</p>
+                            <p class="text-gray-600 font-medium">Belum ada data mahasiswa yang dibimbing</p>
                         </div>
                     </td>
                 </tr>

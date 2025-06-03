@@ -192,9 +192,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'lecturerDashboard'])->name('dashboard');
 
         Route::prefix('students')->name('students.')->group(function () {
-            Route::get('/', function () {
-                return view('Dosen.students.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\dosen\StudentsController::class, 'index'])->name('index');
         });
 
         Route::prefix('achievements')->name('achievements.')->group(function () {
