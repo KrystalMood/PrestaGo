@@ -29,7 +29,7 @@ class ProfileController extends Controller
         $userSkills = $user->skills()->get();
         $userInterests = $user->interests()->get();
         
-        return view('dosen.profile.index', compact(
+        return view('Dosen.profile.index', compact(
             'user',
             'countStudents',
             'skills',
