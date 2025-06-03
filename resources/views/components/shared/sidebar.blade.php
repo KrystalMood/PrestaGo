@@ -2,6 +2,7 @@
 
 @php
     $userRoleFromFileNames = auth()->user()->level->level_nama;
+
     $routeRoleName = '';
 
     switch ($userRoleFromFileNames) {
@@ -13,6 +14,7 @@
             break;
         case 'Dosen':
             $routeRoleName = 'lecturer';
+            $userRoleFromFileNames = 'lecturer';
             break;
         default:
             $routeRoleName = strtolower($userRoleFromFileNames);

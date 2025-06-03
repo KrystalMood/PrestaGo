@@ -1,49 +1,85 @@
-@component('layouts.app', ['title' => 'Daftar Mahasiswa'])
+@component('layouts.dosen', ['title' => 'Mahasiswa yang dibimbing'])
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">{{ __('Daftar Mahasiswa') }}</div>
+<div class="bg-white rounded-lg shadow-custom p-6">
+    <div class="mb-6">
+        @include('dosen.components.ui.page-header', [
+            'subtitle' => 'Halaman ini menampilkan daftar Mahasiswa yang anda bimbing.',
+        ])
+    </div>
+    
+    @php
+        $stats = [
+            [
+                'title' => 'Total Mahasiswa dibimbing',
+                'value' => $totalStudents ?? 0,
+                'icon' => 'users',
+                'key' => 'totalStudents'
+            ],
+            [
+                'title' => 'Mahasiswa yang dibimbingan saat ini',
+                'value' => $onGoingStudents ?? 0,
+                'icon' => 'user-plus',
+                'key' => 'onGoingStudents'
+            ],
+            [
+                'title' => 'Mahasiswa ditolak',
+                'value' => $rejectedStudents ?? 0,
+                'icon' => 'x-circle',
+                'key' => 'rejectedStudents'
+            ],
+        ];
+    @endphp
+    @component('dosen.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
+    @endcomponent
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+    @php
+        $filterOptions = [];
+        foreach ($roles ?? [] as $role) {
+            $filterOptions[] = [
+                'value' => $role->level_kode,
+                'label' => $role->level_nama
+            ];
+        }
+    @endphp
 
-                    <h4>Mahasiswa Bimbingan</h4>
-                    
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Cari mahasiswa...">
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary" type="button">Cari</button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Mahasiswa</th>
-                                <th>NIM</th>
-                                <th>Program Studi</th>
-                                <th>Jumlah Prestasi</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="6" class="text-center">Belum ada data mahasiswa</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    @component('dosen.components.ui.search-and-filter', [
+        'searchRoute' => route('lecturer.profile.update'),
+        'searchPlaceholder' => 'Cari pengguna berdasarkan nama atau email...',
+        'filterOptions' => $filterOptions,
+        'filterName' => 'role',
+        'filterLabel' => 'Semua Peran',
+        'currentFilter' => request('role')
+    ])
+    @endcomponent
+
+    <div id="students-table-container">
+        @component('dosen.students.components.tables')
+        @slot('students', $students ?? collect())
+        @endcomponent
+    </div>
+
+    <div id="pagination-container">
+        @component('dosen.components.tables.pagination', ['data' => $students ?? collect()])
+        @endcomponent
     </div>
 </div>
-@endcomponent 
+
+<!-- Include modals -->
+@include('dosen.students.components.create-student-modal')
+@include('dosen.students.components.edit-student-modal')
+@include('dosen.students.components.show-student-modal')
+@include('dosen.students.components.delete-student-modal')
+
+<!-- JavaScript Variables and Setup -->
+<script>
+    window.studentRoutes = {
+        index: "{{ route('lecturer.students.index') }}"
+    };
+    window.csrfToken = "{{ csrf_token() }}";
+    window.defaultAvatarUrl = "{{ asset('images/avatar.png') }}";
+</script>
+
+<!-- Load External JS -->
+@vite('resources/js/dosen/students.js')
+
+@endcomponent

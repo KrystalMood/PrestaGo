@@ -189,26 +189,55 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Lecturer routes
-    Route::prefix('lecturer')->name('lecturer.')->middleware(['auth.user:DSN'])->group(function () {
+        Route::prefix('lecturer')->name('lecturer.')->middleware(['auth.user:DSN'])->group(function () {
         Route::get('/dashboard', [AuthController::class, 'lecturerDashboard'])->name('dashboard');
 
         Route::prefix('students')->name('students.')->group(function () {
-            Route::get('/', function () {
-                return view('Dosen.students.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\dosen\StudentsController::class, 'index'])->name('index');
         });
 
+        Route::prefix('achievements')->name('achievements.')->group(function () {
+            Route::get('/', [App\Http\Controllers\dosen\AchievementController::class, 'index'])->name('index');
+            Route::get('/{id}', [App\Http\Controllers\dosen\AchievementController::class, 'show'])->name('show');
+            Route::get('/{id}/details/{userId}', 'App\Http\Controllers\dosen\AchievementController@getDetails')->name('details');
+        });
+        
+        Route::prefix('competitions')->name('competitions.')->group(function () {
+            Route::get('/', function () {
+                return view('Dosen.competitions.index');
+            })->name('index');
+        });
+        
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [App\Http\Controllers\dosen\ProfileController::class, 'index'])->name('index');
+            Route::put('/update', [App\Http\Controllers\dosen\ProfileController::class, 'update'])->name('update');
+            Route::post('/skills', [App\Http\Controllers\dosen\ProfileController::class, 'updateSkills'])->name('skills.update');
+            Route::post('/interests', [App\Http\Controllers\dosen\ProfileController::class, 'updateInterests'])->name('interests.update');
+        });
+        
+        
         Route::prefix('recommendations')->name('recommendations.')->group(function () {
             Route::get('/', function () {
                 return view('Dosen.recommendations.index');
             })->name('index');
         });
+        
+        // Route::prefix('settings')->name('settings.')->group(function () {
+        //     Route::get('/', [App\Http\Controllers\dosen\ProfileController::class, 'index'])->name('index');
+        // });
 
-        Route::prefix('profile')->name('profile.')->group(function () {
+        Route::prefix('akademik')->name('akademik.')->group(function () {
             Route::get('/', function () {
-                return view('Dosen.profile.index');
+                return view('Dosen.akademik.index');
             })->name('index');
         });
+
+        Route::prefix('penelitian')->name('penelitian.')->group(function () {
+            Route::get('/', function () {
+                return view('Dosen.penelitian.index');
+            })->name('index');
+        });
+
     });
 
     // Admin Reports Routes
