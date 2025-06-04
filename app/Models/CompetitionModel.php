@@ -50,11 +50,11 @@ class CompetitionModel extends Model
     
     public function skills()
     {
-        return SkillModel::join('sub_competition_skills', 'skills.id', '=', 'sub_competition_skills.skill_id')
-            ->join('sub_competitions', 'sub_competitions.id', '=', 'sub_competition_skills.sub_competition_id')
-            ->where('sub_competitions.competition_id', '=', $this->id)
-            ->select('skills.*', 'sub_competition_skills.importance_level')
-            ->distinct();
+        return SkillModel::whereHas('subCompetitions', function($query) {
+            $query->whereHas('competition', function($q) {
+                $q->where('id', $this->id);
+            });
+        });
     }
 
     public function participants()

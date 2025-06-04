@@ -8,35 +8,30 @@ use App\Models\CompetitionModel;
 use App\Models\SubCompetitionModel;
 use App\Models\CompetitionSkillModel;
 use App\Models\SubCompetitionSkillModel;
+use App\Models\SkillModel;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        // Check if the sub_competition_skills table exists
         if (!Schema::hasTable('sub_competition_skills')) {
-            // Table doesn't exist yet, so we can't migrate data
             return;
         }
         
-        // Get all competitions with skills
-        $competitionsWithSkills = CompetitionModel::whereHas('skills')->with('skills')->get();
+        $competitionsWithSkills = DB::table('competitions')
+            ->join('competition_skills', 'competitions.id', '=', 'competition_skills.competition_id')
+            ->select('competitions.id')
+            ->distinct()
+            ->get();
         
         foreach ($competitionsWithSkills as $competition) {
-            // Get all sub-competitions for this competition
             $subCompetitions = SubCompetitionModel::where('competition_id', $competition->id)->get();
             
             if ($subCompetitions->count() > 0) {
-                // Get all skills for this competition
                 $competitionSkills = CompetitionSkillModel::where('competition_id', $competition->id)->get();
                 
-                // For each sub-competition, add the skills from the parent competition
                 foreach ($subCompetitions as $subCompetition) {
                     foreach ($competitionSkills as $competitionSkill) {
-                        // Check if this skill is already assigned to this sub-competition
                         $exists = SubCompetitionSkillModel::where('sub_competition_id', $subCompetition->id)
                             ->where('skill_id', $competitionSkill->skill_id)
                             ->exists();
@@ -58,26 +53,14 @@ return new class extends Migration
             }
         }
         
-        // After migrating all skills to sub-competitions, drop the competition_skills table
-        // This ensures we don't keep redundant data in the database
         if (Schema::hasTable('competition_skills')) {
             Schema::dropIfExists('competition_skills');
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        // The original migration (2024_01_01_000006_create_competition_skills_table.php) will handle
-        // recreating the competition_skills table structure when rolling back migrations.
-        // Here, we just need to ensure the data flow is properly handled.
-        
-        // If we have sub_competition_skills data and the competition_skills table exists,
-        // we could migrate data back to competition_skills if needed
         if (Schema::hasTable('competition_skills') && Schema::hasTable('sub_competition_skills')) {
-            // Get all sub-competitions with skills
             $subCompetitionSkills = DB::table('sub_competition_skills')
                 ->join('sub_competitions', 'sub_competitions.id', '=', 'sub_competition_skills.sub_competition_id')
                 ->select(
@@ -90,7 +73,6 @@ return new class extends Migration
                 )
                 ->get();
             
-            // Group by competition_id and skill_id to avoid duplicates
             $competitionSkillsMap = [];
             foreach ($subCompetitionSkills as $skill) {
                 $key = $skill->competition_id . '-' . $skill->skill_id;
@@ -108,7 +90,6 @@ return new class extends Migration
                 }
             }
             
-            // Insert the data back into competition_skills
             if (!empty($competitionSkillsMap)) {
                 DB::table('competition_skills')->insert(array_values($competitionSkillsMap));
             }

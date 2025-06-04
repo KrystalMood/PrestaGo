@@ -459,10 +459,35 @@ class ReportController extends Controller
 
     public function export()
     {
-        $totalExports = 24;
-        $pdfExports = 18;
-        $excelExports = 6;
-        $exportGrowth = 15;
+        $totalExports = DB::table('activity_logs')
+            ->where('activity_type', 'report_export')
+            ->count();
+        
+        $pdfExports = DB::table('activity_logs')
+            ->where('activity_type', 'report_export')
+            ->where('details->format', 'pdf')
+            ->count();
+        
+        $excelExports = DB::table('activity_logs')
+            ->where('activity_type', 'report_export')
+            ->where('details->format', 'excel')
+            ->count();
+        
+        $currentMonthExports = DB::table('activity_logs')
+            ->where('activity_type', 'report_export')
+            ->whereMonth('created_at', date('m'))
+            ->whereYear('created_at', date('Y'))
+            ->count();
+        
+        $lastMonthExports = DB::table('activity_logs')
+            ->where('activity_type', 'report_export')
+            ->whereMonth('created_at', date('m') - 1 > 0 ? date('m') - 1 : 12)
+            ->whereYear('created_at', date('m') - 1 > 0 ? date('Y') : date('Y') - 1)
+            ->count();
+        
+        $exportGrowth = $lastMonthExports > 0 
+            ? round((($currentMonthExports - $lastMonthExports) / $lastMonthExports) * 100, 1)
+            : ($currentMonthExports > 0 ? 100 : 0);
         
         return view('admin.reports.export', compact(
             'totalExports',
@@ -474,14 +499,11 @@ class ReportController extends Controller
 
     public function generateReport(Request $request)
     {
-        // Validate the request
         $request->validate([
             'report_format' => 'required|in:pdf,excel',
             'date_range' => 'required|in:current_year,current_semester,last_year,all_time',
         ]);
 
-        // In a real implementation, this would generate the actual report
-        // For now, we'll just redirect with a success message
         return redirect()->back()->with('success', 'Laporan berhasil dibuat dan diunduh.');
     }
 
