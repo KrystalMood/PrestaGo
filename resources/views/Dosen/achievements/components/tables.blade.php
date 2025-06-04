@@ -32,7 +32,11 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full" src="{{ $achievement->user->profile_photo ?? asset('images/default-profile.png') }}" alt="{{ $achievement->user->name }}">
+                                @if($achievement->user && $achievement->user->photo)
+                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $achievement->user->photo) }}" alt="{{ $achievement->user->name }}" loading="lazy">
+                                @else
+                                    <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($achievement->user ? $achievement->user->name : 'User') }}&background=4338ca&color=fff" alt="{{ $achievement->user ? $achievement->user->name : 'User' }}" loading="lazy">
+                                @endif
                             </div>
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900">
@@ -67,7 +71,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <p class="text-gray-600 font-medium">Belum ada data prestasi</p>
-                            <p class="text-gray-500 mt-1 text-sm">Silakan tambahkan prestasi baru dengan mengklik tombol "Tambah Prestasi"</p>
+                            <p class="text-gray-500 mt-1 text-sm">Prestasi mahasiswa akan muncul di sini ketika tersedia</p>
                         </div>
                     </td>
                 </tr>

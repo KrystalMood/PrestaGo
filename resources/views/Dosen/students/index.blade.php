@@ -3,6 +3,7 @@
 <div class="bg-white rounded-lg shadow-custom p-6">
     <div class="mb-6">
         @include('dosen.components.ui.page-header', [
+            'title' => 'Mahasiswa yang dibimbing',
             'subtitle' => 'Halaman ini menampilkan daftar Mahasiswa yang anda bimbing.',
         ])
     </div>

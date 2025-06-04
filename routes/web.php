@@ -203,9 +203,13 @@ Route::middleware(['auth'])->group(function () {
         });
         
         Route::prefix('competitions')->name('competitions.')->group(function () {
-            Route::get('/', function () {
-                return view('Dosen.competitions.index');
-            })->name('index');
+            Route::get('/', [App\Http\Controllers\dosen\CompetitionController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\dosen\CompetitionController::class, 'store'])->name('store');
+            Route::get('/{id}', [App\Http\Controllers\dosen\CompetitionController::class, 'show'])->name('show');
+            Route::get('/{id}/sub-competitions', [App\Http\Controllers\dosen\CompetitionController::class, 'subCompetitions'])->name('sub-competitions.index');
+            Route::get('/{id}/sub-competitions/create', [App\Http\Controllers\dosen\CompetitionController::class, 'createSubCompetition'])->name('sub-competitions.create');
+            Route::post('/{id}/sub-competitions', [App\Http\Controllers\dosen\CompetitionController::class, 'storeSubCompetition'])->name('sub-competitions.store');
+            Route::get('/{id}/sub-competitions/{sub_id}', [App\Http\Controllers\dosen\CompetitionController::class, 'showSubCompetition'])->name('sub-competitions.show');
         });
         
         Route::prefix('profile')->name('profile.')->group(function () {

@@ -283,7 +283,7 @@
 
                 @php
                     // Get upcoming deadlines from actual database
-                    $upcomingDeadlines = App\Models\CompetitionModel::where('verified', true)
+                    $upcomingDeadlines = App\Models\CompetitionModel::where('status', 'active')
                         ->whereNotNull('registration_end')
                         ->where('registration_end', '>=', now())
                         ->orderBy('registration_end', 'asc')

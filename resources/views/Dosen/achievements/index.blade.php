@@ -3,6 +3,7 @@
 <div class="bg-white rounded-lg shadow-custom p-6">
     <div class="mb-6">
         @include('Dosen.components.ui.page-header', [
+            'title' => 'Prestasi Mahasiswa',
             'subtitle' => 'Halaman ini menampilkan daftar prestasi mahasiswa.',
         ])
     </div>
@@ -61,11 +62,14 @@
     </div>
 </div>
 
+<!-- Include modals -->
+@include('Dosen.achievements.components.show-achievements-modal')
 
 <!-- JavaScript Variables and Setup -->
 <script>
     window.achievementRoutes = {
         index: "{{ route('lecturer.profile.index') }}",
+        show: "{{ route('lecturer.achievements.show', ['id' => '__ID__']) }}"
     };
     window.csrfToken = "{{ csrf_token() }}";
     window.defaultCertificateUrl = "{{ asset('images/certificate.png') }}";

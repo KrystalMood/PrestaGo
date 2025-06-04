@@ -37,9 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function initializeEventListeners() {
         initializeShowAchievement();
-        initializeEditAchievement();
-        initializeDeleteAchievement();
-        initializeCreateForm();
     }
     
     /**
@@ -717,344 +714,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Initializes the create achievement form and its step-by-step functionality.
+     * Displays validation errors in the specified form.
+     * @param {Object} errors - An object containing field names as keys and arrays of error messages as values.
+     * @param {string} [formType='edit'] - The type of form ('create' or 'edit') to display errors for.
      */
-    function initializeCreateForm() {
-        const createForm = document.getElementById('create-achievement-form');
-        const createModal = document.getElementById('create-achievement-modal');
-        const openCreateModalBtn = document.getElementById('open-create-achievement-modal');
-        const closeButtons = document.querySelectorAll('#close-create-modal, #cancel-create-achievement');
-        const nextStepBtn = document.getElementById('next-step');
-        const prevStepBtn = document.getElementById('prev-step');
-        const submitBtn = document.getElementById('submit-achievement');
-        
-        let currentStep = 1;
-        const totalSteps = 2;
-        const stepContents = {
-            1: document.getElementById('step-1-content'),
-            2: document.getElementById('step-2-content')
-        };
-        
-        /**
-         * Navigates to a specific step in the create achievement form.
-         * @param {number} stepNumber - The step number to navigate to.
-         */
-        function goToStep(stepNumber) {
-            Object.values(stepContents).forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            stepContents[stepNumber].classList.remove('hidden');
-            
-            document.querySelectorAll('.step-item').forEach((item, index) => {
-                if (index + 1 === stepNumber) {
-                    item.classList.add('active');
-                    item.querySelector('div').classList.remove('bg-gray-200', 'text-gray-600');
-                    item.querySelector('div').classList.add('bg-blue-600', 'text-white');
-                } else if (index + 1 < stepNumber) {
-                    item.classList.add('completed');
-                    item.querySelector('div').classList.remove('bg-gray-200', 'text-gray-600');
-                    item.querySelector('div').classList.add('bg-green-500', 'text-white');
-                } else {
-                    item.classList.remove('active', 'completed');
-                    item.querySelector('div').classList.remove('bg-blue-600', 'bg-green-500', 'text-white');
-                    item.querySelector('div').classList.add('bg-gray-200', 'text-gray-600');
-                }
-            });
-            
-            if (stepNumber > 1) {
-                prevStepBtn.classList.remove('hidden');
-            } else {
-                prevStepBtn.classList.add('hidden');
-            }
-            
-            if (stepNumber === totalSteps) {
-                nextStepBtn.classList.add('hidden');
-                submitBtn.classList.remove('hidden');
-            } else {
-                nextStepBtn.classList.remove('hidden');
-                submitBtn.classList.add('hidden');
-            }
-            
-            currentStep = stepNumber;
-        }
-        
-        /**
-         * Validates the fields of a specific step in the create achievement form.
-         * @param {number} stepNumber - The step number to validate.
-         * @returns {boolean} True if the step is valid, false otherwise.
-         */
-        function validateStep(stepNumber) {
-            let isValid = true;
-            const errorMessages = [];
-            
-            if (stepNumber === 1) {
-                const title = document.getElementById('create-title').value.trim();
-                if (!title) {
-                    isValid = false;
-                    errorMessages.push('Judul prestasi wajib diisi');
-                    document.getElementById('title-error').textContent = 'Judul prestasi wajib diisi';
-                    document.getElementById('title-error').classList.remove('hidden');
-                } else {
-                    document.getElementById('title-error').classList.add('hidden');
-                }
-                
-                const compName = document.getElementById('create-competition-name').value.trim();
-                if (!compName) {
-                    isValid = false;
-                    errorMessages.push('Nama kompetisi/event wajib diisi');
-                    document.getElementById('competition-name-error').textContent = 'Nama kompetisi/event wajib diisi';
-                    document.getElementById('competition-name-error').classList.remove('hidden');
-                } else {
-                    document.getElementById('competition-name-error').classList.add('hidden');
-                }
-                
-                const type = document.getElementById('create-type').value;
-                if (!type) {
-                    isValid = false;
-                    errorMessages.push('Jenis prestasi wajib dipilih');
-                    document.getElementById('type-error').textContent = 'Jenis prestasi wajib dipilih';
-                    document.getElementById('type-error').classList.remove('hidden');
-                } else {
-                    document.getElementById('type-error').classList.add('hidden');
-                }
-                
-                const level = document.getElementById('create-level').value;
-                if (!level) {
-                    isValid = false;
-                    errorMessages.push('Tingkat prestasi wajib dipilih');
-                    document.getElementById('level-error').textContent = 'Tingkat prestasi wajib dipilih';
-                    document.getElementById('level-error').classList.remove('hidden');
-                } else {
-                    document.getElementById('level-error').classList.add('hidden');
-                }
-                
-                const date = document.getElementById('create-date').value;
-                if (!date) {
-                    isValid = false;
-                    errorMessages.push('Tanggal prestasi wajib diisi');
-                    document.getElementById('date-error').textContent = 'Tanggal prestasi wajib diisi';
-                    document.getElementById('date-error').classList.remove('hidden');
-                } else {
-                    document.getElementById('date-error').classList.add('hidden');
-                }
-            } else if (stepNumber === 2) {
-                const description = document.getElementById('create-description').value.trim();
-                if (!description) {
-                    isValid = false;
-                    errorMessages.push('Deskripsi prestasi wajib diisi');
-                    document.getElementById('description-error').textContent = 'Deskripsi prestasi wajib diisi';
-                    document.getElementById('description-error').classList.remove('hidden');
-                } else {
-                    document.getElementById('description-error').classList.add('hidden');
-                }
-                
-                const attachments = document.getElementById('create-attachments').files;
-                if (attachments.length === 0) {
-                    isValid = false;
-                    errorMessages.push('Bukti prestasi wajib diunggah');
-                    document.getElementById('attachments-error').textContent = 'Bukti prestasi wajib diunggah';
-                    document.getElementById('attachments-error').classList.remove('hidden');
-                } else {
-                    let validSize = true;
-                    for (let i = 0; i < attachments.length; i++) {
-                        if (attachments[i].size > 2 * 1024 * 1024) { // 2MB
-                            validSize = false;
-                            break;
-                        }
-                    }
-                    
-                    if (!validSize) {
-                        isValid = false;
-                        errorMessages.push('Ukuran file tidak boleh melebihi 2MB');
-                        document.getElementById('attachments-error').textContent = 'Ukuran file tidak boleh melebihi 2MB';
-                        document.getElementById('attachments-error').classList.remove('hidden');
-                    } else {
-                        document.getElementById('attachments-error').classList.add('hidden');
-                    }
-                }
-            }
-            
-            if (!isValid) {
-                const errorContainer = document.getElementById('create-achievement-error');
-                const errorList = document.getElementById('create-achievement-error-list');
-                const errorCount = document.getElementById('create-achievement-error-count');
-                
-                errorContainer.classList.remove('hidden');
-                errorCount.textContent = errorMessages.length;
-                
-                errorList.innerHTML = '';
-                
-                errorMessages.forEach(message => {
-                    const li = document.createElement('li');
-                    li.textContent = message;
-                    errorList.appendChild(li);
-                });
-            } else {
-                document.getElementById('create-achievement-error').classList.add('hidden');
-            }
-            
-            return isValid;
-        }
-
-        /**
-         * Submits the new achievement data to the server.
-         * @param {HTMLFormElement} form - The create achievement form element.
-         */
-        function submitCreateForm(form) {
-            const submitBtn = document.getElementById('submit-achievement');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Menyimpan...';
-            }
-            
-            const errorContainer = document.getElementById('create-achievement-error');
-            if (errorContainer) {
-                errorContainer.classList.add('hidden');
-            }
-            
-            if (!form.action || form.action.trim() === '') {
-                form.action = '/student/achievements';
-            }
-            
-            form.submit();
-            return;
-            
-            /* 
-            const formData = new FormData(form);
-            
-            console.log('Submitting form data:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + (pair[1] instanceof File ? pair[1].name : pair[1]));
-            }
-            
-            fetch('/student/achievements', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Server responded with status: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Simpan Prestasi';
-                }
-                
-                if (data.success) {
-                    const createModal = document.getElementById('create-achievement-modal');
-                    if (createModal) {
-                        createModal.classList.add('hidden');
-                        createModal.style.display = 'none';
-                    }
-                    
-                    showNotification(data.message, 'success');
-                    
-                    refreshAchievementsTable();
-                } else {
-                    if (data.errors) {
-                        displayValidationErrors(data.errors, 'create');
-                    } else {
-                        showNotification(data.message || 'Terjadi kesalahan saat menyimpan prestasi.', 'error');
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error creating achievement:', error);
-                
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Simpan Prestasi';
-                }
-                
-                showNotification('Terjadi kesalahan saat menambahkan prestasi. Mohon coba lagi.', 'error');
-            });
-            */
-        }
-        
-        if (openCreateModalBtn) {
-            openCreateModalBtn.addEventListener('click', function() {
-                console.log('Opening create achievement modal');
-                createModal.classList.remove('hidden');
-                createModal.style.display = 'flex';
-                goToStep(1);
-                createForm.reset();
-                document.getElementById('create-achievement-error').classList.add('hidden');
-                document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
-            });
-        }
-        
-        if (nextStepBtn) {
-            nextStepBtn.addEventListener('click', function() {
-                if (validateStep(currentStep)) {
-                    goToStep(currentStep + 1);
-                }
-            });
-        }
-        
-        if (prevStepBtn) {
-            prevStepBtn.addEventListener('click', function() {
-                goToStep(currentStep - 1);
-            });
-        }
-        
-        closeButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                createModal.classList.add('hidden');
-                createModal.style.display = 'none';
-                if (createForm) createForm.reset();
-                const errorContainer = document.getElementById('create-achievement-error');
-                if (errorContainer) errorContainer.classList.add('hidden');
-                document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
-                if (typeof goToStep === 'function') goToStep(1);
-            });
-        });
-        
-        createModal.addEventListener('click', function(e) {
-            if (e.target === createModal) {
-                createModal.classList.add('hidden');
-                createModal.style.display = 'none';
-                if (createForm) createForm.reset();
-                const errorContainer = document.getElementById('create-achievement-error');
-                if (errorContainer) errorContainer.classList.add('hidden');
-            }
-        });
-        
-        if (createForm) {
-            createForm.action = '/student/achievements';
-            
-            createForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitCreateForm(this);
-            });
-            
-            const submitBtn = document.getElementById('submit-achievement');
-            if (submitBtn) {
-                submitBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    if (validateStep(2)) {
-                        submitCreateForm(createForm);
-                    }
-                });
-            }
-        }
-    }
-
-/**
- * Displays validation errors in the specified form.
- * @param {Object} errors - An object containing field names as keys and arrays of error messages as values.
- * @param {string} [formType='edit'] - The type of form ('create' or 'edit') to display errors for.
- */
-function displayValidationErrors(errors, formType = 'edit') {
-    const prefix = formType === 'create' ? 'create' : 'edit';
+    function displayValidationErrors(errors, formType = 'edit') {
+        const prefix = formType === 'create' ? 'create' : 'edit';
         const errorContainer = document.getElementById(`${prefix}-achievement-error`);
         const errorList = document.getElementById(`${prefix}-achievement-error-list`);
         const errorCount = document.getElementById(`${prefix}-achievement-error-count`);
@@ -1111,7 +776,7 @@ function displayValidationErrors(errors, formType = 'edit') {
                     paginationContainer.innerHTML = data.pagination;
                 }
                 
-                initializeEventListeners();
+                initializeShowAchievement();
             } else {
                 console.error('Error refreshing table:', data.message || 'Unknown error');
             }
@@ -1345,5 +1010,237 @@ function displayValidationErrors(errors, formType = 'edit') {
         }
         
         return isValid;
+    }
+
+    /**
+     * Navigates to a specific step in the create achievement form.
+     * @param {number} stepNumber - The step number to navigate to.
+     */
+    function goToStep(stepNumber) {
+        Object.values(stepContents).forEach(content => {
+            content.classList.add('hidden');
+        });
+        
+        stepContents[stepNumber].classList.remove('hidden');
+        
+        document.querySelectorAll('.step-item').forEach((item, index) => {
+            if (index + 1 === stepNumber) {
+                item.classList.add('active');
+                item.querySelector('div').classList.remove('bg-gray-200', 'text-gray-600');
+                item.querySelector('div').classList.add('bg-blue-600', 'text-white');
+            } else if (index + 1 < stepNumber) {
+                item.classList.add('completed');
+                item.querySelector('div').classList.remove('bg-gray-200', 'text-gray-600');
+                item.querySelector('div').classList.add('bg-green-500', 'text-white');
+            } else {
+                item.classList.remove('active', 'completed');
+                item.querySelector('div').classList.remove('bg-blue-600', 'bg-green-500', 'text-white');
+                item.querySelector('div').classList.add('bg-gray-200', 'text-gray-600');
+            }
+        });
+        
+        if (stepNumber > 1) {
+            prevStepBtn.classList.remove('hidden');
+        } else {
+            prevStepBtn.classList.add('hidden');
+        }
+        
+        if (stepNumber === totalSteps) {
+            nextStepBtn.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+        } else {
+            nextStepBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        }
+        
+        currentStep = stepNumber;
+    }
+    
+    /**
+     * Validates the fields of a specific step in the create achievement form.
+     * @param {number} stepNumber - The step number to validate.
+     * @returns {boolean} True if the step is valid, false otherwise.
+     */
+    function validateStep(stepNumber) {
+        let isValid = true;
+        const errorMessages = [];
+        
+        if (stepNumber === 1) {
+            const title = document.getElementById('create-title').value.trim();
+            if (!title) {
+                isValid = false;
+                errorMessages.push('Judul prestasi wajib diisi');
+                document.getElementById('title-error').textContent = 'Judul prestasi wajib diisi';
+                document.getElementById('title-error').classList.remove('hidden');
+            } else {
+                document.getElementById('title-error').classList.add('hidden');
+            }
+            
+            const compName = document.getElementById('create-competition-name').value.trim();
+            if (!compName) {
+                isValid = false;
+                errorMessages.push('Nama kompetisi/event wajib diisi');
+                document.getElementById('competition-name-error').textContent = 'Nama kompetisi/event wajib diisi';
+                document.getElementById('competition-name-error').classList.remove('hidden');
+            } else {
+                document.getElementById('competition-name-error').classList.add('hidden');
+            }
+            
+            const type = document.getElementById('create-type').value;
+            if (!type) {
+                isValid = false;
+                errorMessages.push('Jenis prestasi wajib dipilih');
+                document.getElementById('type-error').textContent = 'Jenis prestasi wajib dipilih';
+                document.getElementById('type-error').classList.remove('hidden');
+            } else {
+                document.getElementById('type-error').classList.add('hidden');
+            }
+            
+            const level = document.getElementById('create-level').value;
+            if (!level) {
+                isValid = false;
+                errorMessages.push('Tingkat prestasi wajib dipilih');
+                document.getElementById('level-error').textContent = 'Tingkat prestasi wajib dipilih';
+                document.getElementById('level-error').classList.remove('hidden');
+            } else {
+                document.getElementById('level-error').classList.add('hidden');
+            }
+            
+            const date = document.getElementById('create-date').value;
+            if (!date) {
+                isValid = false;
+                errorMessages.push('Tanggal prestasi wajib diisi');
+                document.getElementById('date-error').textContent = 'Tanggal prestasi wajib diisi';
+                document.getElementById('date-error').classList.remove('hidden');
+            } else {
+                document.getElementById('date-error').classList.add('hidden');
+            }
+        } else if (stepNumber === 2) {
+            const description = document.getElementById('create-description').value.trim();
+            if (!description) {
+                isValid = false;
+                errorMessages.push('Deskripsi prestasi wajib diisi');
+                document.getElementById('description-error').textContent = 'Deskripsi prestasi wajib diisi';
+                document.getElementById('description-error').classList.remove('hidden');
+            } else {
+                document.getElementById('description-error').classList.add('hidden');
+            }
+            
+            const attachments = document.getElementById('create-attachments').files;
+            if (attachments.length === 0) {
+                isValid = false;
+                errorMessages.push('Bukti prestasi wajib diunggah');
+                document.getElementById('attachments-error').textContent = 'Bukti prestasi wajib diunggah';
+                document.getElementById('attachments-error').classList.remove('hidden');
+            } else {
+                let validSize = true;
+                for (let i = 0; i < attachments.length; i++) {
+                    if (attachments[i].size > 2 * 1024 * 1024) { // 2MB
+                        validSize = false;
+                        break;
+                    }
+                }
+                
+                if (!validSize) {
+                    isValid = false;
+                    errorMessages.push('Ukuran file tidak boleh melebihi 2MB');
+                    document.getElementById('attachments-error').textContent = 'Ukuran file tidak boleh melebihi 2MB';
+                    document.getElementById('attachments-error').classList.remove('hidden');
+                } else {
+                    document.getElementById('attachments-error').classList.add('hidden');
+                }
+            }
+        }
+        
+        if (!isValid) {
+            const errorContainer = document.getElementById('create-achievement-error');
+            const errorList = document.getElementById('create-achievement-error-list');
+            const errorCount = document.getElementById('create-achievement-error-count');
+            
+            errorContainer.classList.remove('hidden');
+            errorCount.textContent = errorMessages.length;
+            
+            errorList.innerHTML = '';
+            
+            errorMessages.forEach(message => {
+                const li = document.createElement('li');
+                li.textContent = message;
+                errorList.appendChild(li);
+            });
+        } else {
+            document.getElementById('create-achievement-error').classList.add('hidden');
+        }
+        
+        return isValid;
+    }
+    
+    /**
+     * Submits the new achievement data to the server.
+     * @param {HTMLFormElement} form - The create achievement form element.
+     */
+    function submitCreateForm(form) {
+        const submitBtn = document.getElementById('submit-achievement');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Menyimpan...';
+        }
+        
+        const errorContainer = document.getElementById('create-achievement-error');
+        if (errorContainer) {
+            errorContainer.classList.add('hidden');
+        }
+        
+        const formData = new FormData(form);
+        
+        // Use the route from window.achievementRoutes
+        const url = window.achievementRoutes.store;
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': window.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success notification
+                showNotification('Prestasi berhasil ditambahkan', 'success');
+                
+                // Close the modal
+                const createModal = document.getElementById('create-achievement-modal');
+                if (createModal) {
+                    createModal.classList.add('hidden');
+                }
+                
+                // Reset the form
+                form.reset();
+                goToStep(1);
+                
+                // Refresh the table
+                refreshAchievementsTable();
+            } else {
+                // Show error notification
+                showNotification('Gagal menambahkan prestasi', 'error');
+                
+                // Display validation errors if any
+                if (data.errors) {
+                    displayValidationErrors(data.errors, 'create');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting form:', error);
+            showNotification('Terjadi kesalahan saat menambahkan prestasi', 'error');
+        })
+        .finally(() => {
+            // Re-enable the submit button
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Simpan Prestasi';
+            }
+        });
     }
 });

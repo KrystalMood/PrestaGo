@@ -1,22 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\dosen;
 
 use App\Http\Controllers\Controller;
 use App\Models\CompetitionModel;
 use App\Models\SkillModel;
 use App\Models\PeriodModel;
 use App\Models\UserModel;
+use App\Models\CategoryModel;
 use App\Models\SubCompetitionModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class CompetitionController extends Controller
 { 
     public function index(Request $request)
     {
+        // Use query builder without eager loading initially
         $query = CompetitionModel::orderBy('created_at', 'desc');
             
         if ($request->has('search') && $request->search) {
@@ -36,14 +37,17 @@ class CompetitionController extends Controller
             $query->where('level', $request->level);
         }
         
+        // Get the paginated results
         $competitions = $query->paginate(10)->withQueryString();
         
+        // Manually load relationships for each competition
         foreach ($competitions as $competition) {
             $competition->setRelation('addedBy', $competition->addedBy()->first());
             $competition->setRelation('period', $competition->period()->first());
             $competition->setRelation('skills', $competition->skills()->get());
             $competition->setRelation('subCompetitions', $competition->subCompetitions()->get());
             
+            // Load participants for each sub-competition
             foreach ($competition->subCompetitions as $subCompetition) {
                 $subCompetition->setRelation('participants', $subCompetition->participants()->get());
             }
@@ -53,7 +57,7 @@ class CompetitionController extends Controller
         $activeCompetitions = CompetitionModel::where('status', 'active')->count();
         $completedCompetitions = CompetitionModel::where('status', 'completed')->count();
         $registeredParticipants = \App\Models\SubCompetitionParticipantModel::count();
-        $categories = \App\Models\CategoryModel::all();
+        $categories = CategoryModel::all();
         $skills = SkillModel::all();
         $periods = PeriodModel::all();
         
@@ -74,8 +78,8 @@ class CompetitionController extends Controller
         ];
         
         if ($request->ajax() || $request->has('ajax')) {
-            $tableView = view('admin.competitions.components.tables', compact('competitions'))->render();
-            $paginationView = view('admin.components.tables.pagination', ['data' => $competitions])->render();
+            $tableView = view('Dosen.competitions.components.tables', compact('competitions'))->render();
+            $paginationView = view('Dosen.components.tables.pagination', ['data' => $competitions])->render();
             
             return response()->json([
                 'success' => true,
@@ -90,7 +94,7 @@ class CompetitionController extends Controller
             ]);
         }
         
-        return view('admin.competitions.index', compact(
+        return view('Dosen.competitions.index', compact(
             'competitions', 
             'totalCompetitions', 
             'activeCompetitions', 
@@ -102,14 +106,6 @@ class CompetitionController extends Controller
             'skills',
             'periods'
         ));
-    }
-
-    public function create()
-    {
-        $skills = SkillModel::all();
-        $periods = PeriodModel::all();
-        
-        return view('admin.competitions.create', compact('skills', 'periods'));
     }
 
     public function store(Request $request)
@@ -141,119 +137,86 @@ class CompetitionController extends Controller
             ]);
         }
         
-        return redirect()->route('admin.competitions.index')
+        return redirect()->route('lecturer.competitions.index')
             ->with('success', 'Kompetisi berhasil dibuat!');
     }
 
-    public function show(CompetitionModel $competition, Request $request)
+    public function show($id)
     {
-        $competition->setRelation('addedBy', $competition->addedBy()->first());
+        $competition = CompetitionModel::findOrFail($id);
+        
+        // Manually load relationships to avoid the addEagerConstraints error
         $competition->setRelation('period', $competition->period()->first());
+        $competition->setRelation('addedBy', $competition->addedBy()->first());
         
         return response()->json([
             'success' => true,
-            'data' => $competition->append(['level_formatted']),
+            'competition' => $competition->append(['level_formatted']),
         ]);
     }
-
-    public function update(Request $request, CompetitionModel $competition)
+    
+    public function subCompetitions($competitionId)
     {
-        $validated = $request->validate([
+        $competition = CompetitionModel::findOrFail($competitionId);
+        $subCompetitions = $competition->subCompetitions()->with(['category', 'skills'])->get();
+        $categories = CategoryModel::all();
+        
+        return view('Dosen.competitions.sub-competitions.index', compact('competition', 'subCompetitions', 'categories'));
+    }
+    
+    public function createSubCompetition($competitionId)
+    {
+        $competition = CompetitionModel::findOrFail($competitionId);
+        $categories = CategoryModel::all();
+        
+        return view('Dosen.competitions.sub-competitions.create', compact('competition', 'categories'));
+    }
+    
+    public function storeSubCompetition(Request $request, $competitionId)
+    {
+        $request->validate([
             'name' => 'required|string|max:255',
-            'organizer' => 'required|string|max:255',
-            'level' => 'required|string|in:international,national,regional,provincial,university,internal',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
+            'description' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
             'registration_start' => 'nullable|date',
             'registration_end' => 'nullable|date|after_or_equal:registration_start',
-            'competition_date' => 'required|date',
-            'description' => 'nullable|string',
-            'status' => 'required|string|in:upcoming,active,completed,cancelled',
-            'period_id' => 'required|exists:periods,id',
+            'competition_date' => 'nullable|date',
+            'registration_link' => 'nullable|url|max:255',
+            'requirements' => 'nullable|string',
+            'status' => 'nullable|string|max:20',
         ]);
-        
-        $competition->update($validated);
-        
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Kompetisi berhasil diperbarui.',
-                'data' => $competition,
-            ]);
-        }
-        
-        return redirect()->route('admin.competitions.index')
-            ->with('success', 'Kompetisi berhasil diperbarui!');
-    }
 
-    public function destroy(CompetitionModel $competition, Request $request)
-    {
-        if ($competition->participants()->count() > 0) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tidak dapat menghapus kompetisi yang sudah memiliki peserta.',
-                ], 400);
-            }
-            return back()->with('error', 'Tidak dapat menghapus kompetisi yang sudah memiliki peserta.');
-        }
+        $competition = CompetitionModel::findOrFail($competitionId);
         
-        $competition->subCompetitions()->delete();
-        $competition->delete();
-        
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Kompetisi berhasil dihapus.',
-            ]);
-        }
-        
-        return redirect()->route('admin.competitions.index')
-            ->with('success', 'Kompetisi berhasil dihapus!');
-    }
+        $subCompetition = new SubCompetitionModel();
+        $subCompetition->name = $request->name;
+        $subCompetition->description = $request->description;
+        $subCompetition->competition_id = $competition->id;
+        $subCompetition->category_id = $request->category_id;
+        $subCompetition->start_date = $request->start_date;
+        $subCompetition->end_date = $request->end_date;
+        $subCompetition->registration_start = $request->registration_start;
+        $subCompetition->registration_end = $request->registration_end;
+        $subCompetition->competition_date = $request->competition_date;
+        $subCompetition->registration_link = $request->registration_link;
+        $subCompetition->requirements = $request->requirements;
+        $subCompetition->status = $request->status ?? 'upcoming';
+        $subCompetition->save();
 
-    public function toggleVerification(CompetitionModel $competition)
-    {
-        $competition->verified = !$competition->verified;
-        $competition->save();
-        
-        return back()->with('success', 'Status verifikasi kompetisi telah diubah!');
+        return redirect()->route('lecturer.competitions.sub-competitions.index', $competitionId)
+            ->with('success', 'Sub-kompetisi berhasil dibuat!');
     }
     
-    public function getSubCompetitions($competition)
+    public function showSubCompetition($competitionId, $subCompetitionId)
     {
-        try {
-            \Log::info('Attempting to get sub-competitions for competition ID: ' . $competition);
-            \Log::info('Executing SubCompetitionModel query for competition ID: ' . $competition);
-            $subCompetitions = SubCompetitionModel::where('competition_id', $competition)
-                ->orderBy('name')
-                ->get(['id', 'name']);
-                
-            return response()->json($subCompetitions);
-        } catch (\Exception $e) {
-            \Log::error('Error getting sub-competitions: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to fetch sub-competitions', 'message' => $e->getMessage()], 500);
-        }
-    }
-    
-    public function getAllSubCompetitions()
-    {
-        try {
-            $subCompetitions = SubCompetitionModel::with('competition')
-                ->orderBy('name')
-                ->get()
-                ->map(function($subCompetition) {
-                    return [
-                        'id' => $subCompetition->id,
-                        'name' => $subCompetition->name,
-                        'competition_name' => $subCompetition->competition->name ?? 'Unknown Competition',
-                    ];
-                });
-                
-            return response()->json($subCompetitions);
-        } catch (\Exception $e) {
-            \Log::error('Error getting all sub-competitions: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to fetch all sub-competitions', 'message' => $e->getMessage()], 500);
-        }
+        $competition = CompetitionModel::findOrFail($competitionId);
+        $subCompetition = SubCompetitionModel::with(['category', 'skills'])->findOrFail($subCompetitionId);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $subCompetition
+        ]);
     }
 } 

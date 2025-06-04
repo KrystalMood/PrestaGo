@@ -12,7 +12,11 @@
                 </div>
                 <div class="flex items-center">
                     <div class="flex-shrink-0 h-16 w-16 mr-4">
-                        <img class="h-16 w-16 rounded-full object-cover" src="{{ $user->photo ?? asset('images/default-profile.png') }}" alt="{{ $user->name }}">
+                        @if($user && $user->photo)
+                            <img class="h-16 w-16 rounded-full object-cover" src="{{ asset('storage/' . $user->photo) }}" alt="{{ $user->name }}" loading="lazy">
+                        @else
+                            <img class="h-16 w-16 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($user ? $user->name : 'User') }}&background=4338ca&color=fff&size=150" alt="{{ $user ? $user->name : 'User' }}" loading="lazy">
+                        @endif
                     </div>
                     <div>
                         <h2 class="text-xl font-bold">{{ $user->name }}</h2>
