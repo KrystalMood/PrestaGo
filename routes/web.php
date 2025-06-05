@@ -194,6 +194,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::prefix('students')->name('students.')->group(function () {
             Route::get('/', [App\Http\Controllers\dosen\StudentsController::class, 'index'])->name('index');
+            Route::get('/{id}', [App\Http\Controllers\dosen\StudentsController::class, 'show'])->name('show');
         });
 
         Route::prefix('achievements')->name('achievements.')->group(function () {

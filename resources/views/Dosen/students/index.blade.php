@@ -66,10 +66,7 @@
 </div>
 
 <!-- Include modals -->
-@include('Dosen.students.components.create-student-modal')
-@include('Dosen.students.components.edit-student-modal')
 @include('Dosen.students.components.show-student-modal')
-@include('Dosen.students.components.delete-student-modal')
 
 <!-- JavaScript Variables and Setup -->
 <script>
