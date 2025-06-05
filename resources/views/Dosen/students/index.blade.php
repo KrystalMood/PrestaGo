@@ -2,7 +2,7 @@
 
 <div class="bg-white rounded-lg shadow-custom p-6">
     <div class="mb-6">
-        @include('dosen.components.ui.page-header', [
+        @include('Dosen.components.ui.page-header', [
             'title' => 'Mahasiswa yang dibimbing',
             'subtitle' => 'Halaman ini menampilkan daftar Mahasiswa yang anda bimbing.',
         ])
@@ -30,7 +30,7 @@
             ],
         ];
     @endphp
-    @component('dosen.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
+    @component('Dosen.components.cards.stats-cards', ['stats' => $stats, 'columns' => 3])
     @endcomponent
 
     @php
@@ -43,7 +43,7 @@
         }
     @endphp
 
-    @component('dosen.components.ui.search-and-filter', [
+    @component('Dosen.components.ui.search-and-filter', [
         'searchRoute' => route('lecturer.profile.update'),
         'searchPlaceholder' => 'Cari pengguna berdasarkan nama atau email...',
         'filterOptions' => $filterOptions,
@@ -54,22 +54,22 @@
     @endcomponent
 
     <div id="students-table-container">
-        @component('dosen.students.components.tables')
+        @component('Dosen.students.components.tables')
         @slot('students', $students ?? collect())
         @endcomponent
     </div>
 
     <div id="pagination-container">
-        @component('dosen.components.tables.pagination', ['data' => $students ?? collect()])
+        @component('Dosen.components.tables.pagination', ['data' => $students ?? collect()])
         @endcomponent
     </div>
 </div>
 
 <!-- Include modals -->
-@include('dosen.students.components.create-student-modal')
-@include('dosen.students.components.edit-student-modal')
-@include('dosen.students.components.show-student-modal')
-@include('dosen.students.components.delete-student-modal')
+@include('Dosen.students.components.create-student-modal')
+@include('Dosen.students.components.edit-student-modal')
+@include('Dosen.students.components.show-student-modal')
+@include('Dosen.students.components.delete-student-modal')
 
 <!-- JavaScript Variables and Setup -->
 <script>
