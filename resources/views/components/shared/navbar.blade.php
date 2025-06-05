@@ -1,7 +1,16 @@
 @props(['title' => null, 'user' => null])
 
 @php
-    $userRole = $user ? $user->role : (auth()->user() ? auth()->user()->role : 'admin');
+    // $userRole = $user ? $user->role : (auth()->user() ? auth()->user()->role : 'admin');
+
+    $currentUser = $user ?? auth()->user();
+    $userRole = $currentUser ? $currentUser->role : 'admin';
+
+    // Mendapatkan URL foto profil yang benar
+    $profilePhotoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($currentUser->name ?? 'User') . '&background=4338ca&color=fff';
+    if ($currentUser && $currentUser->photo) {
+        $profilePhotoUrl = asset('storage/photos/' . $currentUser->photo);
+    }
 @endphp
 
 <nav class="bg-white border-b border-gray-200 shadow-sm">
@@ -26,7 +35,8 @@
                         <div tabindex="0" role="button" class="flex items-center cursor-pointer hover:opacity-80 transition-opacity duration-300">
                             <div class="avatar">
                                 <div class="w-8 h-8 rounded-full ring ring-brand ring-offset-base-100 ring-offset-1 bg-brand-light">
-                                    <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name={{ $user ? urlencode($user->name) : 'User' }}&background=4338ca&color=fff" alt="User avatar" loading="lazy" />
+                                    {{-- <img class="h-8 w-8 rounded-full object-cover" src="https://ui-avatars.com/api/?name={{ $user ? urlencode($user->name) : 'User' }}&background=4338ca&color=fff" alt="User avatar" loading="lazy" /> --}}
+                                    <img class="h-8 w-8 rounded-full object-cover" src="{{ $profilePhotoUrl }}" alt="User avatar" loading="lazy" />
                                 </div>
                             </div>
                             <span class="ml-2 text-sm font-medium text-gray-700 hidden sm:block">{{ $user ? $user->name : (auth()->user() ? auth()->user()->name : 'User') }}</span>
@@ -39,12 +49,15 @@
                                 <div class="flex items-center space-x-3">
                                     <div class="avatar">
                                         <div class="w-10 h-10 rounded-full ring ring-brand ring-offset-base-100 ring-offset-1">
-                                            <img src="https://ui-avatars.com/api/?name={{ $user ? urlencode($user->name) : 'User' }}&background=4338ca&color=fff" alt="User avatar" />
+                                            {{-- <img src="https://ui-avatars.com/api/?name={{ $user ? urlencode($user->name) : 'User' }}&background=4338ca&color=fff" alt="User avatar" /> --}}
+                                            <img class="w-full h-full rounded-full object-cover" src="{{ $profilePhotoUrl }}" alt="User avatar" />
                                         </div>
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="font-medium">{{ $user ? $user->name : (auth()->user() ? auth()->user()->name : 'Unknown User') }}</span>
-                                        <span class="text-xs text-gray-500">{{ $user ? $user->email : (auth()->user() ? auth()->user()->email : 'Unknown Email') }}</span>
+                                        {{-- <span class="font-medium">{{ $user ? $user->name : (auth()->user() ? auth()->user()->name : 'Unknown User') }}</span>
+                                        <span class="text-xs text-gray-500">{{ $user ? $user->email : (auth()->user() ? auth()->user()->email : 'Unknown Email') }}</span> --}}
+                                        <span class="font-medium">{{ $currentUser ? $currentUser->name : 'Unknown User' }}</span>
+                                        <span class="text-xs text-gray-500">{{ $currentUser ? $currentUser->email : 'Unknown Email' }}</span>
                                         <span class="text-xs text-brand capitalize">{{ $userRole }}</span>
                                     </div>
                                 </div>
