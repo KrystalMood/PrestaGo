@@ -15,6 +15,11 @@
                     </a>
                 </li>
                 <li class="mr-1">
+                    <a href="#skills-content" class="tab-link inline-block px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-target="skills-content">
+                        Keterampilan
+                    </a>
+                </li>
+                <li class="mr-1">
                     <a href="#interests-content" class="tab-link inline-block px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-target="interests-content">
                         Bidang Minat Penelitian
                     </a>
@@ -79,6 +84,38 @@
                                 <label for="mahasiswa" class="block text-sm font-medium text-gray-700 mb-1">Jumlah mahasiswa yang dibimbing</label>
                                 <input type="text" id="mahasiswa" name="mahasiswa" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-50" value="{{ $countStudents }}" disabled>
                             </div>
+                            <div>
+                                <label for="ratings" class="block text-sm font-medium text-gray-700 mb-1">Rating Aktifitas</label>
+                                <div class="flex items-center">
+                                    <div class="flex">
+                                        @php
+                                            $averageRating = $user->getAverageActivityRating();
+                                            $fullStars = floor($averageRating);
+                                            $halfStar = ceil($averageRating - $fullStars);
+                                            $emptyStars = 5 - $fullStars - $halfStar;
+                                        @endphp
+                                        
+                                        @for($i = 0; $i < $fullStars; $i++)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        @endfor
+                                        
+                                        @if($halfStar)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        @endif
+                                        
+                                        @for($i = 0; $i < $emptyStars; $i++)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        @endfor
+                                    </div>
+                                    <span class="ml-2 text-sm text-gray-600">{{ number_format($averageRating, 1) }} dari 5 ({{ $user->getTotalRatingCount() }} rating)</span>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -93,6 +130,92 @@
                         </div>
                     </div>
                 </div>
+            </form>
+        </div>
+
+        <!-- Skills Tab -->
+        <div id="skills-content" class="tab-content hidden">
+            <form id="skills-form" method="POST" action="{{ route('lecturer.profile.skills.update') }}" class="space-y-6">
+                @csrf
+                
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Daftar Keterampilan</h3>
+                        <p class="text-sm text-gray-600 mt-1">Keterampilan yang Anda kuasai dan tingkat keahlian Anda</p>
+                    </div>
+                    <button type="button" id="open-add-skill-modal-btn" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:-translate-y-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Tambah Keterampilan
+                    </button>
+                </div>
+
+                <div id="selected-skills-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @php 
+                        $userSkillsMap = $userSkills->keyBy('id'); // Easier lookup
+                    @endphp
+                    
+                    @if($userSkills->isNotEmpty())
+                        @foreach($userSkills as $userSkill)
+                            <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden" data-skill-id="{{ $userSkill->id }}">
+                                <div class="p-4">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">{{ $userSkill->name }}</h4>
+                                            @if($userSkill->category)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                                    {{ $userSkill->category }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <button type="button" class="remove-skill-btn text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 transition-colors" title="Hapus Keterampilan">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <label for="skill-level-{{ $userSkill->id }}" class="block text-sm font-medium text-gray-700 mb-1">Tingkat Keahlian</label>
+                                        <select id="skill-level-{{ $userSkill->id }}" name="skill_level[{{ $userSkill->id }}]" class="skill-level-select w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="1" {{ $userSkill->pivot->proficiency_level == 1 ? 'selected' : '' }}>Pemula</option>
+                                            <option value="2" {{ $userSkill->pivot->proficiency_level == 2 ? 'selected' : '' }}>Dasar</option>
+                                            <option value="3" {{ $userSkill->pivot->proficiency_level == 3 ? 'selected' : '' }}>Menengah</option>
+                                            <option value="4" {{ $userSkill->pivot->proficiency_level == 4 ? 'selected' : '' }}>Mahir</option>
+                                            <option value="5" {{ $userSkill->pivot->proficiency_level == 5 ? 'selected' : '' }}>Ahli</option>
+                                        </select>
+                                        
+                                        <div class="flex items-center mt-2">
+                                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                                <div class="bg-blue-600 h-2.5 rounded-full skill-progress-bar" style="width: {{ ($userSkill->pivot->proficiency_level / 5) * 100 }}%"></div>
+                                            </div>
+                                            <span class="text-xs font-medium text-gray-500 ml-2">{{ $userSkill->pivot->proficiency_level }}/5</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div id="no-skills-message" class="text-center py-10 px-4 col-span-2 bg-gray-50 rounded-lg border border-gray-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-16 w-16 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <circle cx="12" cy="9" r="2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 3.5V2m4 1.5V2m-4.5 15H6m12.5 0H15" />
+                            </svg>
+                            <h3 class="mt-3 text-base font-medium text-gray-900">Tambahkan Keterampilan Anda</h3>
+                            <p class="mt-1 text-sm text-gray-500">Anda belum menambahkan keterampilan apapun.</p>
+                        </div>
+                    @endif
+                </div>
+                
+                @if($userSkills->isNotEmpty())
+                <div class="pt-6 flex justify-end">
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+                        Simpan Keterampilan
+                    </button>
+                </div>
+                @endif
             </form>
         </div>
 
@@ -211,6 +334,44 @@
                 <div class="p-5 border-t bg-gray-50 flex justify-between items-center">
                     <span class="text-xs text-gray-500">Pilih satu atau lebih bidang minat</span>
                     <button type="button" id="add-selected-interests-btn" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                        Tambahkan Terpilih
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Skill Modal -->
+        <div id="add-skill-modal" class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full hidden z-50 transition-opacity duration-300">
+            <div class="relative top-20 mx-auto p-0 border w-full max-w-2xl shadow-lg rounded-lg bg-white transition-transform duration-300 transform">
+                <div class="p-5 border-b">
+                    <div class="flex justify-between items-center">
+                        <p class="text-xl font-semibold text-gray-900">Tambah Keterampilan</p>
+                        <button id="close-add-skill-modal-btn" class="modal-close cursor-pointer z-50 text-gray-400 hover:text-gray-500 transition-colors">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="mb-4">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="text" id="modal-skill-search" placeholder="Cari keterampilan..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div id="modal-skills-list" class="max-h-72 overflow-y-auto overflow-x-hidden space-y-1 pr-1">
+                        <!-- Available skills will be populated here by JavaScript -->
+                        <p class="text-gray-500 text-sm py-2 px-1">Ketik untuk mencari keterampilan yang tersedia.</p>
+                    </div>
+                </div>
+                <div class="p-5 border-t bg-gray-50 flex justify-between items-center">
+                    <span class="text-xs text-gray-500">Pilih satu atau lebih keterampilan</span>
+                    <button type="button" id="add-selected-skills-btn" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                         Tambahkan Terpilih
                     </button>
                 </div>

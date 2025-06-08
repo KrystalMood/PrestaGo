@@ -110,6 +110,9 @@ Route::middleware(['auth'])->group(function () {
            Route::post('/generate', [App\Http\Controllers\Admin\RecommendationController::class, 'generate'])->name('generate');
            Route::post('/save-generated', [App\Http\Controllers\Admin\RecommendationController::class, 'saveGenerated'])->name('save-generated');
            Route::post('/save-all-generated', [App\Http\Controllers\Admin\RecommendationController::class, 'saveAllGenerated'])->name('save-all-generated');
+           Route::post('/remove-generated', [App\Http\Controllers\Admin\RecommendationController::class, 'removeGenerated'])->name('remove-generated');
+           Route::post('/clear-generated', [App\Http\Controllers\Admin\RecommendationController::class, 'clearGenerated'])->name('clear-generated');
+           Route::post('/delete-all', [App\Http\Controllers\Admin\RecommendationController::class, 'deleteAll'])->name('delete-all');
            Route::get('/export', [App\Http\Controllers\Admin\RecommendationController::class, 'export'])->name('export');
            Route::get('/{id}', [App\Http\Controllers\Admin\RecommendationController::class, 'show'])->name('show');
            Route::patch('/{id}/status', [App\Http\Controllers\Admin\RecommendationController::class, 'updateStatus'])->name('update-status');
@@ -180,11 +183,24 @@ Route::middleware(['auth'])->group(function () {
 
         // Competition feedback routes
         Route::prefix('feedback')->name('feedback.')->group(function () {
-            Route::get('/', 'App\Http\Controllers\Student\CompetitionFeedbackController@index')->name('index');
-            Route::post('/', 'App\Http\Controllers\Student\CompetitionFeedbackController@store')->name('store');
-            Route::get('/{id}', 'App\Http\Controllers\Student\CompetitionFeedbackController@show')->name('show');
-            Route::delete('/{id}', 'App\Http\Controllers\Student\CompetitionFeedbackController@destroy')->name('destroy');
-            Route::get('/list', 'App\Http\Controllers\Student\CompetitionFeedbackController@list')->name('list');
+            Route::get('/', [App\Http\Controllers\Student\CompetitionFeedbackController::class, 'index'])->name('index');
+            Route::post('/', [App\Http\Controllers\Student\CompetitionFeedbackController::class, 'store'])->name('store');
+            Route::get('/{id}', [App\Http\Controllers\Student\CompetitionFeedbackController::class, 'show'])->name('show');
+            Route::delete('/{id}', [App\Http\Controllers\Student\CompetitionFeedbackController::class, 'destroy'])->name('destroy');
+            
+            Route::get('/list', [App\Http\Controllers\Student\CompetitionFeedbackController::class, 'list'])->name('list');
+            
+            Route::post('/check-eligibility', [App\Http\Controllers\Student\CompetitionFeedbackController::class, 'checkFeedbackEligibility'])->name('check-eligibility');
+        });
+        
+        // Get competition details including lecturer mentorships
+        Route::post('/competition-details', [App\Http\Controllers\Student\CompetitionFeedbackController::class, 'getCompetitionDetails'])->name('competition-details');
+
+        // Lecturer Rating Routes
+        Route::prefix('lecturer-ratings')->name('lecturer-ratings.')->group(function () {
+            Route::post('/', [App\Http\Controllers\Student\LecturerRatingController::class, 'store'])->name('store');
+            Route::get('/competition/{competitionId}', [App\Http\Controllers\Student\LecturerRatingController::class, 'getLecturersForCompetition'])->name('get-lecturers');
+            Route::get('/competition/{competitionId}/lecturer/{dosenId}', [App\Http\Controllers\Student\LecturerRatingController::class, 'getUserRating'])->name('get-user-rating');
         });
     });
 
@@ -211,6 +227,15 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/sub-competitions/create', [App\Http\Controllers\dosen\CompetitionController::class, 'createSubCompetition'])->name('sub-competitions.create');
             Route::post('/{id}/sub-competitions', [App\Http\Controllers\dosen\CompetitionController::class, 'storeSubCompetition'])->name('sub-competitions.store');
             Route::get('/{id}/sub-competitions/{sub_id}', [App\Http\Controllers\dosen\CompetitionController::class, 'showSubCompetition'])->name('sub-competitions.show');
+            Route::get('/{competition}/sub-competitions/{sub_competition}/participants', [App\Http\Controllers\dosen\CompetitionController::class, 'participants'])->name('sub-competitions.participants');
+            Route::post('/{competition}/sub-competitions/{sub_competition}/participants', [App\Http\Controllers\dosen\CompetitionController::class, 'storeParticipant'])->name('sub-competitions.participants.store');
+            Route::put('/{competition}/sub-competitions/{sub_competition}/participants/{participant}/update-status', [App\Http\Controllers\dosen\CompetitionController::class, 'updateParticipantStatus'])->name('sub-competitions.participants.update-status');
+            
+            // Sub-competition skills routes
+            Route::get('/{competition}/sub-competitions/{sub_competition}/skills', [App\Http\Controllers\dosen\CompetitionController::class, 'skills'])->name('sub-competitions.skills');
+            Route::post('/{competition}/sub-competitions/{sub_competition}/skills', [App\Http\Controllers\dosen\CompetitionController::class, 'storeSkill'])->name('sub-competitions.skills.store');
+            Route::put('/{competition}/sub-competitions/{sub_competition}/skills/{skill}', [App\Http\Controllers\dosen\CompetitionController::class, 'updateSkill'])->name('sub-competitions.skills.update');
+            Route::delete('/{competition}/sub-competitions/{sub_competition}/skills/{skill}', [App\Http\Controllers\dosen\CompetitionController::class, 'destroySkill'])->name('sub-competitions.skills.destroy');
         });
         
         Route::prefix('profile')->name('profile.')->group(function () {

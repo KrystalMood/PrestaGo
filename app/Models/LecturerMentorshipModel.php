@@ -16,6 +16,8 @@ class LecturerMentorshipModel extends Model
         'dosen_id',
         'status',
         'notes',
+        'average_rating',
+        'rating_count'
     ];
 
     public function competition()
@@ -26,5 +28,19 @@ class LecturerMentorshipModel extends Model
     public function lecturer()
     {
         return $this->belongsTo(UserModel::class, 'dosen_id', 'id');
+    }
+    
+    public function ratings()
+    {
+        return $this->hasMany(LecturerRating::class, 'dosen_id', 'dosen_id')
+                    ->where('competition_id', $this->competition_id);
+    }
+
+    public function updateAverageRating()
+    {
+        $ratings = $this->ratings()->pluck('activity_rating');
+        $this->rating_count = $ratings->count();
+        $this->average_rating = $ratings->count() > 0 ? $ratings->avg() : null;
+        $this->save();
     }
 } 

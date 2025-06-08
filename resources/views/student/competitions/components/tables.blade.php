@@ -30,7 +30,10 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($competitions as $competition)
-                <tr class="hover:bg-gray-50 transition-colors competition-row" data-competition-id="{{ $competition->id }}">
+                <tr class="hover:bg-gray-50 transition-colors competition-row" 
+                    data-competition-id="{{ $competition->id }}"
+                    data-start-date="{{ $competition->start_date ? $competition->start_date->format('Y-m-d') : '' }}"
+                    data-end-date="{{ $competition->end_date ? $competition->end_date->format('Y-m-d') : '' }}">
                     <td class="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-900">
                         <span class="bg-gray-100 text-gray-700 py-1 px-2.5 rounded-md font-medium">
                             {{ ($competitions instanceof \Illuminate\Pagination\LengthAwarePaginator) ? (($competitions->currentPage() - 1) * $competitions->perPage() + $loop->iteration) : $loop->iteration }}
@@ -67,7 +70,7 @@
                         {{ $competition->registration_end ? \Carbon\Carbon::parse($competition->registration_end)->format('d M Y') : 'Tidak ditentukan' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        <span class="status-badge px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                             @if($competition->status == 'open') 
                                 bg-emerald-100 text-emerald-800
                             @elseif($competition->status == 'upcoming')

@@ -21,6 +21,12 @@
                     color="gray"
                     href="{{ route('admin.recommendations.export') }}"
                 />
+                <button id="delete-all-recommendations-btn" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    Hapus Semua
+                </button>
             </div>
         </div>
 
@@ -325,5 +331,198 @@
                 });
             });
         });
+    </script>
+
+    <!-- Modal untuk konfirmasi hapus semua rekomendasi -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md mx-auto p-6 w-full">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="modal-title">Konfirmasi Hapus Semua</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-500 close-modal">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="mb-6">
+                <p class="text-gray-600" id="modal-message">Apakah Anda yakin ingin menghapus semua rekomendasi yang tersimpan? Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 close-modal">
+                    Batal
+                </button>
+                <button type="button" id="confirm-delete-all" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    Ya, Hapus Semua
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal functions
+        function showModal() {
+            const modal = document.getElementById('confirmation-modal');
+            modal.classList.remove('hidden');
+            
+            // Setup close buttons
+            const closeButtons = modal.querySelectorAll('.close-modal');
+            closeButtons.forEach(button => {
+                button.onclick = function() {
+                    modal.classList.add('hidden');
+                };
+            });
+        }
+        
+        // Toast notification function
+        function showToast(type, message) {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Set toast class based on type
+            let bgColor, textColor, borderColor;
+            switch (type) {
+                case 'error':
+                    bgColor = 'bg-red-100';
+                    textColor = 'text-red-700';
+                    borderColor = 'border-red-400';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-100';
+                    textColor = 'text-yellow-700';
+                    borderColor = 'border-yellow-400';
+                    break;
+                case 'info':
+                    bgColor = 'bg-blue-100';
+                    textColor = 'text-blue-700';
+                    borderColor = 'border-blue-400';
+                    break;
+                case 'success':
+                default:
+                    bgColor = 'bg-green-100';
+                    textColor = 'text-green-700';
+                    borderColor = 'border-green-400';
+                    break;
+            }
+            
+            toast.className = `${bgColor} ${textColor} px-4 py-3 rounded-lg border ${borderColor} shadow-md mb-3 flex items-center justify-between transform transition-all duration-500 ease-in-out opacity-0 translate-x-full`;
+            
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        ${type === 'error' ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>' :
+                          type === 'warning' ? '<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>' :
+                          '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>'}
+                    </svg>
+                    <div>${message}</div>
+                </div>
+                <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-x-full');
+            }, 10);
+            
+            // Auto remove after 5 seconds
+            const autoRemoveTimeout = setTimeout(() => {
+                removeToast(toast);
+            }, 5000);
+            
+            // Close button event
+            toast.querySelector('button').addEventListener('click', () => {
+                clearTimeout(autoRemoveTimeout);
+                removeToast(toast);
+            });
+        }
+        
+        function removeToast(toast) {
+            toast.classList.add('opacity-0', 'translate-x-full');
+            setTimeout(() => {
+                toast.remove();
+            }, 500);
+        }
+        
+        // Set up delete all button event
+        const deleteAllBtn = document.getElementById('delete-all-recommendations-btn');
+        if (deleteAllBtn) {
+            deleteAllBtn.addEventListener('click', function() {
+                showModal();
+            });
+        }
+        
+        // Set up confirm delete all button
+        const confirmDeleteAllBtn = document.getElementById('confirm-delete-all');
+        if (confirmDeleteAllBtn) {
+            confirmDeleteAllBtn.addEventListener('click', function() {
+                // Hide the modal
+                document.getElementById('confirmation-modal').classList.add('hidden');
+                
+                // Show loading state
+                confirmDeleteAllBtn.disabled = true;
+                confirmDeleteAllBtn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Menghapus...
+                `;
+                
+                // Make AJAX request to delete all recommendations
+                confirmDeleteAll();
+            });
+        }
+        
+        function confirmDeleteAll() {
+            fetch('/admin/recommendations/delete-all', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideDeleteAllModal();
+                if (data.success) {
+                    showToast('success', data.message);
+                    // Hapus semua baris dari tabel
+                    document.querySelector('.recommendation-table tbody').innerHTML = '';
+                    // Refresh halaman setelah 1.5 detik
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showToast('error', data.message || 'Terjadi kesalahan saat menghapus rekomendasi');
+                }
+            })
+            .catch(error => {
+                hideDeleteAllModal();
+                showToast('error', 'Terjadi kesalahan saat menghapus rekomendasi');
+                console.error('Error:', error);
+            });
+        }
+        
+        // Set up individual delete confirmation
+        const deleteButtons = document.querySelectorAll('.delete-recommendation-form');
+        deleteButtons.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (confirm('Apakah Anda yakin ingin menghapus rekomendasi ini?')) {
+                    this.submit();
+                }
+            });
+        });
+    });
     </script>
 @endcomponent 

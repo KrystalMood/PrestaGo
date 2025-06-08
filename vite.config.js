@@ -22,7 +22,10 @@ export default defineConfig({
                 'resources/js/admin/reports/periods.js',
                 'resources/js/admin/reports/export.js',
                 'resources/js/student/recommendations.js',
-                'resources/js/student/competitions.js'
+                'resources/js/student/competitions.js',
+                'resources/js/dosen/competitions.js',
+                'resources/js/dosen/sub-competitions.js',
+                'resources/js/dosen/skills.js'
             ],
             refresh: true,
         }),

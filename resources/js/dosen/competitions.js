@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setupCompetitionModals();
     attachPaginationHandlers();
+    autoUpdateCompetitionStatuses();
 
     // Function to initialize and set up event listeners for competition modals.
     function setupCompetitionModals() {
@@ -256,14 +257,121 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to load competition data for viewing in the modal.
     function loadCompetitionForView(competitionId) {
-        if (!window.showCompetitionModal) return;
+        if (!window.showCompetitionModal) {
+            console.error('Show competition modal not found in the DOM');
+            showNotification('Error: Modal not found', 'error');
+            return;
+        }
         
         window.showCompetitionModal.classList.remove('hidden');
-        document.querySelector('.competition-detail-skeleton').classList.remove('hidden');
-        document.querySelector('.competition-detail-content').classList.add('hidden');
         
-        const url = competitionRoutes.show.replace('__id__', competitionId);
+        // Get skeleton and content elements
+        const skeletonElements = document.querySelectorAll('.competition-detail-skeleton');
+        const contentElements = document.querySelectorAll('.competition-detail-content');
         
+        // Show skeleton loading
+        if (skeletonElements.length > 0) {
+            skeletonElements.forEach(el => el.classList.remove('hidden'));
+        } else {
+            console.error('Skeleton elements not found');
+        }
+        
+        // Hide content
+        if (contentElements.length > 0) {
+            contentElements.forEach(el => el.classList.add('hidden'));
+        } else {
+            console.error('Content elements not found');
+        }
+        
+        // Check if all required DOM elements exist
+        const requiredElements = [
+            'competition-name',
+            'competition-level',
+            'level-icon-container',
+            'level-icon',
+            'competition-id',
+            'competition-organizer',
+            'competition-period',
+            'competition-status',
+            'competition-dates',
+            'competition-registration',
+            'competition-date',
+            'competition-description',
+            'show-competition-updated-at'
+        ];
+        
+        const missingElements = [];
+        requiredElements.forEach(id => {
+            if (!document.getElementById(id)) {
+                missingElements.push(id);
+            }
+        });
+        
+        if (missingElements.length > 0) {
+            console.error('Missing DOM elements:', missingElements);
+            hideSkeletonShowContent();
+            showNotification('Terjadi kesalahan pada tampilan. Beberapa elemen tidak ditemukan.', 'error');
+            return;
+        }
+        
+        // Construct the URL
+        let url = '';
+        try {
+            url = competitionRoutes.show.replace('__id__', competitionId);
+            console.log('Fetching competition data from URL:', url);
+        } catch (error) {
+            console.error('Error constructing URL:', error);
+            showNotification('Error constructing URL: ' + error.message, 'error');
+            hideSkeletonShowContent();
+            return;
+        }
+        
+        // Helper function to hide skeleton and show content
+        function hideSkeletonShowContent() {
+            if (skeletonElements.length > 0) {
+                skeletonElements.forEach(el => el.classList.add('hidden'));
+            }
+            if (contentElements.length > 0) {
+                contentElements.forEach(el => el.classList.remove('hidden'));
+            }
+        }
+        
+        // Set element text safely
+        function setElementText(id, text) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = text;
+            } else {
+                console.warn(`Element with id '${id}' not found`);
+            }
+        }
+        
+        // Set element HTML safely
+        function setElementHTML(id, html) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.innerHTML = html;
+            } else {
+                console.warn(`Element with id '${id}' not found`);
+            }
+        }
+        
+        // Set element class safely
+        function setElementClass(id, className) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.className = '';
+                className.split(' ').forEach(cls => {
+                    if (cls.trim()) {
+                        element.classList.add(cls.trim());
+                    }
+                });
+            } else {
+                console.warn(`Element with id '${id}' not found`);
+            }
+        }
+        
+        // Make the request
         fetch(url, {
             method: 'GET',
             headers: {
@@ -272,83 +380,107 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-CSRF-TOKEN': csrfToken
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.status);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             if (data.success && data.competition) {
-                document.querySelector('.competition-detail-skeleton').classList.add('hidden');
-                document.querySelector('.competition-detail-content').classList.remove('hidden');
+                hideSkeletonShowContent();
                 
                 const competition = data.competition;
                 
-                document.getElementById('competition-name').textContent = competition.name || '';
-                document.getElementById('competition-level').textContent = competition.level_formatted || '';
+                setElementText('competition-name', competition.name || '');
+                setElementText('competition-level', competition.level_formatted || '');
                 
                 updateLevelIcon(competition.level);
                 
-                document.getElementById('competition-id').textContent = competition.id || '';
-                document.getElementById('competition-organizer').textContent = competition.organizer || '';
+                setElementText('competition-id', competition.id || '');
+                setElementText('competition-organizer', competition.organizer || '');
                 
                 if (competition.period) {
-                    document.getElementById('competition-period').textContent = competition.period.name || '';
+                    setElementText('competition-period', competition.period.name || '');
                 } else {
-                    document.getElementById('competition-period').textContent = '-';
+                    setElementText('competition-period', '-');
                 }
                 
                 const statusEl = document.getElementById('competition-status');
                 if (statusEl) {
                     statusEl.textContent = getStatusText(competition.status);
-                    statusEl.className = `px-3 py-1 text-sm font-semibold rounded-full ${getStatusClass(competition.status)}`;
+                    statusEl.classList.remove(...statusEl.classList);
+                    statusEl.classList.add('px-3', 'py-1', 'text-sm', 'font-semibold', 'rounded-full');
+                    const statusClasses = getStatusClass(competition.status).split(' ');
+                    statusClasses.forEach(cls => {
+                        if (cls.trim()) statusEl.classList.add(cls.trim());
+                    });
                 }
                 
-                const startDate = competition.start_date ? new Date(competition.start_date) : null;
-                const endDate = competition.end_date ? new Date(competition.end_date) : null;
-                
-                if (startDate && endDate) {
-                    const formatDate = (date) => {
-                        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                    };
+                try {
+                    const startDate = competition.start_date ? new Date(competition.start_date) : null;
+                    const endDate = competition.end_date ? new Date(competition.end_date) : null;
                     
-                    document.getElementById('competition-dates').textContent = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-                } else {
-                    document.getElementById('competition-dates').textContent = '-';
-                }
-                
-                const regStartDate = competition.registration_start_date ? new Date(competition.registration_start_date) : null;
-                const regEndDate = competition.registration_end_date ? new Date(competition.registration_end_date) : null;
-                
-                if (regStartDate && regEndDate) {
-                    const formatDate = (date) => {
-                        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                    };
+                    if (startDate && endDate) {
+                        const formatDate = (date) => {
+                            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                        };
+                        
+                        setElementText('competition-dates', `${formatDate(startDate)} - ${formatDate(endDate)}`);
+                    } else {
+                        setElementText('competition-dates', '-');
+                    }
                     
-                    document.getElementById('competition-registration').textContent = `${formatDate(regStartDate)} - ${formatDate(regEndDate)}`;
-                } else {
-                    document.getElementById('competition-registration').textContent = '-';
+                    const regStartDate = competition.registration_start_date ? new Date(competition.registration_start_date) : null;
+                    const regEndDate = competition.registration_end_date ? new Date(competition.registration_end_date) : null;
+                    
+                    if (regStartDate && regEndDate) {
+                        const formatDate = (date) => {
+                            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                        };
+                        
+                        setElementText('competition-registration', `${formatDate(regStartDate)} - ${formatDate(regEndDate)}`);
+                    } else {
+                        setElementText('competition-registration', '-');
+                    }
+                    
+                    if (competition.competition_date) {
+                        const compDate = new Date(competition.competition_date);
+                        setElementText('competition-date', compDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }));
+                    } else {
+                        setElementText('competition-date', '-');
+                    }
+                } catch (dateError) {
+                    console.error('Error formatting dates:', dateError);
+                    setElementText('competition-dates', '-');
+                    setElementText('competition-registration', '-');
+                    setElementText('competition-date', '-');
                 }
                 
-                if (competition.competition_date) {
-                    const compDate = new Date(competition.competition_date);
-                    document.getElementById('competition-date').textContent = compDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                } else {
-                    document.getElementById('competition-date').textContent = '-';
-                }
-                
-                document.getElementById('competition-description').innerHTML = competition.description || '-';
+                setElementHTML('competition-description', competition.description || '-');
                 
                 if (competition.updated_at) {
-                    const updatedAt = new Date(competition.updated_at);
-                    document.getElementById('show-competition-updated-at').textContent = updatedAt.toLocaleString('id-ID');
+                    try {
+                        const updatedAt = new Date(competition.updated_at);
+                        setElementText('show-competition-updated-at', updatedAt.toLocaleString('id-ID'));
+                    } catch (e) {
+                        setElementText('show-competition-updated-at', '-');
+                    }
                 } else {
-                    document.getElementById('show-competition-updated-at').textContent = '-';
+                    setElementText('show-competition-updated-at', '-');
                 }
             } else {
                 console.error('Failed to load competition data:', data);
-                showNotification('Gagal memuat data kompetisi', 'error');
+                hideSkeletonShowContent();
+                showNotification(data.message || 'Gagal memuat data kompetisi', 'error');
             }
         })
         .catch(error => {
             console.error('Error loading competition:', error);
-            showNotification('Terjadi kesalahan saat memuat data kompetisi', 'error');
+            hideSkeletonShowContent();
+            showNotification('Terjadi kesalahan saat memuat data kompetisi: ' + error.message, 'error');
         });
     }
 
@@ -359,7 +491,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!iconContainer || !icon) return;
         
-        iconContainer.className = 'h-24 w-24 rounded-full overflow-hidden flex items-center justify-center shadow-md';
+        // Use classList instead of className
+        iconContainer.classList.forEach(cls => {
+            if (cls.startsWith('bg-')) {
+                iconContainer.classList.remove(cls);
+            }
+        });
+        
+        icon.classList.forEach(cls => {
+            if (cls.startsWith('text-')) {
+                icon.classList.remove(cls);
+            }
+        });
+        
+        iconContainer.classList.add('h-24', 'w-24', 'rounded-full', 'overflow-hidden', 'flex', 'items-center', 'justify-center', 'shadow-md');
         
         let bgClass = 'bg-indigo-100';
         let textClass = 'text-indigo-500';
@@ -398,32 +543,67 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         iconContainer.classList.add(bgClass);
-        icon.className = `h-12 w-12 ${textClass}`;
+        icon.classList.add('h-12', 'w-12', textClass);
         icon.innerHTML = svgPath;
     }
 
-    // Function to get the human-readable status text.
-    function getStatusText(status) {
-        const statusMap = {
-            'upcoming': 'Akan Datang',
-            'active': 'Aktif',
-            'completed': 'Selesai',
-            'cancelled': 'Dibatalkan'
-        };
+    // Function to automatically update competition statuses based on dates
+    function autoUpdateCompetitionStatuses() {
+        const competitionRows = document.querySelectorAll('[data-competition-id]');
         
-        return statusMap[status] || status;
+        competitionRows.forEach(row => {
+            const startDate = row.dataset.startDate ? new Date(row.dataset.startDate) : null;
+            const endDate = row.dataset.endDate ? new Date(row.dataset.endDate) : null;
+            
+            if (!startDate || !endDate) return;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let status = 'upcoming';
+            
+            if (today < startDate) {
+                status = 'upcoming';
+            } else if (today >= startDate && today <= endDate) {
+                status = 'active';
+            } else if (today > endDate) {
+                status = 'completed';
+            }
+            
+            const statusBadge = row.querySelector('.status-badge');
+            if (statusBadge) {
+                statusBadge.textContent = getStatusText(status);
+                statusBadge.className = `status-badge px-2 py-1 text-xs font-medium rounded-full ${getStatusClass(status)}`;
+            }
+        });
     }
-
-    // Function to get the CSS class for a status.
+    
+    // Function to get the text representation of a status
+    function getStatusText(status) {
+        switch (status) {
+            case 'upcoming':
+                return 'Akan Datang';
+            case 'active':
+                return 'Aktif';
+            case 'completed':
+                return 'Selesai';
+            default:
+                return 'Unknown';
+        }
+    }
+    
+    // Function to get the CSS class for a status
     function getStatusClass(status) {
-        const statusClassMap = {
-            'upcoming': 'bg-yellow-100 text-yellow-800',
-            'active': 'bg-green-100 text-green-800',
-            'completed': 'bg-blue-100 text-blue-800',
-            'cancelled': 'bg-red-100 text-red-800'
-        };
-        
-        return statusClassMap[status] || 'bg-gray-100 text-gray-800';
+        switch (status) {
+            case 'upcoming':
+                return 'bg-blue-100 text-blue-800';
+            case 'active':
+                return 'bg-green-100 text-green-800';
+            case 'completed':
+                return 'bg-gray-100 text-gray-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
     }
 
     // Function to handle pagination.

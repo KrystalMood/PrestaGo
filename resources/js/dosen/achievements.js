@@ -47,6 +47,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const showModal = document.getElementById('show-achievement-modal');
         const closeButtons = document.querySelectorAll('#close-show-modal, #close-show-achievement-btn');
         
+        const sortDropdown = document.getElementById('achievement-sort');
+        if (sortDropdown) {
+            sortDropdown.addEventListener('change', function() {
+                const sortValue = this.value;
+                const url = new URL(window.location.href);
+                
+                if (sortValue) {
+                    url.searchParams.set('sort', sortValue);
+                } else {
+                    url.searchParams.delete('sort');
+                }
+                
+                window.location.href = url.toString();
+            });
+        }
+        
         showButtons.forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();

@@ -27,6 +27,24 @@
             </div>
         </div>
 
+        <!-- Sorting Dropdown -->
+        <div class="mb-6 flex justify-end items-center">
+            <span class="mr-2 text-sm text-gray-600">Urutkan berdasarkan:</span>
+            <div class="w-full md:w-64">
+                <select
+                    id="achievement-sort"
+                    name="sort"
+                    class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                    onchange="applySorting()"
+                >
+                    <option value="date_desc" {{ ($currentSort ?? '') == 'date_desc' ? 'selected' : '' }}>Tanggal Terbaru</option>
+                    <option value="date_asc" {{ ($currentSort ?? '') == 'date_asc' ? 'selected' : '' }}>Tanggal Terlama</option>
+                    <option value="title_asc" {{ ($currentSort ?? '') == 'title_asc' ? 'selected' : '' }}>Judul (A-Z)</option>
+                    <option value="title_desc" {{ ($currentSort ?? '') == 'title_desc' ? 'selected' : '' }}>Judul (Z-A)</option>
+                </select>
+            </div>
+        </div>
+
         <!-- Achievement List -->
         <div class="mt-6">
             <div class="bg-white rounded-lg shadow-custom overflow-hidden">
@@ -35,11 +53,33 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul Prestasi</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Judul Prestasi
+                                    @if(($currentSort ?? '') == 'title_asc')
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                        </svg>
+                                    @elseif(($currentSort ?? '') == 'title_desc')
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    @endif
+                                </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kompetisi</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Tanggal
+                                    @if(($currentSort ?? '') == 'date_asc')
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                        </svg>
+                                    @elseif(($currentSort ?? '') == 'date_desc')
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    @endif
+                                </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -137,6 +177,20 @@
             show: "{{ route('lecturer.achievements.show', ':id') }}",
         };
         window.csrfToken = "{{ csrf_token() }}";
+
+        // Function to apply sorting
+        function applySorting() {
+            const sortValue = document.getElementById('achievement-sort').value;
+            const url = new URL(window.location.href);
+            
+            if (sortValue) {
+                url.searchParams.set('sort', sortValue);
+            } else {
+                url.searchParams.delete('sort');
+            }
+            
+            window.location.href = url.toString();
+        }
     </script>
 
     <!-- Include achievements.js -->

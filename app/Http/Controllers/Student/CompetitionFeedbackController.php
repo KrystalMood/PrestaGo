@@ -10,6 +10,8 @@ use App\Models\CompetitionFeedback;
 use App\Models\CompetitionModel;
 use App\Models\CompetitionParticipantModel;
 use Carbon\Carbon;
+use App\Models\LecturerMentorshipModel;
+use App\Models\LecturerRating;
 
 class CompetitionFeedbackController extends Controller
 {
@@ -18,7 +20,6 @@ class CompetitionFeedbackController extends Controller
         $userId = Auth::id();
         $today = Carbon::now();
         
-        // Get competitions where the user has participated AND the competition has ended
         $participatedCompetitions = CompetitionParticipantModel::where('user_id', $userId)
             ->with(['competition' => function($query) use ($today) {
                 $query->whereDate('end_date', '<', $today);
@@ -30,9 +31,6 @@ class CompetitionFeedbackController extends Controller
                 return [$competition->id => $competition->name];
             });
         
-        // If no competitions found, don't fall back to all completed competitions
-        // This ensures students can only rate competitions they've participated in
-        
         $feedbackSubmitted = CompetitionFeedback::where('user_id', $userId)
             ->pluck('competition_id')
             ->toArray();
@@ -42,7 +40,14 @@ class CompetitionFeedbackController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         
-        return view('student.feedback.index', compact('participatedCompetitions', 'feedbackSubmitted', 'previousFeedback'));
+        $competitionIds = $previousFeedback->pluck('competition_id')->toArray();
+        $lecturerRatings = LecturerRating::whereIn('competition_id', $competitionIds)
+            ->where('rated_by_user_id', $userId)
+            ->with('lecturer')
+            ->get()
+            ->groupBy('competition_id');
+        
+        return view('student.feedback.index', compact('participatedCompetitions', 'feedbackSubmitted', 'previousFeedback', 'lecturerRatings'));
     }
 
     public function store(Request $request)
@@ -59,12 +64,15 @@ class CompetitionFeedbackController extends Controller
             'skills_gained' => 'required|string',
             'recommendation' => 'required|in:yes,maybe,no',
             'additional_comments' => 'nullable|string',
+            'lecturer_ratings' => 'nullable|array',
+            'lecturer_ratings.*.dosen_id' => 'required|exists:users,id',
+            'lecturer_ratings.*.activity_rating' => 'required|integer|min:1|max:5',
+            'lecturer_ratings.*.comments' => 'nullable|string|max:500',
         ]);
 
         $userId = Auth::id();
         $validated['user_id'] = $userId;
         
-        // Check if the user has already submitted feedback for this competition
         $existingFeedback = CompetitionFeedback::where('user_id', $userId)
             ->where('competition_id', $validated['competition_id'])
             ->first();
@@ -74,7 +82,6 @@ class CompetitionFeedbackController extends Controller
                 ->with('error', 'Anda sudah memberikan feedback untuk lomba ini sebelumnya.');
         }
         
-        // Check if the user has participated in this competition
         $hasParticipated = CompetitionParticipantModel::where('user_id', $userId)
             ->where('competition_id', $validated['competition_id'])
             ->exists();
@@ -84,7 +91,6 @@ class CompetitionFeedbackController extends Controller
                 ->with('error', 'Anda hanya dapat memberikan feedback untuk lomba yang telah Anda ikuti.');
         }
         
-        // Check if the competition has ended
         $competition = CompetitionModel::find($validated['competition_id']);
         $today = Carbon::now();
         
@@ -93,7 +99,44 @@ class CompetitionFeedbackController extends Controller
                 ->with('error', 'Anda hanya dapat memberikan feedback setelah lomba selesai.');
         }
         
-        CompetitionFeedback::create($validated);
+        $feedback = CompetitionFeedback::create([
+            'user_id' => $userId,
+            'competition_id' => $validated['competition_id'],
+            'overall_rating' => $validated['overall_rating'],
+            'organization_rating' => $validated['organization_rating'],
+            'judging_rating' => $validated['judging_rating'],
+            'learning_rating' => $validated['learning_rating'],
+            'materials_rating' => $validated['materials_rating'],
+            'strengths' => $validated['strengths'],
+            'improvements' => $validated['improvements'],
+            'skills_gained' => $validated['skills_gained'],
+            'recommendation' => $validated['recommendation'],
+            'additional_comments' => $validated['additional_comments'] ?? null,
+        ]);
+        
+        if (isset($validated['lecturer_ratings']) && !empty($validated['lecturer_ratings'])) {
+            foreach ($validated['lecturer_ratings'] as $lecturerRating) {
+                $mentorship = LecturerMentorshipModel::where('dosen_id', $lecturerRating['dosen_id'])
+                    ->where('competition_id', $validated['competition_id'])
+                    ->first();
+                    
+                if ($mentorship) {
+                    $rating = LecturerRating::updateOrCreate(
+                        [
+                            'dosen_id' => $lecturerRating['dosen_id'],
+                            'competition_id' => $validated['competition_id'],
+                            'rated_by_user_id' => $userId
+                        ],
+                        [
+                            'activity_rating' => $lecturerRating['activity_rating'],
+                            'comments' => $lecturerRating['comments'] ?? null
+                        ]
+                    );
+                    
+                    $mentorship->updateAverageRating();
+                }
+            }
+        }
         
         return redirect()->route('student.feedback.index')
             ->with('success', 'Feedback berhasil disimpan. Terima kasih atas masukan Anda!');
@@ -101,13 +144,19 @@ class CompetitionFeedbackController extends Controller
 
     public function show($id)
     {
-        $feedback = CompetitionFeedback::findOrFail($id);
+        $feedback = CompetitionFeedback::with('competition')
+            ->findOrFail($id);
         
         if ($feedback->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
         
-        return view('student.feedback.show', compact('feedback'));
+        $lecturerRatings = LecturerRating::where([
+            'competition_id' => $feedback->competition_id,
+            'rated_by_user_id' => $feedback->user_id
+        ])->with('lecturer')->get();
+        
+        return view('student.feedback.show', compact('feedback', 'lecturerRatings'));
     }
 
     public function destroy($id)
@@ -165,12 +214,6 @@ class CompetitionFeedbackController extends Controller
         ]);
     }
 
-    /**
-     * Check if the student can provide feedback for a competition
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function checkFeedbackEligibility(Request $request)
     {
         $request->validate([
@@ -181,7 +224,6 @@ class CompetitionFeedbackController extends Controller
         $competitionId = $request->competition_id;
         $today = Carbon::now();
         
-        // Check if the user has already submitted feedback
         $existingFeedback = CompetitionFeedback::where('user_id', $userId)
             ->where('competition_id', $competitionId)
             ->exists();
@@ -193,7 +235,6 @@ class CompetitionFeedbackController extends Controller
             ]);
         }
         
-        // Check if the user has participated in this competition
         $hasParticipated = CompetitionParticipantModel::where('user_id', $userId)
             ->where('competition_id', $competitionId)
             ->exists();
@@ -205,7 +246,6 @@ class CompetitionFeedbackController extends Controller
             ]);
         }
         
-        // Check if the competition has ended
         $competition = CompetitionModel::find($competitionId);
         
         if (!$competition) {
@@ -222,10 +262,41 @@ class CompetitionFeedbackController extends Controller
             ]);
         }
         
-        // If all checks pass, the user is eligible to provide feedback
         return response()->json([
             'eligible' => true,
             'message' => 'Anda dapat memberikan feedback untuk lomba ini.'
+        ]);
+    }
+
+    public function getCompetitionDetails(Request $request)
+    {
+        $request->validate([
+            'competition_id' => 'required|exists:competitions,id',
+        ]);
+        
+        $competitionId = $request->competition_id;
+        $competition = CompetitionModel::with('mentorships.lecturer')->findOrFail($competitionId);
+        
+        $lecturers = $competition->mentorships->map(function ($mentorship) {
+            $lecturer = $mentorship->lecturer;
+            
+            return [
+                'id' => $lecturer->id,
+                'name' => $lecturer->name,
+                'nip' => $lecturer->nip,
+                'average_rating' => $mentorship->average_rating,
+                'rating_count' => $mentorship->rating_count,
+                'has_rated' => LecturerRating::where('dosen_id', $lecturer->id)
+                    ->where('competition_id', $mentorship->competition_id)
+                    ->where('rated_by_user_id', Auth::id())
+                    ->exists()
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'competition' => $competition,
+            'lecturers' => $lecturers
         ]);
     }
 }

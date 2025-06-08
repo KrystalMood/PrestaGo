@@ -22,7 +22,9 @@ class RecommendationModel extends Model
         'recommendation_reason',
         'notified',
         'notified_at',
-        'match_factors'
+        'match_factors',
+        'for_lecturer',
+        'calculation_method'
     ];
     
     protected $casts = [

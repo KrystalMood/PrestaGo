@@ -143,16 +143,56 @@ class CompetitionController extends Controller
 
     public function show($id)
     {
-        $competition = CompetitionModel::findOrFail($id);
-        
-        // Manually load relationships to avoid the addEagerConstraints error
-        $competition->setRelation('period', $competition->period()->first());
-        $competition->setRelation('addedBy', $competition->addedBy()->first());
-        
-        return response()->json([
-            'success' => true,
-            'competition' => $competition->append(['level_formatted']),
-        ]);
+        try {
+            // Add logging
+            \Log::info("Fetching competition with ID: {$id}");
+            
+            // Check if competition exists
+            $exists = CompetitionModel::where('id', $id)->exists();
+            if (!$exists) {
+                \Log::warning("Competition with ID {$id} not found");
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kompetisi tidak ditemukan',
+                ], 404);
+            }
+            
+            // Get the competition
+            $competition = CompetitionModel::findOrFail($id);
+            \Log::info("Competition found: " . $competition->name);
+            
+            // Load relationships safely
+            try {
+                $period = $competition->period()->first();
+                $competition->setRelation('period', $period);
+                
+                $addedBy = $competition->addedBy()->first();
+                $competition->setRelation('addedBy', $addedBy);
+                
+                \Log::info("Relationships loaded successfully");
+            } catch (\Exception $relationError) {
+                \Log::error("Error loading relationships: " . $relationError->getMessage());
+                // Continue even if relationships fail to load
+            }
+            
+            // Add level_formatted attribute
+            $competition = $competition->append(['level_formatted']);
+            
+            return response()->json([
+                'success' => true,
+                'competition' => $competition,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error("Error in CompetitionController@show: " . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memuat data kompetisi',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
     }
     
     public function subCompetitions($competitionId)
@@ -174,7 +214,7 @@ class CompetitionController extends Controller
     
     public function storeSubCompetition(Request $request, $competitionId)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
@@ -205,6 +245,18 @@ class CompetitionController extends Controller
         $subCompetition->status = $request->status ?? 'upcoming';
         $subCompetition->save();
 
+        if ($request->ajax() || $request->wantsJson()) {
+            $subCompetitions = $competition->subCompetitions()->with(['category'])->get();
+            $tableHtml = view('Dosen.competitions.sub-competitions.table', compact('competition', 'subCompetitions'))->render();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Sub-kompetisi berhasil ditambahkan.',
+                'data' => $subCompetition,
+                'html' => $tableHtml
+            ]);
+        }
+
         return redirect()->route('lecturer.competitions.sub-competitions.index', $competitionId)
             ->with('success', 'Sub-kompetisi berhasil dibuat!');
     }
@@ -218,5 +270,251 @@ class CompetitionController extends Controller
             'success' => true,
             'data' => $subCompetition
         ]);
+    }
+    
+    public function participants($competition, $sub_competition)
+    {
+        $competition = CompetitionModel::findOrFail($competition);
+        $subCompetition = SubCompetitionModel::findOrFail($sub_competition);
+        $participants = $subCompetition->participants;
+        $students = UserModel::where('role', 'MHS')->get();
+        
+        return view('Dosen.competitions.sub-competitions.participants', compact('competition', 'subCompetition', 'participants', 'students'));
+    }
+    
+    public function storeParticipant(Request $request, $competition, $sub_competition)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:users,id',
+            'team_name' => 'nullable|string|max:255',
+            'advisor_name' => 'nullable|string|max:255',
+            'status' => 'nullable|string|max:20',
+        ]);
+
+        $subCompetition = SubCompetitionModel::findOrFail($sub_competition);
+        
+        $existingParticipant = $subCompetition->participants()
+            ->where('user_id', $request->student_id)
+            ->first();
+            
+        if ($existingParticipant) {
+            return redirect()->back()->with('error', 'Mahasiswa sudah terdaftar sebagai peserta.');
+        }
+        
+        $participant = new \App\Models\SubCompetitionParticipantModel();
+        $participant->sub_competition_id = $subCompetition->id;
+        $participant->user_id = $request->student_id;
+        $participant->team_name = $request->team_name;
+        $participant->advisor_name = $request->advisor_name;
+        $participant->status = $request->status ?? 'registered';
+        $participant->save();
+
+        return redirect()->back()->with('success', 'Peserta berhasil ditambahkan.');
+    }
+    
+    public function updateParticipantStatus(Request $request, $competition, $sub_competition, $participant)
+    {
+        $request->validate([
+            'status' => 'required|in:registered,pending',
+        ]);
+
+        $participant = \App\Models\SubCompetitionParticipantModel::findOrFail($participant);
+        $participant->status = $request->status;
+        $participant->save();
+
+        return redirect()->back()->with('success', 'Status peserta berhasil diperbarui.');
+    }
+    
+    public function skills($competition, $sub_competition)
+    {
+        try {
+            $competition = CompetitionModel::findOrFail($competition);
+            $subCompetition = SubCompetitionModel::with('skills')->findOrFail($sub_competition);
+            
+            if ($subCompetition->competition_id != $competition->id) {
+                $correctCompetitionId = $subCompetition->competition_id;
+                return redirect()
+                    ->route('lecturer.competitions.sub-competitions.skills', [
+                        'competition' => $correctCompetitionId,
+                        'sub_competition' => $sub_competition
+                    ])
+                    ->with('info', 'Anda telah dialihkan ke kompetisi yang benar.');
+            }
+            
+            $allSkills = SkillModel::orderBy('category', 'asc')->orderBy('name', 'asc')->get();
+            
+            return view('Dosen.competitions.sub-competitions.skills.index', compact('competition', 'subCompetition', 'allSkills'));
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('lecturer.competitions.index')
+                ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+    
+    public function storeSkill(Request $request, $competition, $sub_competition)
+    {
+        try {
+            $validated = $request->validate([
+                'skill_id' => 'required|exists:skills,id',
+                'importance_level' => 'required|integer|min:1|max:10',
+                'weight_value' => 'nullable|numeric|min:0',
+                'criterion_type' => 'nullable|string|in:benefit,cost',
+            ]);
+            
+            $competition = CompetitionModel::findOrFail($competition);
+            $subCompetition = SubCompetitionModel::findOrFail($sub_competition);
+            
+            if ($subCompetition->competition_id != $competition->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sub-kompetisi tidak ditemukan dalam kompetisi ini'
+                ], 422);
+            }
+            
+            $exists = $subCompetition->skills()->where('skill_id', $request->skill_id)->exists();
+            
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Skill sudah ditambahkan ke sub-kompetisi ini'
+                ], 422);
+            }
+            
+            $skill = SkillModel::findOrFail($request->skill_id);
+            
+            $subCompetition->skills()->attach($request->skill_id, [
+                'importance_level' => $request->importance_level,
+                'weight_value' => $request->weight_value ?? 1.0,
+                'criterion_type' => $request->criterion_type ?? 'benefit',
+                'ahp_priority' => 0.0
+            ]);
+            
+            $subCompetition->load('skills');
+            
+            $skills = $subCompetition->skills;
+            $html = view('Dosen.competitions.sub-competitions.skills.table', compact('skills'))->render();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Skill berhasil ditambahkan',
+                'data' => [
+                    'skill' => $skill,
+                    'importance_level' => $request->importance_level,
+                    'weight_value' => $request->weight_value ?? 1.0,
+                    'criterion_type' => $request->criterion_type ?? 'benefit',
+                ],
+                'html' => $html
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menambahkan skill: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function updateSkill(Request $request, $competition, $sub_competition, $skill)
+    {
+        try {
+            $request->validate([
+                'importance_level' => 'required|integer|min:1|max:10',
+                'weight_value' => 'nullable|numeric|min:0',
+                'criterion_type' => 'nullable|string|in:benefit,cost',
+            ]);
+            
+            $competition = CompetitionModel::findOrFail($competition);
+            $subCompetition = SubCompetitionModel::findOrFail($sub_competition);
+            
+            if ($subCompetition->competition_id != $competition->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sub-kompetisi tidak ditemukan dalam kompetisi ini'
+                ], 422);
+            }
+            
+            $skillModel = SkillModel::findOrFail($skill);
+            
+            $subCompetition->skills()->updateExistingPivot($skill, [
+                'importance_level' => $request->importance_level,
+                'weight_value' => $request->weight_value ?? 1.0,
+                'criterion_type' => $request->criterion_type ?? 'benefit',
+            ]);
+            
+            $subCompetition->load('skills');
+            
+            $skills = $subCompetition->skills;
+            $html = view('Dosen.competitions.sub-competitions.skills.table', compact('skills'))->render();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Skill berhasil diperbarui',
+                'data' => [
+                    'skill' => $skillModel,
+                    'importance_level' => $request->importance_level,
+                    'weight_value' => $request->weight_value ?? 1.0,
+                    'criterion_type' => $request->criterion_type ?? 'benefit',
+                ],
+                'html' => $html
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat memperbarui skill: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    public function destroySkill($competition, $sub_competition, $skill)
+    {
+        try {
+            $competition = CompetitionModel::findOrFail($competition);
+            $subCompetition = SubCompetitionModel::findOrFail($sub_competition);
+            
+            if ($subCompetition->competition_id != $competition->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sub-kompetisi tidak ditemukan dalam kompetisi ini'
+                ], 422);
+            }
+            
+            $exists = $subCompetition->skills()->where('skill_id', $skill)->exists();
+            
+            if (!$exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Skill tidak ditemukan pada sub-kompetisi ini'
+                ], 404);
+            }
+            
+            $subCompetition->skills()->detach($skill);
+            
+            $subCompetition->load('skills');
+            
+            $skills = $subCompetition->skills;
+            $html = view('Dosen.competitions.sub-competitions.skills.table', compact('skills'))->render();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Skill berhasil dihapus dari sub-kompetisi',
+                'html' => $html
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus skill: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

@@ -192,87 +192,158 @@ class RecommendationController extends Controller
             
         $programs = StudyProgramModel::all();
         
+        // Retrieve latest recommendations, exclude any from current session
         $latest_recommendations = RecommendationModel::with(['user', 'competition'])
+            ->whereNotNull('id') // This ensures we're only getting saved recommendations
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
         
-        return view('admin.recommendations.automatic', compact('competitions', 'programs', 'latest_recommendations'));
+        $lecturers = UserModel::whereHas('level', function($query) {
+            $query->where('level_kode', 'DSN');
+        })->orderBy('name')->get();
+        
+        return view('admin.recommendations.automatic', compact('competitions', 'programs', 'latest_recommendations', 'lecturers'));
     }
 
     public function generate(Request $request)
     {
         $validated = $request->validate([
             'competition_id' => 'nullable|exists:competitions,id',
-            'program_studi_id' => 'nullable|exists:study_programs,id',
+            'program_studi_id' => 'nullable|exists:program_studi,id',
+            'dss_method' => 'required|in:ahp,wp,hybrid',
             'threshold' => 'required|numeric|min:0|max:100',
             'max_recommendations' => 'required|integer|min:1|max:10',
-            'dss_method' => 'required|in:ahp',
-            'ahp_consistency_threshold' => 'required|numeric|min:0|max:0.2',
-            'ahp_priority_skills' => 'required|integer|min:1|max:9',
-            'ahp_priority_achievements' => 'required|integer|min:1|max:9',
-            'ahp_priority_interests' => 'required|integer|min:1|max:9',
-            'ahp_priority_deadline' => 'required|integer|min:1|max:9',
-            'ahp_priority_competition_level' => 'required|integer|min:1|max:9',
+            
+            // AHP parameters
+            'ahp_priority_skills' => 'nullable|numeric|min:1|max:9',
+            'ahp_priority_achievements' => 'nullable|numeric|min:1|max:9',
+            'ahp_priority_interests' => 'nullable|numeric|min:1|max:9',
+            'ahp_priority_deadline' => 'nullable|numeric|min:1|max:9',
+            'ahp_priority_competition_level' => 'nullable|numeric|min:1|max:9',
+            'ahp_consistency_threshold' => 'nullable|numeric|min:0.01|max:0.5',
+            
+            // WP parameters
+            'wp_weight_skills' => 'nullable|numeric|min:0.1|max:1.0',
+            'wp_weight_interests' => 'nullable|numeric|min:0.1|max:1.0',
+            'wp_weight_competition_level' => 'nullable|numeric|min:0.1|max:1.0',
+            'wp_weight_deadline' => 'nullable|numeric|min:0.1|max:1.0',
+            'wp_weight_activity_rating' => 'nullable|numeric|min:0.1|max:1.0',
         ]);
         
         try {
-            DB::beginTransaction();
-            
             $recommendations = $this->recommendationService->generateRecommendations($validated);
             
-            foreach ($recommendations as $recommendation) {
-                $recommendation->save();
+            if ($recommendations->isEmpty()) {
+                // Return a meaningful error when no recommendations are found
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tidak ada rekomendasi yang dapat dihasilkan. Pastikan terdapat kompetisi aktif yang terverifikasi dalam sistem atau coba kurangi nilai ambang batas (threshold).'
+                    ], 200);
+                }
+                
+                return back()->with('error', 'Tidak ada rekomendasi yang dapat dihasilkan. Pastikan terdapat kompetisi aktif yang terverifikasi dalam sistem atau coba kurangi nilai ambang batas (threshold).');
             }
             
-            DB::commit();
+            $formattedRecommendations = [];
             
-            return redirect()
-                ->route('admin.recommendations.index')
-                ->with('success', 'Berhasil menghasilkan ' . $recommendations->count() . ' rekomendasi baru.');
+            foreach ($recommendations as $recommendation) {
+                $user = $recommendation->user_id ? UserModel::find($recommendation->user_id) : null;
                 
-        } catch (\Exception $e) {
-            DB::rollBack();
+                if (!$user) continue;
+                
+                $competition = $recommendation->competition_id ? CompetitionModel::find($recommendation->competition_id) : null;
+                
+                if (!$competition) continue;
+                
+                $formattedRecommendations[] = [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'user_identifier' => $recommendation->for_lecturer ? ($user->nip ?? 'N/A') : ($user->nim ?? 'N/A'),
+                    'user_type' => $recommendation->for_lecturer ? 'Dosen' : 'Mahasiswa',
+                    'program_studi' => $user->programStudi->name ?? 'N/A',
+                    'competition_id' => $competition->id,
+                    'competition_name' => $competition->name,
+                    'competition_level' => ucfirst($competition->level ?? 'N/A'),
+                    'match_score' => $recommendation->match_score,
+                    'factors' => json_decode($recommendation->match_factors, true) ?? [],
+                    'calculation_method' => $recommendation->calculation_method ?? $validated['dss_method']
+                ];
+            }
             
-            return back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan saat menghasilkan rekomendasi: ' . $e->getMessage());
+            $request->session()->put('generated_recommendations', $formattedRecommendations);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Berhasil menghasilkan ' . count($formattedRecommendations) . ' rekomendasi',
+                    'count' => count($formattedRecommendations)
+                ]);
+            }
+            
+            // Re-fetch the latest recommendations to avoid stale data
+            $latest_recommendations = RecommendationModel::with(['user', 'competition'])
+                ->whereNotNull('id')
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+                
+            return back()->with('success', 'Berhasil menghasilkan ' . count($formattedRecommendations) . ' rekomendasi!')
+                        ->with('latest_recommendations', $latest_recommendations);
+        } catch (\Exception $e) {
+            \Log::error('Error generating recommendations: ' . $e->getMessage(), [
+                'exception' => $e,
+                'params' => $validated
+            ]);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat menghasilkan rekomendasi: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return back()->with('error', 'Terjadi kesalahan saat menghasilkan rekomendasi: ' . $e->getMessage());
         }
     }
 
     public function saveGenerated(Request $request)
     {
         $validated = $request->validate([
-            'student_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:users,id',
             'competition_id' => 'required|exists:competitions,id',
             'match_score' => 'required|numeric|min:0|max:100',
         ]);
         
-        $existingRec = RecommendationModel::where('user_id', $validated['student_id'])
+        $existingRec = RecommendationModel::where('user_id', $validated['user_id'])
             ->where('competition_id', $validated['competition_id'])
             ->first();
             
         if ($existingRec) {
-            return back()->with('info', 'Rekomendasi untuk mahasiswa dan kompetisi ini sudah ada!');
+            return back()->with('info', 'Rekomendasi untuk pengguna dan kompetisi ini sudah ada!');
         }
         
         $generatedRecs = $request->session()->get('generated_recommendations', []);
         $factors = null;
+        $userType = null;
         
         foreach ($generatedRecs as $rec) {
-            if ($rec['student_id'] == $validated['student_id'] && 
+            if ($rec['user_id'] == $validated['user_id'] && 
                 $rec['competition_id'] == $validated['competition_id']) {
                 $factors = $rec['factors'];
+                $userType = $rec['user_type'];
                 break;
             }
         }
         
         $recommendation = new RecommendationModel();
-        $recommendation->user_id = $validated['student_id'];
+        $recommendation->user_id = $validated['user_id'];
         $recommendation->competition_id = $validated['competition_id'];
         $recommendation->match_score = $validated['match_score'];
         $recommendation->recommended_by = 'system';
         $recommendation->status = 'pending';
+        $recommendation->for_lecturer = $userType === 'Dosen';
         
         if ($factors) {
             $recommendation->match_factors = json_encode($factors);
@@ -280,7 +351,15 @@ class RecommendationController extends Controller
         
         $recommendation->save();
         
-        return back()->with('success', 'Rekomendasi berhasil disimpan!');
+        // Re-fetch the latest recommendations to include the newly saved one
+        $latest_recommendations = RecommendationModel::with(['user', 'competition'])
+            ->whereNotNull('id')
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+        
+        return back()->with('success', 'Rekomendasi berhasil disimpan!')
+                    ->with('latest_recommendations', $latest_recommendations);
     }
 
     public function saveAllGenerated(Request $request)
@@ -294,18 +373,19 @@ class RecommendationController extends Controller
         $savedCount = 0;
         
         foreach ($generatedRecs as $rec) {
-            $exists = RecommendationModel::where('user_id', $rec['student_id'])
+            $exists = RecommendationModel::where('user_id', $rec['user_id'])
                 ->where('competition_id', $rec['competition_id'])
                 ->exists();
                 
             if (!$exists) {
                 $recommendation = new RecommendationModel();
-                $recommendation->user_id = $rec['student_id'];
+                $recommendation->user_id = $rec['user_id'];
                 $recommendation->competition_id = $rec['competition_id'];
                 $recommendation->match_score = $rec['match_score'];
                 $recommendation->recommended_by = 'system';
                 $recommendation->status = 'pending';
                 $recommendation->match_factors = json_encode($rec['factors']);
+                $recommendation->for_lecturer = $rec['user_type'] === 'Dosen';
                 $recommendation->save();
                 
                 $savedCount++;
@@ -314,6 +394,48 @@ class RecommendationController extends Controller
         
         return redirect()->route('admin.recommendations.index')
             ->with('success', $savedCount . ' rekomendasi baru telah disimpan!');
+    }
+
+    public function removeGenerated(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required',
+            'competition_id' => 'required',
+        ]);
+        
+        $generatedRecs = $request->session()->get('generated_recommendations', []);
+        $filteredRecs = [];
+        
+        foreach ($generatedRecs as $rec) {
+            if ($rec['user_id'] != $validated['user_id'] || 
+                $rec['competition_id'] != $validated['competition_id']) {
+                $filteredRecs[] = $rec;
+            }
+        }
+        
+        $request->session()->put('generated_recommendations', $filteredRecs);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'count' => count($filteredRecs)
+            ]);
+        }
+        
+        return back();
+    }
+    
+    public function clearGenerated(Request $request)
+    {
+        $request->session()->forget('generated_recommendations');
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true
+            ]);
+        }
+        
+        return back();
     }
 
     public function export()
@@ -334,8 +456,9 @@ class RecommendationController extends Controller
             
             fputcsv($file, [
                 'ID', 
-                'Mahasiswa', 
-                'NIM', 
+                'Nama Pengguna', 
+                'NIM/NIP', 
+                'Tipe Pengguna',
                 'Program Studi',
                 'Kompetisi',
                 'Level',
@@ -358,11 +481,17 @@ class RecommendationController extends Controller
                     'admin' => 'Admin'
                 ][$recommendation->recommended_by] ?? $recommendation->recommended_by;
                 
+                $userType = $recommendation->for_lecturer ? 'Dosen' : 'Mahasiswa';
+                $userIdentifier = $recommendation->for_lecturer ? 
+                    ($recommendation->user->nip ?? 'N/A') : 
+                    ($recommendation->user->nim ?? 'N/A');
+                
                 fputcsv($file, [
                     $recommendation->id,
                     $recommendation->user->name ?? 'N/A',
-                    $recommendation->user->nim ?? 'N/A',
-                    $recommendation->user->program_studi->name ?? 'N/A',
+                    $userIdentifier,
+                    $userType,
+                    $recommendation->user->programStudi->name ?? 'N/A',
                     $recommendation->competition->name ?? 'N/A',
                     ucfirst($recommendation->competition->level ?? 'N/A'),
                     $recommendation->match_score . '%',
@@ -467,6 +596,35 @@ class RecommendationController extends Controller
                 ->with('success', 'Rekomendasi berhasil dihapus!');
         } catch (\Exception $e) {
             if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menghapus rekomendasi: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.recommendations.index')
+                ->with('error', 'Gagal menghapus rekomendasi: ' . $e->getMessage());
+        }
+    }
+    
+    public function deleteAll(Request $request)
+    {
+        try {
+            // Menghapus semua rekomendasi
+            $deletedCount = RecommendationModel::count();
+            RecommendationModel::truncate();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $deletedCount . ' rekomendasi berhasil dihapus!'
+                ]);
+            }
+            
+            return redirect()->route('admin.recommendations.index')
+                ->with('success', $deletedCount . ' rekomendasi berhasil dihapus!');
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Gagal menghapus rekomendasi: ' . $e->getMessage()

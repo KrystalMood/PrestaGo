@@ -75,4 +75,29 @@ class UserModel extends Authenticatable
     {
         return $this->hasMany(Internship::class, 'user_id', 'id');
     }
+
+    public function competitionParticipations()
+    {
+        return $this->hasMany(CompetitionParticipantModel::class, 'user_id', 'id');
+    }
+
+    public function lecturerRatings()
+    {
+        return $this->hasMany(LecturerRating::class, 'dosen_id', 'id');
+    }
+
+    public function mentorships()
+    {
+        return $this->hasMany(LecturerMentorshipModel::class, 'dosen_id', 'id');
+    }
+
+    public function getAverageActivityRating()
+    {
+        return $this->lecturerRatings()->avg('activity_rating') ?? 0;
+    }
+
+    public function getTotalRatingCount()
+    {
+        return $this->lecturerRatings()->count();
+    }
 }

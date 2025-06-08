@@ -187,6 +187,22 @@
                             rows="3"
                         />
                         
+                        <!-- Lecturer Ratings Section -->
+                        <div id="lecturer-ratings-section" class="mb-6">
+                            <h3 class="text-md font-medium text-gray-700 mb-3">Penilaian Dosen Pembimbing</h3>
+                            <p class="text-sm text-gray-500 mb-4">Beri penilaian untuk dosen pembimbing dalam kompetisi ini (skala 1-5)</p>
+                            
+                            <div id="lecturer-ratings-container" class="space-y-4">
+                                <div class="text-center py-8 px-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada dosen pembimbing</h3>
+                                    <p class="mt-1 text-sm text-gray-500">Kompetisi ini tidak memiliki dosen pembimbing yang terdaftar.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div>
                             <label for="recommendation" class="block text-sm font-medium text-gray-700 mb-2">
                                 Apakah Kamu Merekomendasikan Lomba/Kompetisi Ini?
@@ -299,6 +315,37 @@
                             <h5 class="text-sm font-medium text-gray-700">Keterampilan yang Diperoleh</h5>
                             <p class="mt-1 text-sm text-gray-600">{{ $feedback->skills_gained }}</p>
                         </div>
+                        
+                        @if(isset($lecturerRatings[$feedback->competition_id]) && $lecturerRatings[$feedback->competition_id]->count() > 0)
+                        <div class="mt-4">
+                            <h5 class="text-sm font-medium text-gray-700">Penilaian Dosen Pembimbing</h5>
+                            <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                                @foreach($lecturerRatings[$feedback->competition_id] as $rating)
+                                <div class="bg-gray-50 p-2 rounded border border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium">{{ $rating->lecturer->name }}</span>
+                                        <div class="flex">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                @if($i <= $rating->activity_rating)
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                @else
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                @endif
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    @if(!empty($rating->comments))
+                                    <p class="mt-1 text-xs text-gray-600">{{ \Str::limit($rating->comments, 100) }}</p>
+                                    @endif
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
                         
                         <div class="mt-4 flex justify-end">
                             <a href="{{ route('student.feedback.show', $feedback->id) }}" class="text-blue-600 hover:text-blue-800 text-sm">
@@ -428,4 +475,221 @@
             }
         });
     </script>
-@endsection 
+@endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Existing star rating functionality
+        const starButtons = document.querySelectorAll('.star-btn');
+        const ratingStars = document.getElementById('rating-stars');
+        const ratingText = document.getElementById('rating-text');
+        const overallRatingInput = document.getElementById('overall_rating');
+        
+        starButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                overallRatingInput.value = rating;
+                
+                // Update stars appearance
+                starButtons.forEach((btn, index) => {
+                    const star = btn.querySelector('svg');
+                    if (index < rating) {
+                        star.classList.remove('text-gray-300');
+                        star.classList.add('text-yellow-400');
+                        star.setAttribute('fill', 'currentColor');
+                    } else {
+                        star.classList.remove('text-yellow-400');
+                        star.classList.add('text-gray-300');
+                        star.setAttribute('fill', 'none');
+                    }
+                });
+                
+                // Update rating text
+                const ratingTexts = {
+                    1: 'Sangat Buruk',
+                    2: 'Buruk',
+                    3: 'Cukup',
+                    4: 'Baik',
+                    5: 'Sangat Baik'
+                };
+                
+                ratingText.textContent = ratingTexts[rating] || 'Pilih rating';
+            });
+        });
+        
+        // Existing competition selection functionality
+        const competitionSelect = document.getElementById('competition_id');
+        const feedbackExistsWarning = document.getElementById('feedback-exists-warning');
+        const feedbackFormContent = document.getElementById('feedback-form-content');
+        const submitButton = document.getElementById('submit-button');
+        
+        competitionSelect.addEventListener('change', function() {
+            const competitionId = this.value;
+            
+            if (!competitionId) {
+                feedbackExistsWarning.classList.add('hidden');
+                feedbackFormContent.classList.remove('hidden');
+                submitButton.disabled = false;
+                return;
+            }
+            
+            // Check if feedback already exists and get competition details
+            checkFeedbackEligibility(competitionId);
+        });
+        
+        function checkFeedbackEligibility(competitionId) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch(`/student/feedback/check-eligibility`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    competition_id: competitionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.eligible) {
+                    feedbackExistsWarning.classList.add('hidden');
+                    feedbackFormContent.classList.remove('hidden');
+                    submitButton.disabled = false;
+                    
+                    // Get competition details including lecturer mentorships
+                    getCompetitionDetails(competitionId);
+                } else {
+                    feedbackExistsWarning.textContent = data.message;
+                    feedbackExistsWarning.classList.remove('hidden');
+                    feedbackFormContent.classList.add('hidden');
+                    submitButton.disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error checking feedback eligibility:', error);
+            });
+        }
+        
+        // Function to get competition details including lecturer mentorships
+        function getCompetitionDetails(competitionId) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            fetch(`/student/competition-details`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    competition_id: competitionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderLecturerRatings(data.lecturers);
+                }
+            })
+            .catch(error => {
+                console.error('Error getting competition details:', error);
+            });
+        }
+        
+        // Function to render lecturer rating inputs
+        function renderLecturerRatings(lecturers) {
+            const lecturerRatingsSection = document.getElementById('lecturer-ratings-section');
+            const lecturerRatingsContainer = document.getElementById('lecturer-ratings-container');
+            
+            if (!lecturers || lecturers.length === 0) {
+                lecturerRatingsSection.classList.add('hidden');
+                return;
+            }
+            
+            lecturerRatingsSection.classList.remove('hidden');
+            lecturerRatingsContainer.innerHTML = '';
+            
+            lecturers.forEach((lecturer, index) => {
+                const lecturerCard = document.createElement('div');
+                lecturerCard.className = 'bg-white border border-gray-200 rounded-lg p-4';
+                
+                const lecturerRatingHTML = `
+                    <input type="hidden" name="lecturer_ratings[${index}][dosen_id]" value="${lecturer.id}">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h4 class="font-medium text-gray-900">${lecturer.name}</h4>
+                            <p class="text-sm text-gray-500">${lecturer.nip}</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tingkat Keaktifan Dosen</label>
+                        <div class="flex items-center">
+                            <div class="flex items-center space-x-1 lecturer-rating-stars" data-index="${index}">
+                                ${[1, 2, 3, 4, 5].map(star => `
+                                    <button type="button" class="lecturer-star-btn" data-rating="${star}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-gray-300 hover:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                        </svg>
+                                    </button>
+                                `).join('')}
+                            </div>
+                            <span class="ml-3 text-sm text-gray-500 lecturer-rating-text">Pilih rating</span>
+                            <input type="hidden" name="lecturer_ratings[${index}][activity_rating]" class="lecturer-rating-input" value="">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="lecturer-comments-${index}" class="block text-sm font-medium text-gray-700 mb-2">Komentar (Opsional)</label>
+                        <textarea id="lecturer-comments-${index}" name="lecturer_ratings[${index}][comments]" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Komentar tentang kinerja dosen pembimbing..."></textarea>
+                    </div>
+                `;
+                
+                lecturerCard.innerHTML = lecturerRatingHTML;
+                lecturerRatingsContainer.appendChild(lecturerCard);
+            });
+            
+            // Add event listeners for lecturer rating stars
+            const lecturerStarButtons = document.querySelectorAll('.lecturer-star-btn');
+            
+            lecturerStarButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    const starsContainer = this.closest('.lecturer-rating-stars');
+                    const index = starsContainer.getAttribute('data-index');
+                    const ratingInput = starsContainer.parentNode.querySelector('.lecturer-rating-input');
+                    const ratingText = starsContainer.parentNode.querySelector('.lecturer-rating-text');
+                    
+                    ratingInput.value = rating;
+                    
+                    // Update stars appearance
+                    const stars = starsContainer.querySelectorAll('.lecturer-star-btn svg');
+                    stars.forEach((star, i) => {
+                        if (i < rating) {
+                            star.classList.remove('text-gray-300');
+                            star.classList.add('text-yellow-400');
+                            star.setAttribute('fill', 'currentColor');
+                        } else {
+                            star.classList.remove('text-yellow-400');
+                            star.classList.add('text-gray-300');
+                            star.setAttribute('fill', 'none');
+                        }
+                    });
+                    
+                    // Update rating text
+                    const ratingTexts = {
+                        1: 'Sangat Tidak Aktif',
+                        2: 'Tidak Aktif',
+                        3: 'Cukup Aktif',
+                        4: 'Aktif',
+                        5: 'Sangat Aktif'
+                    };
+                    
+                    ratingText.textContent = ratingTexts[rating] || 'Pilih rating';
+                });
+            });
+        }
+    });
+</script>
+@endpush 

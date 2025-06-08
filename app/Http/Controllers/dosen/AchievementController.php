@@ -13,24 +13,17 @@ use Illuminate\Support\Facades\Auth;
 
 class AchievementController extends Controller
 {
-    /**
-     * Display a listing of the achievements.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
-     */
     public function index(Request $request)
     {
-        // Handle search query
         $search = $request->input('search');
         
-        // Filter by type if provided
         $type = $request->input('type');
         
-        // Query to get students with their achievement counts
+        $sort = $request->input('sort', 'achievements_desc');
+        
         $query = AchievementModel::select('user_id')
                     ->selectRaw('COUNT(*) as total_achievements')
-                    ->with(['user']) // Eager load user data
+                    ->with(['user'])
                     ->when($search, function ($query, $search) {
                         return $query->whereHas('user', function ($q) use ($search) {
                             $q->where('name', 'LIKE', '%' . $search . '%')
@@ -42,10 +35,26 @@ class AchievementController extends Controller
                     })
                     ->groupBy('user_id');
         
-        // Pagination of students with achievement counts
-        $Achievements = $query->orderByRaw('COUNT(*) DESC')->paginate(10);
+        switch ($sort) {
+            case 'name_asc':
+                $query->join('users', 'achievements.user_id', '=', 'users.id')
+                      ->orderBy('users.name', 'asc');
+                break;
+            case 'name_desc':
+                $query->join('users', 'achievements.user_id', '=', 'users.id')
+                      ->orderBy('users.name', 'desc');
+                break;
+            case 'achievements_asc':
+                $query->orderByRaw('COUNT(*) ASC');
+                break;
+            case 'achievements_desc':
+            default:
+                $query->orderByRaw('COUNT(*) DESC');
+                break;
+        }
         
-        // Calculate stats
+        $Achievements = $query->paginate(10);
+        
         $totalAchievements = AchievementModel::count();
         $totalStudentsWithAchievements = AchievementModel::distinct('user_id')->count('user_id');
         $verifiedAchievements = AchievementModel::verified()->count();
@@ -55,42 +64,22 @@ class AchievementController extends Controller
             'totalAchievements' => $totalAchievements,
             'totalStudentsWithAchievements' => $totalStudentsWithAchievements,
             'verifiedAchievements' => $verifiedAchievements,
+            'currentSort' => $sort
         ]);
     }
 
-    /**
-     * Export achievements data as CSV or Excel.
-     *
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
-     */
     public function export()
     {
-        // This is a placeholder for export functionality
-        // You would implement the actual export logic here
-        
         return redirect()->back()->with('status', 'Data prestasi berhasil diunduh.');
     }
 
-    /**
-     * Show the form for creating a new achievement.
-     *
-     * @return \Illuminate\View\View
-     */
     public function create()
     {
-        // Return view for creating a new achievement
         return view('Dosen.achievements.create');
     }
 
-    /**
-     * Store a newly created achievement in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function store(Request $request)
     {
-        // Validate the request data
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'title' => 'required|string|max:255',
@@ -102,24 +91,14 @@ class AchievementController extends Controller
             'status' => 'required|in:pending,verified,rejected',
         ]);
         
-        // Create the achievement
         $achievement = AchievementModel::create($validated);
         
-        // Handle attachments if present
         if ($request->hasFile('attachments')) {
-            // Process attachments
         }
         
         return redirect()->route('dosen.achievements.index')
                         ->with('status', 'Prestasi berhasil ditambahkan!');
     }
-
-    /**
-     * Display the specified achievement.
-     *
-     * @param  int  $id
-     * @return \Illuminate\View\View
-     */
 
     public function getDetails($id,$userId)
     {
@@ -198,26 +177,40 @@ class AchievementController extends Controller
         }
     }
     
-    public function show($id)
+    public function show($id, Request $request)
     {
         $user = UserModel::findOrFail($id);
 
-        $subAchievements = AchievementModel::with(['user', 'verifier', 'attachments'])->where('user_id', $user->id)
-                            ->orderBy('date', 'desc')
-                            ->get();
+        $query = AchievementModel::with(['user', 'verifier', 'attachments'])
+                    ->where('user_id', $user->id);
+
+        $sort = $request->input('sort', 'date_desc');
+        
+        switch ($sort) {
+            case 'title_asc':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'title_desc':
+                $query->orderBy('title', 'desc');
+                break;
+            case 'date_asc':
+                $query->orderBy('date', 'asc');
+                break;
+            case 'date_desc':
+            default:
+                $query->orderBy('date', 'desc');
+                break;
+        }
+        
+        $subAchievements = $query->get();
+        
         return view('Dosen.achievements.sub-achievements.index', [
             'user' => $user,
             'subAchievements' => $subAchievements,
+            'currentSort' => $sort
         ]);
     }
 
-    /**
-     * Verify the achievement.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function verify(Request $request, $id)
     {
         $achievement = AchievementModel::findOrFail($id);
@@ -229,13 +222,6 @@ class AchievementController extends Controller
         return redirect()->back()->with('status', 'Prestasi berhasil diverifikasi!');
     }
 
-    /**
-     * Reject the achievement.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function reject(Request $request, $id)
     {
         $validated = $request->validate([
@@ -250,12 +236,6 @@ class AchievementController extends Controller
         return redirect()->back()->with('status', 'Prestasi ditolak!');
     }
 
-    /**
-     * Display achievements for a specific student.
-     *
-     * @param  int  $userId
-     * @return \Illuminate\View\View
-     */
     public function studentAchievements($userId)
     {
         $student = UserModel::findOrFail($userId);
@@ -264,7 +244,6 @@ class AchievementController extends Controller
                         ->orderBy('date', 'desc')
                         ->get();
         
-        // Get achievement counts by type
         $achievementsByType = AchievementModel::where('user_id', $userId)
                         ->selectRaw('type, COUNT(*) as count')
                         ->groupBy('type')
@@ -272,7 +251,6 @@ class AchievementController extends Controller
                         ->pluck('count', 'type')
                         ->toArray();
         
-        // Get achievement counts by level
         $achievementsByLevel = AchievementModel::where('user_id', $userId)
                         ->selectRaw('level, COUNT(*) as count')
                         ->groupBy('level')

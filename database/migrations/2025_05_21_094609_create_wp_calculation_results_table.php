@@ -15,11 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id'); 
             $table->unsignedBigInteger('competition_id'); 
-            $table->string('calculation_type', 50)->default('interest'); 
-            $table->float('vector_s', 10, 6); 
-            $table->float('vector_v', 10, 6); 
-            $table->float('relative_preference', 10, 6)->nullable(); 
-            $table->integer('rank')->nullable(); 
+            $table->string('calculation_type', 50)->default('recommendation'); 
+            $table->float('final_score', 10, 6); 
             $table->json('calculation_details')->nullable(); 
             $table->timestamp('calculated_at'); 
             $table->timestamps();

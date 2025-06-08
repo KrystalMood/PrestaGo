@@ -28,6 +28,8 @@ class DatabaseSeeder extends Seeder
             AchievementSeeder::class,
             CompetitionParticipantSeeder::class,
             CompetitionFeedbackSeeder::class,
+            FixMentorshipSeeder::class,
+            LecturerRatingSeeder::class,
         ]);
         
         if (Schema::hasTable('sub_competition_skills')) {

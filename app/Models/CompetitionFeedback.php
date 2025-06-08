@@ -35,4 +35,18 @@ class CompetitionFeedback extends Model
     {
         return $this->belongsTo(CompetitionModel::class);
     }
+    
+    public function lecturerRatings()
+    {
+        return LecturerRating::where([
+            'competition_id' => $this->competition_id,
+            'rated_by_user_id' => $this->user_id
+        ])->with('lecturer')->get();
+    }
+    
+    public function lecturerRatingsRelation()
+    {
+        return $this->hasMany(LecturerRating::class, 'rated_by_user_id', 'user_id')
+                    ->where('competition_id', $this->competition_id);
+    }
 }

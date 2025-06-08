@@ -16,94 +16,37 @@
     </div>
     
     <div class="mb-6 flex justify-end">
-        <a href="{{ route('lecturer.competitions.sub-competitions.create', $competition->id) }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+        <button type="button" id="open-add-sub-competition-modal" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
             Tambah Sub-Kompetisi
-        </a>
+        </button>
     </div>
     
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode Pendaftaran</th>
-                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Peserta</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($subCompetitions as $index => $subCompetition)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $subCompetition->name }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $subCompetition->category ? $subCompetition->category->name : 'Tidak ada kategori' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @php
-                                $statusClass = 'bg-gray-100 text-gray-800';
-                                $statusText = $subCompetition->status ?? 'Unknown';
-                                
-                                switch($subCompetition->status) {
-                                    case 'upcoming':
-                                        $statusClass = 'bg-yellow-100 text-yellow-800';
-                                        $statusText = 'Akan Datang';
-                                        break;
-                                    case 'active':
-                                        $statusClass = 'bg-green-100 text-green-800';
-                                        $statusText = 'Aktif';
-                                        break;
-                                    case 'completed':
-                                        $statusClass = 'bg-blue-100 text-blue-800';
-                                        $statusText = 'Selesai';
-                                        break;
-                                    case 'cancelled':
-                                        $statusClass = 'bg-red-100 text-red-800';
-                                        $statusText = 'Dibatalkan';
-                                        break;
-                                }
-                            @endphp
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                                {{ $statusText }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            @if($subCompetition->registration_start && $subCompetition->registration_end)
-                                {{ \Carbon\Carbon::parse($subCompetition->registration_start)->format('d/m/Y') }} - 
-                                {{ \Carbon\Carbon::parse($subCompetition->registration_end)->format('d/m/Y') }}
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            @php
-                                $participantCount = $subCompetition->participants ? $subCompetition->participants->count() : 0;
-                            @endphp
-                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {{ $participantCount }} Peserta
-                            </span>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                            Belum ada sub-kompetisi yang tersedia.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+    <div id="sub-competitions-table-container">
+        @include('Dosen.competitions.sub-competitions.table')
     </div>
 </div>
+
+<!-- Include modals -->
+@include('Dosen.competitions.sub-competitions.components.add-sub-competition-modal')
+@include('Dosen.competitions.sub-competitions.components.edit-sub-competition-modal')
+@include('Dosen.competitions.sub-competitions.components.show-sub-competition-modal')
+
+<!-- JavaScript Variables and Setup -->
+<script>
+    window.subCompetitionRoutes = {
+        index: "{{ route('lecturer.competitions.sub-competitions.index', $competition->id) }}",
+        store: "{{ route('lecturer.competitions.sub-competitions.store', $competition->id) }}",
+        show: "{{ route('lecturer.competitions.sub-competitions.show', ['id' => $competition->id, 'sub_id' => '__id__']) }}",
+        edit: "{{ route('lecturer.competitions.sub-competitions.show', ['id' => $competition->id, 'sub_id' => '__id__']) }}/edit",
+        skills: "{{ route('lecturer.competitions.sub-competitions.skills', ['competition' => $competition->id, 'sub_competition' => '__id__']) }}"
+    };
+    window.csrfToken = "{{ csrf_token() }}";
+    window.competitionId = "{{ $competition->id }}";
+</script>
+
+<!-- Load External JS -->
+@vite(['resources/js/dosen/sub-competitions.js'])
 @endcomponent 

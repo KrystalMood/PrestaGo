@@ -281,10 +281,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const formData = new FormData(form);
+        formData.append('_method', 'PUT');
         let url = skillRoutes.update.replace('__id__', skillId);
         
         fetch(url, {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
                 'X-Requested-With': 'XMLHttpRequest',

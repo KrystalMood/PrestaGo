@@ -1,6 +1,6 @@
-@props(['title' => null, 'linkText' => null, 'linkUrl' => null])
+@props(['title' => null, 'linkText' => null, 'linkUrl' => null, 'id' => null])
 
-<div class="bg-white rounded-lg shadow-custom overflow-hidden">
+<div class="bg-white rounded-lg shadow-custom overflow-hidden" {{ $id ? "id=$id" : '' }}>
     <div class="p-6">
         @if($title)
             <div class="flex justify-between items-center mb-4">
