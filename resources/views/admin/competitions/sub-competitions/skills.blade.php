@@ -182,10 +182,8 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
-        // Initialize DataTable
         $('#skillsTable').DataTable();
         
-        // Add Skill Form Submission
         $('#addSkillForm').on('submit', function(e) {
             e.preventDefault();
             
