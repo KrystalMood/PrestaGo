@@ -215,7 +215,6 @@
             });
         });
         
-        // Edit Skill Button Click
         $('.edit-skill-btn').on('click', function() {
             var skillId = $(this).data('skill-id');
             var skillName = $(this).data('skill-name');
@@ -230,20 +229,31 @@
             $('#edit_criterion_type').val(criterionType);
         });
         
-        // Edit Skill Form Submission
         $('#editSkillForm').on('submit', function(e) {
             e.preventDefault();
             
             var skillId = $('#edit_skill_id').val();
+            var importanceLevel = $('#edit_importance_level').val();
+            
+            if (!importanceLevel || importanceLevel < 1 || importanceLevel > 10) {
+                toastr.error('Please enter a valid importance level (1-10)');
+                return;
+            }
+            
+            console.log('Form data being submitted:', $(this).serialize());
+            console.log('Importance level:', importanceLevel);
+            
+            var formData = $(this).serialize();
             
             $.ajax({
                 url: "{{ route('admin.competitions.sub-competitions.skills.update', ['competition' => $competition->id, 'sub_competition' => $subCompetition->id, 'skill' => ':skillId']) }}".replace(':skillId', skillId),
                 method: 'PUT',
-                data: $(this).serialize(),
+                data: formData,
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(response) {
+                    console.log('Response:', response);
                     if (response.success) {
                         $('#editSkillModal').modal('hide');
                         toastr.success(response.message);
@@ -252,13 +262,26 @@
                         }, 1000);
                     }
                 },
-                error: function() {
-                    toastr.error('An error occurred. Please try again.');
+                error: function(xhr, status, error) {
+                    console.error('Error status:', status);
+                    console.error('Error:', error);
+                    console.error('Response:', xhr.responseJSON);
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        var errorMessages = [];
+                        for (var field in xhr.responseJSON.errors) {
+                            errorMessages.push(xhr.responseJSON.errors[field][0]);
+                        }
+                        toastr.error(errorMessages.join('<br>'));
+                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                        toastr.error(xhr.responseJSON.message);
+                    } else {
+                        toastr.error('An error occurred. Please try again.');
+                    }
                 }
             });
         });
         
-        // Delete Skill Button Click
         $('.delete-skill-btn').on('click', function() {
             var skillId = $(this).data('skill-id');
             var skillName = $(this).data('skill-name');
@@ -267,7 +290,6 @@
             $('#confirmDeleteSkill').data('skill-id', skillId);
         });
         
-        // Confirm Delete Skill
         $('#confirmDeleteSkill').on('click', function() {
             var skillId = $(this).data('skill-id');
             

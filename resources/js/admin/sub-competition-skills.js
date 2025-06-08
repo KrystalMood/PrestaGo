@@ -262,10 +262,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function submitEditSkill() {
         const form = document.getElementById('edit-skill-form');
         const skillId = document.getElementById('edit_skill_id').value;
+        const importanceLevel = document.getElementById('edit_importance_level').value;
+        const weightValue = document.getElementById('edit_weight_value').value;
+        const criterionType = document.getElementById('edit_criterion_type').value;
         const submitBtn = document.getElementById('submit-edit-skill');
         
         if (!skillId) {
             showNotification('ID skill tidak valid', 'error');
+            return;
+        }
+        
+        if (!importanceLevel || importanceLevel < 1 || importanceLevel > 10) {
+            displayFormErrors('edit-skill-form', { importance_level: ['Masukkan tingkat kepentingan yang valid (1-10)'] });
             return;
         }
         
@@ -280,21 +288,37 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         
-        const formData = new FormData(form);
-        formData.append('_method', 'PUT');
+        const params = new URLSearchParams();
+        params.append('skill_id', skillId);
+        params.append('importance_level', importanceLevel);
+        params.append('weight_value', weightValue);
+        params.append('criterion_type', criterionType);
+        params.append('_method', 'PUT');
+        params.append('_token', csrfToken);
+        
         let url = skillRoutes.update.replace('__id__', skillId);
         
+        console.log('Form data being sent:');
+        for (let pair of params.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
+        
         fetch(url, {
-            method: 'PUT',
+            method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             },
-            body: formData
+            body: params
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             if (data.success) {
                 showNotification(data.message || 'Skill berhasil diperbarui', 'success');
                 closeModal(window.editSkillModal);
