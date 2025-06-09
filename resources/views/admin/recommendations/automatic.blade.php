@@ -381,7 +381,7 @@
                                     @endif
                                     @if($recommendation->wp_result_id)
                                         <span class="inline-flex items-center ml-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            WP: {{ number_format($recommendation->wpResult->relative_preference * 100, 1) }}%
+                                            WP: {{ number_format($recommendation->wpResult->final_score * 100, 1) }}%
                                         </span>
                                     @endif
                                 </div>
@@ -496,6 +496,13 @@
                                         <div class="flex items-center justify-between">
                                             <span>Tingkat Lomba:</span>
                                             <span>{{ $rec['factors']['competition_level'] }}%</span>
+                                        </div>
+                                        @endif
+                                        
+                                        @if(isset($rec['factors']['activity_rating']))
+                                        <div class="flex items-center justify-between">
+                                            <span>Rating Dosen:</span>
+                                            <span>{{ $rec['factors']['activity_rating'] }}%</span>
                                         </div>
                                         @endif
                                     </div>

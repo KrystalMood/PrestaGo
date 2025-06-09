@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const thresholdValue = document.getElementById('threshold-value');
     
     if (thresholdSlider && thresholdValue) {
+        thresholdValue.textContent = thresholdSlider.value + '%';
+        
         thresholdSlider.addEventListener('input', function() {
             thresholdValue.textContent = this.value + '%';
         });
@@ -173,7 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const subCompetitionSelect = document.getElementById('sub_competition_id');
     
     if (competitionSelect && subCompetitionContainer && subCompetitionSelect) {
-        // Function to handle the response from a fetch request
         function handleFetchResponse(response) {
             console.log('Response status:', response.status);
             if (!response.ok) {

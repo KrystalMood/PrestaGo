@@ -29,8 +29,14 @@ class DatabaseSeeder extends Seeder
             CompetitionParticipantSeeder::class,
             CompetitionFeedbackSeeder::class,
             FixMentorshipSeeder::class,
-            LecturerRatingSeeder::class,
+            RecommendationSeeder::class,
         ]);
+        
+        if (Schema::hasTable('lecturer_ratings')) {
+            $this->call(LecturerRatingSeeder::class);
+        } else {
+            $this->command->warn('lecturer_ratings table does not exist. Skipping LecturerRatingSeeder.');
+        }
         
         if (Schema::hasTable('sub_competition_skills')) {
             $this->call(SubCompetitionSkillSeeder::class);

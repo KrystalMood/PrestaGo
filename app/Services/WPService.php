@@ -4,117 +4,70 @@ namespace App\Services;
 
 class WPService
 {
-    public function calculateWeights(array $criteria): array
+    public function calculateWeights(array $criteriaWeights): array
     {
-        $totalWeight = array_sum($criteria);
-        $normalizedWeights = [];
+        $totalWeight = array_sum($criteriaWeights);
         
-        foreach ($criteria as $key => $weight) {
-            $normalizedWeights[$key] = $weight / $totalWeight;
+        if ($totalWeight <= 0) {
+            throw new \Exception("Total weight of criteria must be positive.");
+        }
+        
+        $normalizedWeights = [];
+        foreach ($criteriaWeights as $criterion => $weight) {
+            $normalizedWeights[$criterion] = $weight / $totalWeight;
         }
         
         return $normalizedWeights;
     }
     
-    public function calculateWPScore(array $alternatives, array $weights, array $criteriaTypes = []): array
+    public function calculateVectorS(array $alternatives, array $normalizedWeights): array
     {
-        $scores = [];
+        $vectorS_scores = [];
         
-        if (empty($alternatives)) {
-            \Log::warning('calculateWPScore called with empty alternatives array');
-            return [0.01];
-        }
-        
-        foreach ($alternatives as $altKey => $alternative) {
-            $score = 1;
-            $calculationDetails = [];
-            
-            \Log::info("Calculating WP score for alternative: {$altKey}");
-            
-            foreach ($alternative as $critKey => $value) {
-                if (!isset($weights[$critKey])) {
-                    \Log::warning("Weight not found for criterion '{$critKey}'", [
-                        'available_weights' => array_keys($weights)
-                    ]);
-                    continue;
-                }
-                
-                $weight = $weights[$critKey];
-                
-                if (isset($criteriaTypes[$critKey]) && $criteriaTypes[$critKey] === 'cost') {
-                    $weight = -$weight;
-                }
-                
-                if ($value <= 0) {
-                    \Log::warning("Value for criterion '{$critKey}' is zero or negative: {$value}, using minimum value");
-                    $value = 0.01;
-                }
-                
-                $partialScore = pow($value, $weight);
-                
-                if (!is_finite($partialScore)) {
-                    \Log::warning("Non-finite partial score for criterion '{$critKey}': using fallback", [
-                        'value' => $value,
-                        'weight' => $weight,
-                        'partial_score' => $partialScore
-                    ]);
-                    $partialScore = 1;
-                }
-                
-                $score *= $partialScore;
-                $calculationDetails[$critKey] = [
-                    'value' => $value,
-                    'weight' => $weight,
-                    'partial' => $partialScore
-                ];
-                
-                \Log::info("Criterion: {$critKey}, Value: {$value}, Weight: {$weight}, Partial score: {$partialScore}");
+        foreach ($alternatives as $altKey => $criteriaValues) {
+            $s_score = 1;
+            foreach ($normalizedWeights as $criterion => $weight) {
+                $value = $criteriaValues[$criterion] ?? 0;
+                // Add a small epsilon to avoid log(0) issues if a value is 0
+                $s_score *= pow($value + 1e-9, $weight);
             }
-            
-            if (!is_finite($score) || $score <= 0) {
-                \Log::warning("Final score is non-finite or non-positive: {$score}, using minimum value", [
-                    'calculation_details' => $calculationDetails
-                ]);
-                $score = 0.01;
-            }
-            
-            \Log::info("Final WP score for alternative {$altKey}: {$score}");
-            $scores[$altKey] = $score;
+            $vectorS_scores[$altKey] = $s_score;
         }
         
-        if (empty($scores)) {
-            \Log::warning('No scores calculated in WP method');
-            return [0.01];
+        return $vectorS_scores;
+    }
+
+    public function calculateVectorV(array $vectorS_scores): array
+    {
+        $total_S = array_sum($vectorS_scores);
+        
+        if ($total_S == 0) {
+            return array_fill_keys(array_keys($vectorS_scores), 0);
         }
         
-        $finalScores = array_values($scores);
+        $vectorV_scores = [];
+        foreach ($vectorS_scores as $altKey => $s_score) {
+            $vectorV_scores[$altKey] = $s_score / $total_S;
+        }
         
-        \Log::info("WP calculation completed with " . count($finalScores) . " scores", [
-            'scores' => $finalScores
-        ]);
-        
-        return $finalScores;
+        return $vectorV_scores;
+    }
+
+    public function calculateWPScore(array $alternatives, array $normalizedWeights): array
+    {
+        return $this->calculateVectorS($alternatives, $normalizedWeights);
     }
     
-    public function normalizeScores(array $scores): array
+    public function calculateFinalScore(array $factorScores, array $criteriaWeights): float
     {
-        if (empty($scores)) {
-            return [];
+        $normalizedWeights = $this->calculateWeights($criteriaWeights);
+        $finalScore = 0;
+
+        foreach ($normalizedWeights as $criterion => $weight) {
+            $score = ($factorScores[$criterion] ?? 0) / 100;
+            $finalScore += $score * $weight;
         }
         
-        $maxScore = max($scores);
-        $normalizedScores = [];
-        
-        if ($maxScore > 0) {
-            foreach ($scores as $key => $score) {
-                $normalizedScores[$key] = ($score / $maxScore) * 100;
-            }
-        } else {
-            foreach ($scores as $key => $score) {
-                $normalizedScores[$key] = 0;
-            }
-        }
-        
-        return $normalizedScores;
+        return $finalScore * 100;
     }
 } 

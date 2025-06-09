@@ -17,6 +17,12 @@ use App\Services\RecommendationService;
 use App\Models\Competition;
 use App\Models\ProgramStudi;
 use App\Models\Recommendation;
+use App\Models\User;
+use App\Models\Participation;
+use App\Services\AHPService;
+use App\Models\AHPResultModel;
+use App\Services\WPService;
+use App\Models\WPResultModel;
 
 class RecommendationController extends Controller
 {
@@ -126,44 +132,78 @@ class RecommendationController extends Controller
 
     public function show($id)
     {
-        $recommendation = RecommendationModel::with([
-            'user', 
-            'user.skills', 
-            'user.programStudi', 
-            'competition',
-            'competition.skills'
-        ])->findOrFail($id);
-        
-        $achievements = AchievementModel::where('user_id', $recommendation->user_id)
-            ->where('status', 'verified')
-            ->orderBy('date', 'desc')
-            ->limit(5)
-            ->get();
+        try {
+            $recommendation = RecommendationModel::findOrFail($id);
             
-        $participations = CompetitionParticipantModel::with('competition')
-            ->where('user_id', $recommendation->user_id)
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-        
-        $match_factors = [];
-        if (!empty($recommendation->match_factors)) {
-            $match_factors = json_decode($recommendation->match_factors, true);
-        } else {
+            $user = UserModel::findOrFail($recommendation->user_id);
+            $competition = CompetitionModel::findOrFail($recommendation->competition_id);
+            
+            $userSkills = $user->skills()->get();
+            $userInterests = $user->interests()->get();
+            $userAchievements = $user->achievements()->get();
+            
+            $competitionSkills = $competition->skills()->get();
+            $competitionInterests = $competition->interests()->get();
+            
+            $recommendation->user = $user;
+            $recommendation->competition = $competition;
+            $recommendation->user->skills = $userSkills;
+            $recommendation->user->interests = $userInterests;
+            $recommendation->user->achievements = $userAchievements;
+            $recommendation->competition->skills = $competitionSkills;
+            $recommendation->competition->interests = $competitionInterests;
+            $recommendation->competition->program_study = $competition->programStudy;
+            
+            $participations = CompetitionParticipantModel::where('user_id', $user->id)->get();
+            foreach ($participations as $participation) {
+                $participationCompetition = CompetitionModel::find($participation->competition_id);
+                $participation->competition = $participationCompetition;
+            }
+            $recommendation->user->participations = $participations;
+            
             $match_factors = [
-                'skills' => 0,
-                'achievements' => 0,
-                'academic' => 0,
-                'experience' => 0
+                'skill_match' => 0,
+                'interest_match' => 0,
+                'achievement_match' => 0,
+                'experience_match' => 0
             ];
+            
+            if ($recommendation->for_lecturer && !$recommendation->wp_result_id) {
+                $this->generateWPCalculationForRecommendation($recommendation);
+            } elseif (!$recommendation->for_lecturer && !$recommendation->ahp_result_id) {
+                $this->generateAHPCalculationForRecommendation($recommendation);
+            }
+            
+            if ($recommendation->for_lecturer && $recommendation->wp_result_id) {
+                $wpDetails = json_decode($recommendation->wpResult->calculation_details, true);
+                if (isset($wpDetails['factor_scores'])) {
+                    foreach ($wpDetails['factor_scores'] as $factor => $score) {
+                        if (array_key_exists($factor, $match_factors)) {
+                            $match_factors[$factor] = $score;
+                        }
+                    }
+                }
+            } elseif (!$recommendation->for_lecturer && $recommendation->ahp_result_id) {
+                $ahpDetails = json_decode($recommendation->ahpResult->calculation_details, true);
+                if (isset($ahpDetails['factor_scores'])) {
+                    foreach ($ahpDetails['factor_scores'] as $factor => $score) {
+                        if (array_key_exists($factor, $match_factors)) {
+                            $match_factors[$factor] = $score;
+                        }
+                    }
+                }
+            }
+            
+            return view('admin.recommendations.show', compact('recommendation', 'match_factors'));
+        } catch (\Exception $e) {
+            \Log::error('Error showing recommendation: ' . $e->getMessage(), [
+                'exception' => $e,
+                'id' => $id
+            ]);
+            
+            return redirect()->route('admin.recommendations.index')
+                ->with('error', 'Rekomendasi tidak ditemukan atau terjadi kesalahan.');
         }
-        
-        return view('admin.recommendations.show', compact(
-            'recommendation', 
-            'achievements', 
-            'participations',
-            'match_factors'
-        ));
     }
 
     public function updateStatus(Request $request, $id)
@@ -192,9 +232,8 @@ class RecommendationController extends Controller
             
         $programs = StudyProgramModel::all();
         
-        // Retrieve latest recommendations, exclude any from current session
         $latest_recommendations = RecommendationModel::with(['user', 'competition'])
-            ->whereNotNull('id') // This ensures we're only getting saved recommendations
+            ->whereNotNull('id')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
@@ -215,7 +254,6 @@ class RecommendationController extends Controller
             'threshold' => 'required|numeric|min:0|max:100',
             'max_recommendations' => 'required|integer|min:1|max:10',
             
-            // AHP parameters
             'ahp_priority_skills' => 'nullable|numeric|min:1|max:9',
             'ahp_priority_achievements' => 'nullable|numeric|min:1|max:9',
             'ahp_priority_interests' => 'nullable|numeric|min:1|max:9',
@@ -223,7 +261,6 @@ class RecommendationController extends Controller
             'ahp_priority_competition_level' => 'nullable|numeric|min:1|max:9',
             'ahp_consistency_threshold' => 'nullable|numeric|min:0.01|max:0.5',
             
-            // WP parameters
             'wp_weight_skills' => 'nullable|numeric|min:0.1|max:1.0',
             'wp_weight_interests' => 'nullable|numeric|min:0.1|max:1.0',
             'wp_weight_competition_level' => 'nullable|numeric|min:0.1|max:1.0',
@@ -235,7 +272,6 @@ class RecommendationController extends Controller
             $recommendations = $this->recommendationService->generateRecommendations($validated);
             
             if ($recommendations->isEmpty()) {
-                // Return a meaningful error when no recommendations are found
                 if ($request->ajax()) {
                     return response()->json([
                         'success' => false,
@@ -282,7 +318,6 @@ class RecommendationController extends Controller
                 ]);
             }
             
-            // Re-fetch the latest recommendations to avoid stale data
             $latest_recommendations = RecommendationModel::with(['user', 'competition'])
                 ->whereNotNull('id')
                 ->orderBy('created_at', 'desc')
@@ -351,7 +386,12 @@ class RecommendationController extends Controller
         
         $recommendation->save();
         
-        // Re-fetch the latest recommendations to include the newly saved one
+        if ($recommendation->for_lecturer) {
+            $this->generateWPCalculationForRecommendation($recommendation);
+        } else {
+            $this->generateAHPCalculationForRecommendation($recommendation);
+        }
+        
         $latest_recommendations = RecommendationModel::with(['user', 'competition'])
             ->whereNotNull('id')
             ->orderBy('created_at', 'desc')
@@ -387,6 +427,12 @@ class RecommendationController extends Controller
                 $recommendation->match_factors = json_encode($rec['factors']);
                 $recommendation->for_lecturer = $rec['user_type'] === 'Dosen';
                 $recommendation->save();
+                
+                if ($recommendation->for_lecturer) {
+                    $this->generateWPCalculationForRecommendation($recommendation);
+                } else {
+                    $this->generateAHPCalculationForRecommendation($recommendation);
+                }
                 
                 $savedCount++;
             }
@@ -610,7 +656,6 @@ class RecommendationController extends Controller
     public function deleteAll(Request $request)
     {
         try {
-            // Menghapus semua rekomendasi
             $deletedCount = RecommendationModel::count();
             RecommendationModel::truncate();
             
@@ -634,5 +679,350 @@ class RecommendationController extends Controller
             return redirect()->route('admin.recommendations.index')
                 ->with('error', 'Gagal menghapus rekomendasi: ' . $e->getMessage());
         }
+    }
+
+    private function generateAHPCalculationForRecommendation(RecommendationModel $recommendation)
+    {
+        try {
+            $matchFactors = json_decode($recommendation->match_factors, true);
+            
+            if (empty($matchFactors)) {
+                \Log::warning('Match factors were empty for recommendation ID: ' . $recommendation->id . '. AHP calculation might be incorrect.');
+                $matchFactors = [];
+            }
+            
+            $criteriaPriorities = [
+                'skills' => 5,
+                'achievements' => 4,
+                'interests' => 4,
+                'deadline' => 3,
+                'competition_level' => 6
+            ];
+            
+            $sanitizedMatchFactors = [];
+            foreach (array_keys($criteriaPriorities) as $criterion) {
+                $sanitizedMatchFactors[$criterion] = $matchFactors[$criterion] ?? 0;
+            }
+
+            $ahpService = app(AHPService::class);
+            
+            $pairwiseMatrix = $ahpService->createPairwiseMatrixFromPriorities($criteriaPriorities);
+            
+            $weightsResult = $ahpService->calculateWeights($pairwiseMatrix);
+            
+            $finalScore = 0;
+            $criteriaWeights = array_combine(array_keys($criteriaPriorities), $weightsResult['weights']);
+            foreach($sanitizedMatchFactors as $factor => $score) {
+                if(isset($criteriaWeights[$factor])) {
+                    $finalScore += ($score / 100) * $criteriaWeights[$factor];
+                }
+            }
+            $finalScore = $finalScore * 100;
+
+            $weightedScores = [];
+            foreach ($sanitizedMatchFactors as $factor => $score) {
+                if(isset($criteriaWeights[$factor])) {
+                    $weightedScores[$factor] = ($score / 100) * $criteriaWeights[$factor];
+                }
+            }
+            
+            $calculationDetails = [
+                'criteria_weights' => $criteriaWeights,
+                'factor_scores' => $sanitizedMatchFactors,
+                'weighted_scores' => $weightedScores,
+                'pairwise_matrix' => $pairwiseMatrix,
+                'consistency_info' => $weightsResult['calculation_details']['consistency_check']
+            ];
+            
+            $ahpResult = AHPResultModel::updateOrCreate(
+                [
+                    'user_id' => $recommendation->user_id,
+                    'competition_id' => $recommendation->competition_id,
+                    'calculation_type' => 'recommendation'
+                ],
+                [
+                    'final_score' => $finalScore / 100,
+                    'consistency_ratio' => $weightsResult['consistency_ratio'],
+                    'is_consistent' => $weightsResult['is_consistent'],
+                    'calculation_details' => json_encode($calculationDetails),
+                    'calculated_at' => now()
+                ]
+            );
+            
+            $recommendation->ahp_result_id = $ahpResult->id;
+            $recommendation->save();
+            
+            return $ahpResult;
+        } catch (\Exception $e) {
+            \Log::error('Error generating AHP calculation: ' . $e->getMessage(), [
+                'exception' => $e,
+                'recommendation_id' => $recommendation->id
+            ]);
+            
+            return null;
+        }
+    }
+
+    /**
+     * Generate WP calculation details for a recommendation
+     */
+    private function generateWPCalculationForRecommendation(RecommendationModel $recommendation)
+    {
+        try {
+            $wpService = app(WPService::class);
+
+            $lecturer = $recommendation->user;
+            $competition = $recommendation->competition;
+
+        
+            $competingLecturers = UserModel::where('id', '!=', $lecturer->id)
+                ->whereHas('level', fn($q) => $q->where('level_kode', 'DSN'))
+                ->where('program_studi_id', $lecturer->program_studi_id)
+                ->limit(10)
+                ->get()
+                ->prepend($lecturer);
+
+            $criteriaWeights = [
+                'skills' => 0.3,
+                'interests' => 0.2,
+                'competition_level' => 0.2,
+                'deadline' => 0.2,
+                'activity_rating' => 0.1
+            ];
+
+            if ($competingLecturers->count() <= 1) {
+                $factorScores = $this->calculateLecturerMatchFactors($lecturer, $competition);
+                $sanitizedFactors = [];
+                foreach (array_keys($criteriaWeights) as $criterion) {
+                    $sanitizedFactors[$criterion] = min($factorScores[$criterion] ?? 0, 100);
+                }
+
+                $finalScore = 0;
+                foreach ($criteriaWeights as $criterion => $weight) {
+                    $finalScore += ($sanitizedFactors[$criterion] / 100) * $weight;
+                }
+
+                $calculationDetails = [
+                    'message' => 'Calculated using simple weighted average as only one candidate was available for comparison.',
+                    'criteria_weights' => $criteriaWeights,
+                    'factor_scores' => $sanitizedFactors,
+                    'vector_s' => null,
+                    'vector_v' => null,
+                    'rank' => 1,
+                    'full_wp_results' => []
+                ];
+
+                $wpResultModel = WPResultModel::updateOrCreate(
+                    [
+                        'user_id' => $recommendation->user_id,
+                        'competition_id' => $recommendation->competition_id,
+                        'calculation_type' => 'recommendation'
+                    ],
+                    [
+                        'final_score' => $finalScore,
+                        'vector_s' => null,
+                        'vector_v' => null,
+                        'relative_preference' => null,
+                        'rank' => 1,
+                        'calculation_details' => json_encode($calculationDetails),
+                        'calculated_at' => now()
+                    ]
+                );
+
+                $recommendation->wp_result_id = $wpResultModel->id;
+                $recommendation->match_score = $finalScore * 100;
+                $recommendation->save();
+                
+                return $wpResultModel;
+            }
+
+            $normalizedWeights = $wpService->calculateWeights($criteriaWeights);
+
+            $allFactorScores = [];
+            foreach ($competingLecturers as $compLec) {
+                $factors = $this->calculateLecturerMatchFactors($compLec, $competition);
+                $sanitizedFactors = [];
+                foreach (array_keys($criteriaWeights) as $criterion) {
+                    $sanitizedFactors[$criterion] = min($factors[$criterion] ?? 0, 100);
+                }
+                $allFactorScores[$compLec->id] = $sanitizedFactors;
+            }
+
+            $alternativesForS = array_map(function ($scores) {
+                return array_map(fn($v) => $v / 100, $scores);
+            }, $allFactorScores);
+
+            $vectorS_scores = $wpService->calculateVectorS($alternativesForS, $normalizedWeights);
+            $vectorV_scores = $wpService->calculateVectorV($vectorS_scores);
+
+            arsort($vectorV_scores);ine rank
+            $rankedResults = [];
+            $rank = 1;
+            foreach ($vectorV_scores as $lecturerId => $vScore) {
+                $rankedResults[] = [
+                    'alternative_id' => $lecturerId,
+                    'vector_s' => $vectorS_scores[$lecturerId],
+                    'vector_v' => $vScore,
+                    'rank' => $rank++
+                ];
+            }
+
+            $targetResult = collect($rankedResults)->firstWhere('alternative_id', $lecturer->id);
+
+            if (!$targetResult) {
+                \Log::error("Could not find WP result for target lecturer ID: {$lecturer->id}");
+                return null;
+            }
+
+            $finalScore = $targetResult['vector_v'];
+
+            $calculationDetails = [
+                'criteria_weights' => $normalizedWeights,
+                'factor_scores' => $allFactorScores[$lecturer->id],
+                'vector_s' => $targetResult['vector_s'],
+                'vector_v' => $targetResult['vector_v'],
+                'rank' => $targetResult['rank'],
+                'full_wp_results' => $rankedResults // Store full context
+            ];
+            
+            $wpResultModel = WPResultModel::updateOrCreate(
+                [
+                    'user_id' => $recommendation->user_id,
+                    'competition_id' => $recommendation->competition_id,
+                    'calculation_type' => 'recommendation'
+                ],
+                [
+                    'final_score' => $finalScore, 
+                    'vector_s' => $targetResult['vector_s'],
+                    'vector_v' => $targetResult['vector_v'],
+                    'relative_preference' => $targetResult['vector_v'], 
+                    'rank' => $targetResult['rank'],
+                    'calculation_details' => json_encode($calculationDetails),
+                    'calculated_at' => now()
+                ]
+            );
+            
+            $recommendation->wp_result_id = $wpResultModel->id;
+            $recommendation->match_score = $finalScore * 100;
+            $recommendation->save();
+            
+            return $wpResultModel;
+        } catch (\Exception $e) {
+            \Log::error('Error generating WP calculation for recommendation: ' . $e->getMessage(), [
+                'exception' => $e,
+                'recommendation_id' => $recommendation->id
+            ]);
+            
+            return null;
+        }
+    }
+
+    private function calculateLecturerMatchFactors(UserModel $lecturer, CompetitionModel $competition): array
+    {
+        $factors = [
+            'skills' => 0,
+            'interests' => 0,
+            'competition_level' => 0,
+            'activity_rating' => 0,
+            'deadline' => 0
+        ];
+        
+        $lecturerSkills = $lecturer->skills()->get();
+        $competitionSkills = $competition->skills()->get();
+        
+        if ($competitionSkills->count() > 0) {
+            $skillMatches = 0;
+            $totalSkillImportance = 0;
+            
+            foreach ($competitionSkills as $reqSkill) {
+                $totalSkillImportance += $reqSkill->pivot->importance_level ?? 3;
+                
+                foreach ($lecturerSkills as $lecturerSkill) {
+                    if ($reqSkill->id === $lecturerSkill->id) {
+                        $proficiencyPercentage = ($lecturerSkill->pivot->proficiency_level / 5) * 100;
+                        $importanceLevel = $reqSkill->pivot->importance_level ?? 3;
+                        $skillMatches += ($importanceLevel * $proficiencyPercentage) / 5;
+                        break;
+                    }
+                }
+            }
+            
+            if ($totalSkillImportance > 0) {
+                $factors['skills'] = round(($skillMatches / $totalSkillImportance) * 100);
+            }
+        }
+        
+        $lecturerInterests = $lecturer->interests()->get();
+        $competitionInterests = $competition->interests()->get();
+        
+        if ($competitionInterests->count() > 0) {
+            $interestMatches = 0;
+            $totalInterestImportance = 0;
+            
+            foreach ($competitionInterests as $reqInterest) {
+                $totalInterestImportance += $reqInterest->pivot->importance_factor ?? 3;
+                
+                foreach ($lecturerInterests as $lecturerInterest) {
+                    if ($reqInterest->id === $lecturerInterest->id) {
+                        $interestPercentage = ($lecturerInterest->pivot->interest_level / 5) * 100;
+                        $importanceFactor = $reqInterest->pivot->importance_factor ?? 3;
+                        $interestMatches += ($importanceFactor * $interestPercentage) / 5;
+                        break;
+                    }
+                }
+            }
+            
+            if ($totalInterestImportance > 0) {
+                $factors['interests'] = round(($interestMatches / $totalInterestImportance) * 100);
+            }
+        }
+        
+        $levelMatchPercentages = [
+            'international' => 100,
+            'national' => 90,
+            'regional' => 80,
+            'provincial' => 70,
+            'university' => 60,
+            'internal' => 50,
+        ];
+        
+        $factors['competition_level'] = $levelMatchPercentages[$competition->level] ?? 70;
+        
+        if ($competition->registration_end) {
+            $now = Carbon::now();
+            $registrationEnd = Carbon::parse($competition->registration_end);
+            $daysUntilDeadline = $now->diffInDays($registrationEnd, false);
+            
+            if ($daysUntilDeadline < 0) {
+                $factors['deadline'] = 0;
+            } else if ($daysUntilDeadline <= 7) {
+                $factors['deadline'] = 100;
+            } else if ($daysUntilDeadline <= 14) {
+                $factors['deadline'] = 85;
+            } else if ($daysUntilDeadline <= 30) {
+                $factors['deadline'] = 70;
+            } else if ($daysUntilDeadline <= 60) {
+                $factors['deadline'] = 50;
+            } else {
+                $factors['deadline'] = 30;
+            }
+        }
+        
+        $averageRating = $lecturer->getAverageActivityRating();
+        $ratingCount = $lecturer->getTotalRatingCount();
+        
+        $factors['activity_rating'] = ($averageRating / 5) * 100;
+        
+        if ($ratingCount > 0) {
+            $reliabilityFactor = min(1, $ratingCount / 10);
+            $baseActivityRating = $factors['activity_rating'];
+            $defaultActivityRating = 50;
+            $factors['activity_rating'] = ($baseActivityRating * $reliabilityFactor) + 
+                                         ($defaultActivityRating * (1 - $reliabilityFactor));
+        } else {
+            $factors['activity_rating'] = 50; // Default to neutral if no ratings
+        }
+        
+        return $factors;
     }
 } 

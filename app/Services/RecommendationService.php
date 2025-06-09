@@ -41,7 +41,6 @@ class RecommendationService
         ]);
         
         if ($method === 'hybrid') {
-            // For hybrid method, generate both student and lecturer recommendations
             $studentParams = $params;
             $lecturerParams = $params;
             
@@ -63,7 +62,6 @@ class RecommendationService
                 return $recommendations;
             }
             
-            // Generate student recommendations using AHP
             foreach ($students as $student) {
                 $studentRecommendations = $this->generateStudentRecommendations(
                     $student,
@@ -77,7 +75,6 @@ class RecommendationService
                 $recommendations = $recommendations->merge($studentRecommendations);
             }
             
-            // Generate lecturer recommendations using WP
             foreach ($lecturers as $lecturer) {
                 $lecturerRecommendations = $this->generateLecturerCompetitionRecommendations(
                     $lecturer,
@@ -90,7 +87,6 @@ class RecommendationService
                 $recommendations = $recommendations->merge($lecturerRecommendations);
             }
         } elseif ($method === 'wp') {
-            // WP method is for lecturers
             $lecturers = $this->getEligibleLecturers($params['program_studi_id'] ?? null);
             $competitions = $this->getTargetCompetitions($params['competition_id'] ?? null);
             
@@ -107,7 +103,6 @@ class RecommendationService
                 return $recommendations;
             }
             
-            // Enhanced logging for debugging
             foreach ($lecturers as $lecturer) {
                 Log::info("Processing lecturer: ID {$lecturer->id}, Name: {$lecturer->name}");
                 $hasSkills = $lecturer->skills()->count() > 0;
@@ -118,7 +113,6 @@ class RecommendationService
                     try {
                         Log::info("Processing competition for lecturer: Competition ID {$competition->id}, Name: {$competition->name}");
                         
-                        // Check if competition has required data
                         $hasCompSkills = $competition->skills()->count() > 0;
                         $hasCompInterests = $competition->interests()->count() > 0;
                         Log::info("Competition has skills: " . ($hasCompSkills ? 'Yes' : 'No') . ", has interests: " . ($hasCompInterests ? 'Yes' : 'No'));
@@ -127,7 +121,6 @@ class RecommendationService
                         
                         Log::info("Match factors for lecturer ID {$lecturer->id} and competition ID {$competition->id}:", $matchFactors);
                         
-                        // Check if any match factors are non-zero
                         $hasNonZeroFactors = false;
                         foreach ($matchFactors as $factor => $value) {
                             if ($value > 0) {
@@ -138,7 +131,7 @@ class RecommendationService
                         
                         if (!$hasNonZeroFactors) {
                             Log::warning("All match factors are zero for lecturer ID {$lecturer->id} and competition ID {$competition->id}");
-                            continue; // Skip this competition-lecturer pair
+                            continue;
                         }
                         
                         $lecturerRecommendation = new RecommendationModel();
@@ -150,19 +143,19 @@ class RecommendationService
                         $lecturerRecommendation->calculation_method = 'wp';
                         
                         try {
-                            $wpResult = $this->performWPCalculation($lecturer, $competition, $matchFactors, $params);
-                            $score = $wpResult->final_score * 100;
-                            $lecturerRecommendation->match_score = $score;
-                            $lecturerRecommendation->wp_result_id = $wpResult->id;
+                            $weights = $this->getLecturerCriteriaWeights();
+                            $score = $this->calculateWeightedAverage($matchFactors, $weights);
                             
-                            Log::info("WP Score for lecturer ID {$lecturer->id} and competition ID {$competition->id}: {$score}");
+                            $lecturerRecommendation->match_score = $score;
+                            
+                            Log::info("Weighted Average Score for lecturer ID {$lecturer->id} and competition ID {$competition->id}: {$score}");
                             
                             if ($score >= $threshold) {
                                 $recommendations->push($lecturerRecommendation);
                                 Log::info("Added recommendation for lecturer ID {$lecturer->id} and competition ID {$competition->id} with score {$score}");
                             }
                         } catch (\Exception $e) {
-                            Log::error("Error in WP calculation for lecturer ID {$lecturer->id} and competition ID {$competition->id}: " . $e->getMessage(), [
+                            Log::error("Error in weighted average calculation for lecturer ID {$lecturer->id} and competition ID {$competition->id}: " . $e->getMessage(), [
                                 'exception' => $e,
                                 'lecturer_id' => $lecturer->id,
                                 'competition_id' => $competition->id
@@ -251,87 +244,30 @@ class RecommendationService
         int $maxRecommendations,
         array $params
     ): Collection {
-        $scores = collect();
-        
-        if ($competitions->isEmpty()) {
-            Log::warning("No eligible competitions found for lecturer ID {$lecturer->id}");
-            return $scores; // Return empty collection
-        }
-        
-        Log::info("Processing {$competitions->count()} competitions for lecturer ID {$lecturer->id}");
+        $allScores = [];
         
         foreach ($competitions as $competition) {
             $matchFactors = $this->calculateLecturerMatchFactors($lecturer, $competition);
             
-            Log::info("Match factors for lecturer ID {$lecturer->id} and competition ID {$competition->id}:", [
-                'skills' => $matchFactors['skills'] ?? 0,
-                'interests' => $matchFactors['interests'] ?? 0,
-                'competition_level' => $matchFactors['competition_level'] ?? 0,
-                'deadline' => $matchFactors['deadline'] ?? 0,
-                'activity_rating' => $matchFactors['activity_rating'] ?? 0
-            ]);
+            $weights = $this->getLecturerCriteriaWeights();
+            $score = $this->calculateWeightedAverage($matchFactors, $weights);
             
-            $score = 0;
-            $wpResult = null;
-            
-            try {
-                $wpResult = $this->performWPCalculation($lecturer, $competition, $matchFactors, $params);
-                $score = $wpResult->final_score * 100;
-                
-                Log::info("RecommendationService: Lecturer ID {$lecturer->id} - Competition ID {$competition->id} - Calculated Score: {$score} - Threshold: {$threshold}", [
-                    'lecturer_id' => $lecturer->id,
-                    'lecturer_name' => $lecturer->name,
-                    'competition_id' => $competition->id,
-                    'competition_name' => $competition->name,
-                    'factors' => $matchFactors,
-                    'score' => $score,
-                    'threshold' => $threshold,
-                    'method' => 'wp'
-                ]);
-                
-                if ($score >= $threshold) {
-                    $scores->push([
-                        'lecturer' => $lecturer,
-                        'competition' => $competition,
-                        'score' => $score,
-                        'method' => 'wp',
-                        'factors' => $matchFactors,
-                        'wp_result' => $wpResult
-                    ]);
-                }
-            } catch (\Exception $e) {
-                Log::error("Error calculating WP score for lecturer ID {$lecturer->id} and competition ID {$competition->id}: " . $e->getMessage(), [
-                    'exception' => $e,
-                    'lecturer_id' => $lecturer->id,
-                    'competition_id' => $competition->id,
-                    'match_factors' => $matchFactors
-                ]);
+            if ($score >= $threshold) {
+                $recommendation = new RecommendationModel();
+                $recommendation->user_id = $lecturer->id;
+                $recommendation->competition_id = $competition->id;
+                $recommendation->recommended_by = 'system';
+                $recommendation->for_lecturer = true;
+                $recommendation->match_factors = json_encode($matchFactors);
+                $recommendation->match_score = $score;
+                $recommendation->calculation_method = 'wp';
+                $allScores[] = $recommendation;
             }
         }
         
-        Log::info("Found {$scores->count()} competitions matching threshold {$threshold} for lecturer ID {$lecturer->id}");
-        
-        return $scores
-            ->sortByDesc('score')
-            ->take($maxRecommendations)
-            ->map(function ($data) {
-                $recommendation = new RecommendationModel([
-                    'user_id' => $data['lecturer']->id,
-                    'competition_id' => $data['competition']->id,
-                    'match_score' => $data['score'],
-                    'recommended_by' => 'system',
-                    'status' => 'pending',
-                    'match_factors' => json_encode($data['factors']),
-                    'for_lecturer' => true,
-                    'calculation_method' => $data['method']
-                ]);
-                
-                if ($data['wp_result']) {
-                    $recommendation->wp_result_id = $data['wp_result']->id;
-                }
-                
-                return $recommendation;
-            });
+        return collect($allScores)
+            ->sortByDesc('match_score')
+            ->take($maxRecommendations);
     }
     
     private function getEligibleLecturers($programStudiId = null): Collection
@@ -357,7 +293,6 @@ class RecommendationService
             'deadline' => 0
         ];
         
-        // Calculate skill match
         $lecturerSkills = $lecturer->skills()->get();
         $competitionSkills = $competition->skills()->get();
         
@@ -383,7 +318,6 @@ class RecommendationService
             }
         }
         
-        // Calculate interest match
         $lecturerInterests = $lecturer->interests()->get();
         $competitionInterests = $competition->interests()->get();
         
@@ -409,7 +343,6 @@ class RecommendationService
             }
         }
         
-        // Calculate competition level match
         $levelMatchPercentages = [
             'international' => 100,
             'national' => 90,
@@ -421,51 +354,39 @@ class RecommendationService
         
         $factors['competition_level'] = $levelMatchPercentages[$competition->level] ?? 70;
         
-        // Calculate deadline factor
         if ($competition->registration_end) {
             $now = Carbon::now();
             $registrationEnd = Carbon::parse($competition->registration_end);
             $daysUntilDeadline = $now->diffInDays($registrationEnd, false);
             
             if ($daysUntilDeadline < 0) {
-                // Registration already closed
                 $factors['deadline'] = 0;
             } else if ($daysUntilDeadline <= 7) {
-                // Urgent (less than a week)
                 $factors['deadline'] = 100;
             } else if ($daysUntilDeadline <= 14) {
-                // Soon (1-2 weeks)
                 $factors['deadline'] = 85;
             } else if ($daysUntilDeadline <= 30) {
-                // Medium (2-4 weeks)
                 $factors['deadline'] = 70;
             } else if ($daysUntilDeadline <= 60) {
-                // Comfortable (1-2 months)
                 $factors['deadline'] = 50;
             } else {
-                // Far away (more than 2 months)
                 $factors['deadline'] = 30;
             }
         }
         
-        // Calculate activity rating factor
         $averageRating = $lecturer->getAverageActivityRating();
         $ratingCount = $lecturer->getTotalRatingCount();
         
-        // Convert rating to a 0-100 scale
         $factors['activity_rating'] = ($averageRating / 5) * 100;
         
-        // Apply a weight modifier based on number of ratings (more ratings = more reliable)
         if ($ratingCount > 0) {
-            $reliabilityFactor = min(1, $ratingCount / 10); // Max reliability at 10+ ratings
-            // Adjust the activity rating factor based on reliability
-            // This ensures ratings with more feedback have more impact
+            $reliabilityFactor = min(1, $ratingCount / 10);
             $baseActivityRating = $factors['activity_rating'];
-            $defaultActivityRating = 50; // Neutral default
+            $defaultActivityRating = 50;
             $factors['activity_rating'] = ($baseActivityRating * $reliabilityFactor) + 
                                          ($defaultActivityRating * (1 - $reliabilityFactor));
         } else {
-            $factors['activity_rating'] = 50; // Default to neutral if no ratings
+            $factors['activity_rating'] = 50;
         }
         
         return $factors;
@@ -477,7 +398,6 @@ class RecommendationService
         array $matchFactors, 
         array $params
     ): WPResultModel {
-        // Ensure all necessary match factors exist
         $requiredFactors = ['skills', 'interests', 'competition_level', 'deadline', 'activity_rating'];
         foreach ($requiredFactors as $factor) {
             if (!isset($matchFactors[$factor])) {
@@ -486,11 +406,10 @@ class RecommendationService
                     'competition_id' => $competition->id,
                     'available_factors' => array_keys($matchFactors)
                 ]);
-                $matchFactors[$factor] = 50; // Default to neutral value
+                $matchFactors[$factor] = 50;
             }
         }
         
-        // Define criteria weights (adjust these values based on importance)
         $criteria = [
             'skills' => isset($params['wp_weight_skills']) ? (float)($params['wp_weight_skills'] * 100) : 30,
             'interests' => isset($params['wp_weight_interests']) ? (float)($params['wp_weight_interests'] * 100) : 20,
@@ -499,13 +418,12 @@ class RecommendationService
             'activity_rating' => isset($params['wp_weight_activity_rating']) ? (float)($params['wp_weight_activity_rating'] * 100) : 10
         ];
         
-        // Ensure all criteria have non-zero values
         foreach ($criteria as $key => $value) {
             if ($value <= 0) {
                 Log::warning("Criteria '{$key}' has zero or negative weight, setting to default", [
                     'original_value' => $value
                 ]);
-                $criteria[$key] = 10; // Default low weight
+                $criteria[$key] = 10;
             }
         }
         
@@ -513,10 +431,9 @@ class RecommendationService
         
         $weights = $this->wpService->calculateWeights($criteria);
         
-        // Ensure normalized match factors are valid (non-negative)
         $alternative = [];
         foreach ($requiredFactors as $factor) {
-            $normalizedValue = max(0.01, $matchFactors[$factor] / 100); // Ensure minimum positive value
+            $normalizedValue = max(0.01, $matchFactors[$factor] / 100);
             $alternative[$factor] = $normalizedValue;
         }
         
@@ -525,11 +442,9 @@ class RecommendationService
         try {
             $calculationResult = $this->wpService->calculateWPScore(['lecturer' => $alternative], $weights);
             
-            // Check if result array is empty before accessing index 0
             $score = 0;
             if (!empty($calculationResult) && isset($calculationResult[0])) {
                 $score = $calculationResult[0];
-                // Normalize score if it's outside expected range
                 if ($score > 1) {
                     Log::warning("WP calculation returned score > 1, normalizing", [
                         'original_score' => $score
@@ -539,10 +454,9 @@ class RecommendationService
                     Log::warning("WP calculation returned zero or negative score, setting minimum", [
                         'original_score' => $score
                     ]);
-                    $score = 0.01; // Minimum positive score
+                    $score = 0.01;
                 }
             } else {
-                // Log the error and provide default score
                 Log::error('WP calculation returned empty result', [
                     'lecturer_id' => $lecturer->id,
                     'competition_id' => $competition->id,
@@ -550,7 +464,7 @@ class RecommendationService
                     'weights' => $weights,
                     'alternative' => $alternative
                 ]);
-                $score = 0.01; // Default minimum score
+                $score = 0.01;
             }
         } catch (\Exception $e) {
             Log::error('Exception in WP calculation: ' . $e->getMessage(), [
@@ -561,10 +475,9 @@ class RecommendationService
                 'weights' => $weights,
                 'alternative' => $alternative
             ]);
-            $score = 0.01; // Default minimum score
+            $score = 0.01; 
         }
         
-        // Save calculation details using updateOrCreate to prevent duplicate entries
         $wpResult = WPResultModel::updateOrCreate(
             [
                 'user_id' => $lecturer->id,
@@ -598,7 +511,7 @@ class RecommendationService
         
         if ($competitions->isEmpty()) {
             Log::warning("No eligible competitions found for student ID {$student->id}");
-            return $scores; // Return empty collection
+            return $scores;
         }
         
         Log::info("Processing {$competitions->count()} competitions for student ID {$student->id}");
@@ -1072,5 +985,43 @@ class RecommendationService
         }
         
         return $competitions;
+    }
+    
+    /**
+     * Calculate a simple weighted average score.
+     *
+     * @param array $factors Key-value array of factor scores (0-100).
+     * @param array $weights Key-value array of weights (summing to 1).
+     * @return float The final score (0-100).
+     */
+    private function calculateWeightedAverage(array $factors, array $weights): float
+    {
+        $totalScore = 0.0;
+        
+        foreach ($weights as $criterion => $weight) {
+            $score = $factors[$criterion] ?? 0;
+            // Ensure score is within 0-100
+            $score = max(0, min(100, $score));
+            $totalScore += ($score / 100) * $weight;
+        }
+        
+        // Return score as a percentage
+        return round($totalScore * 100, 2);
+    }
+    
+    /**
+     * Get the criteria weights for lecturer recommendations.
+     *
+     * @return array
+     */
+    private function getLecturerCriteriaWeights(): array
+    {
+        return [
+            'skills' => 0.3,
+            'interests' => 0.2,
+            'competition_level' => 0.2,
+            'deadline' => 0.2,
+            'activity_rating' => 0.1
+        ];
     }
 } 

@@ -100,4 +100,9 @@ class UserModel extends Authenticatable
     {
         return $this->lecturerRatings()->count();
     }
+
+    public function achievements()
+    {
+        return $this->hasMany(AchievementModel::class, 'user_id', 'id');
+    }
 }

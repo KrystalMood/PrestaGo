@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class CompetitionModel extends Model
 {
@@ -37,6 +38,42 @@ class CompetitionModel extends Model
         'competition_date' => 'date',
         'verified' => 'boolean',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::retrieved(function ($competition) {
+            $competition->updateStatusBasedOnDates();
+        });
+    }
+    
+    public function updateStatusBasedOnDates()
+    {
+        $now = Carbon::now();
+        $registrationStart = Carbon::parse($this->registration_start);
+        $registrationEnd = Carbon::parse($this->registration_end);
+        $competitionStart = Carbon::parse($this->start_date);
+        $competitionEnd = Carbon::parse($this->end_date);
+        
+        $newStatus = $this->status;
+        
+        if ($now->lt($registrationStart)) {
+            $newStatus = 'upcoming';
+        } elseif (($now->gte($registrationStart) && $now->lte($registrationEnd)) || 
+                  ($now->gte($competitionStart) && $now->lte($competitionEnd))) {
+            $newStatus = 'active';
+        } elseif ($now->gt($competitionEnd)) {
+            $newStatus = 'completed';
+        }
+        
+        if ($this->status !== $newStatus) {
+            $this->status = $newStatus;
+            $this->save();
+        }
+        
+        return $this;
+    }
 
     public function addedBy()
     {
@@ -96,7 +133,7 @@ class CompetitionModel extends Model
 
     public function scopeOngoing($query)
     {
-        return $query->where('status', 'ongoing');
+        return $query->where('status', 'active');
     }
 
     public function scopeCompleted($query)
@@ -138,7 +175,7 @@ class CompetitionModel extends Model
             'open' => 'Aktif',
             'upcoming' => 'Akan Datang',
             'completed' => 'Selesai',
-            'ongoing' => 'Sedang Berlangsung',
+            'ongoing' => 'Aktif',
             'closed' => 'Ditutup'
         ];
         

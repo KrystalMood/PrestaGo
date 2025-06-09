@@ -16,12 +16,20 @@ class WPResultModel extends Model
         'competition_id',
         'calculation_type',
         'final_score',
+        'vector_s',
+        'vector_v',
+        'relative_preference',
+        'rank',
         'calculation_details',
         'calculated_at'
     ];
     
     protected $casts = [
         'final_score' => 'float',
+        'vector_s' => 'float',
+        'vector_v' => 'float',
+        'relative_preference' => 'float',
+        'rank' => 'integer',
         'calculation_details' => 'json',
         'calculated_at' => 'datetime',
     ];

@@ -7,6 +7,9 @@
         $methodLabel = $isForStudent ? '(Metode AHP)' : '(Metode WP)';
     @endphp
     
+    <!-- Add Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     @include('admin.components.ui.page-header', [
         'title' => $targetLabel . ' ' . $methodLabel,
         'description' => 'Informasi lengkap tentang rekomendasi kompetisi',
@@ -146,10 +149,71 @@
                                                 </button>
                                                 
                                                 <div id="ahp-details" class="hidden mt-2 bg-white p-2 rounded border border-gray-200 text-xs">
-                                                    <pre class="whitespace-pre-wrap text-xs text-gray-600">{{ json_encode(json_decode($recommendation->ahpResult->calculation_details), JSON_PRETTY_PRINT) }}</pre>
+                                                    <div class="mb-2">
+                                                        <h6 class="font-medium text-gray-700 mb-1">Detail Perhitungan AHP</h6>
+                                                        
+                                                        @php
+                                                            $ahpDetails = json_decode($recommendation->ahpResult->calculation_details, true);
+                                                        @endphp
+                                                        
+                                                        @if(isset($ahpDetails['criteria_weights']))
+                                                            <div class="mb-2">
+                                                                <h6 class="text-xs font-medium text-gray-600">Bobot Kriteria:</h6>
+                                                                <div class="grid grid-cols-2 gap-1 mt-1">
+                                                                    @foreach($ahpDetails['criteria_weights'] as $criterion => $weight)
+                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
+                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $criterion)) }}:</span>
+                                                                            <span class="font-medium text-indigo-600">{{ number_format($weight, 4) }}</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if(isset($ahpDetails['factor_scores']))
+                                                            <div class="mb-2">
+                                                                <h6 class="text-xs font-medium text-gray-600">Skor Faktor:</h6>
+                                                                <div class="grid grid-cols-2 gap-1 mt-1">
+                                                                    @foreach($ahpDetails['factor_scores'] as $factor => $score)
+                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
+                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
+                                                                            <span class="font-medium text-indigo-600">{{ number_format($score, 2) }}%</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if(isset($ahpDetails['weighted_scores']))
+                                                            <div class="mb-2">
+                                                                <h6 class="text-xs font-medium text-gray-600">Skor Tertimbang:</h6>
+                                                                <div class="grid grid-cols-2 gap-1 mt-1">
+                                                                    @foreach($ahpDetails['weighted_scores'] as $factor => $score)
+                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
+                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
+                                                                            <span class="font-medium text-indigo-600">{{ number_format($score, 2) }}%</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        <div class="mt-2 pt-2 border-t border-gray-200">
+                                                            <div class="flex justify-between">
+                                                                <span class="text-xs font-medium text-gray-600">Skor Final:</span>
+                                                                <span class="text-xs font-bold text-indigo-700">{{ number_format($recommendation->ahpResult->final_score * 100, 2) }}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <details class="mt-2">
+                                                        <summary class="text-xs text-gray-500 cursor-pointer">Lihat JSON Lengkap</summary>
+                                                        <pre class="whitespace-pre-wrap text-xs text-gray-600 mt-1 p-2 bg-gray-50 rounded">{{ json_encode($ahpDetails, JSON_PRETTY_PRINT) }}</pre>
+                                                    </details>
                                                 </div>
                                             </div>
                                         @endif
+                                    
                                     </div>
                                 @else
                                     <div class="text-xs text-gray-500 italic">Tidak ada data perhitungan AHP</div>
@@ -186,8 +250,8 @@
                                         </div>
                                         
                                         <div>
-                                            <span class="text-xs text-gray-500">Preferensi Relatif:</span>
-                                            <span class="text-sm font-medium text-green-700 ml-1">{{ number_format($recommendation->wpResult->relative_preference * 100, 2) }}%</span>
+                                            <span class="text-xs text-gray-500">Skor Akhir:</span>
+                                            <span class="text-sm font-medium text-green-700 ml-1">{{ number_format($recommendation->wpResult->final_score * 100, 2) }}%</span>
                                         </div>
                                         
                                         <div>
@@ -211,10 +275,93 @@
                                                 </button>
                                                 
                                                 <div id="wp-details" class="hidden mt-2 bg-white p-2 rounded border border-gray-200 text-xs">
-                                                    <pre class="whitespace-pre-wrap text-xs text-gray-600">{{ json_encode(json_decode($recommendation->wpResult->calculation_details), JSON_PRETTY_PRINT) }}</pre>
+                                                    <div class="mb-2">
+                                                        <h6 class="font-medium text-gray-700 mb-1">Detail Perhitungan WP</h6>
+                                                        
+                                                        @php
+                                                            $wpDetails = json_decode($recommendation->wpResult->calculation_details, true);
+                                                        @endphp
+                                                        
+                                                        @if(isset($wpDetails['criteria_weights']))
+                                                            <div class="mb-2">
+                                                                <h6 class="text-xs font-medium text-gray-600">Bobot Kriteria:</h6>
+                                                                <div class="grid grid-cols-2 gap-1 mt-1">
+                                                                    @foreach($wpDetails['criteria_weights'] as $criterion => $weight)
+                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
+                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $criterion)) }}:</span>
+                                                                            <span class="font-medium text-green-600">{{ number_format($weight, 4) }}</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if(isset($wpDetails['normalized_values']))
+                                                            <div class="mb-2">
+                                                                <h6 class="text-xs font-medium text-gray-600">Nilai Ternormalisasi:</h6>
+                                                                <div class="grid grid-cols-2 gap-1 mt-1">
+                                                                    @foreach($wpDetails['normalized_values'] as $criterion => $value)
+                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
+                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $criterion)) }}:</span>
+                                                                            <span class="font-medium text-green-600">{{ number_format($value, 4) }}</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if(isset($wpDetails['factor_scores']))
+                                                            <div class="mb-2">
+                                                                <h6 class="text-xs font-medium text-gray-600">Skor Faktor:</h6>
+                                                                <div class="grid grid-cols-2 gap-1 mt-1">
+                                                                    @foreach($wpDetails['factor_scores'] as $factor => $score)
+                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
+                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
+                                                                            <span class="font-medium text-green-600">{{ number_format($score, 2) }}%</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if(isset($wpDetails['weighted_scores']))
+                                                            <div class="mb-2">
+                                                                <h6 class="text-xs font-medium text-gray-600">Skor Tertimbang:</h6>
+                                                                <div class="grid grid-cols-2 gap-1 mt-1">
+                                                                    @foreach($wpDetails['weighted_scores'] as $factor => $score)
+                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
+                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
+                                                                            <span class="font-medium text-green-600">{{ number_format($score * 100, 2) }}%</span>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        <div class="mt-2 pt-2 border-t border-gray-200">
+                                                            <div class="flex justify-between mb-1">
+                                                                <span class="text-xs font-medium text-gray-600">Vector S:</span>
+                                                                <span class="text-xs font-medium text-green-700">{{ number_format($recommendation->wpResult->vector_s, 4) }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between mb-1">
+                                                                <span class="text-xs font-medium text-gray-600">Vector V:</span>
+                                                                <span class="text-xs font-medium text-green-700">{{ number_format($recommendation->wpResult->vector_v, 4) }}</span>
+                                                            </div>
+                                                            <div class="flex justify-between">
+                                                                <span class="text-xs font-medium text-gray-600">Skor Akhir:</span>
+                                                                <span class="text-xs font-bold text-green-700">{{ number_format($recommendation->wpResult->final_score * 100, 2) }}%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <details class="mt-2">
+                                                        <summary class="text-xs text-gray-500 cursor-pointer">Lihat JSON Lengkap</summary>
+                                                        <pre class="whitespace-pre-wrap text-xs text-gray-600 mt-1 p-2 bg-gray-50 rounded">{{ json_encode($wpDetails, JSON_PRETTY_PRINT) }}</pre>
+                                                    </details>
                                                 </div>
                                             </div>
                                         @endif
+                                        
                                     </div>
                                 @else
                                     <div class="text-xs text-gray-500 italic">Tidak ada data perhitungan WP</div>
@@ -307,7 +454,11 @@
                             @foreach($recommendation->competition->skills as $skill)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                     {{ $skill->name }} 
+                                    @if(isset($skill->pivot) && isset($skill->pivot->importance_level))
                                     <span class="ml-1 text-indigo-600">({{ $skill->pivot->importance_level }}/5)</span>
+                                    @else
+                                        <span class="ml-1 text-indigo-600">(N/A)</span>
+                                    @endif
                                 </span>
                             @endforeach
                         </div>
@@ -319,7 +470,11 @@
                             @foreach($recommendation->competition->interests as $interest)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {{ $interest->name }} 
+                                    @if(isset($interest->pivot) && isset($interest->pivot->relevance_score))
                                     <span class="ml-1 text-blue-600">({{ $interest->pivot->relevance_score }})</span>
+                                    @else
+                                        <span class="ml-1 text-blue-600">(N/A)</span>
+                                    @endif
                                 </span>
                             @endforeach
                         </div>
@@ -402,18 +557,12 @@
                     @endif
                 </div>
                 
-                <div class="border-t border-gray-200 pt-4 mt-4">
-                    <a href="{{ route('admin.users.show', $recommendation->user->id) }}" class="inline-flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        Lihat Profil Lengkap
-                    </a>
-                </div>
             @endcomponent
         </div>
     </div>
-@endcomponent 
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -426,5 +575,132 @@
                 }
             });
         }
+
+            // Check if we have match factors data
+            @if(isset($match_factors) && count($match_factors) > 0)
+                // Prepare data for radar charts
+                const labels = [
+                    @foreach($match_factors as $factor => $value)
+                        '{{ ucfirst(str_replace('_', ' ', $factor)) }}',
+                    @endforeach
+                ];
+                
+                const ahpData = [
+                    @foreach($match_factors as $factor => $value)
+                        {{ isset($recommendation->ahpResult) && isset(json_decode($recommendation->ahpResult->calculation_details, true)['factor_scores'][$factor]) 
+                            ? json_decode($recommendation->ahpResult->calculation_details, true)['factor_scores'][$factor]
+                            : 0 }},
+                    @endforeach
+                ];
+                
+                const wpData = [
+                    @foreach($match_factors as $factor => $value)
+                        {{ isset($recommendation->wpResult) && isset(json_decode($recommendation->wpResult->calculation_details, true)['factor_scores'][$factor]) 
+                            ? json_decode($recommendation->wpResult->calculation_details, true)['factor_scores'][$factor]
+                            : 0 }},
+                    @endforeach
+                ];
+                
+                // AHP Radar Chart
+                const ahpCtx = document.getElementById('ahpRadarChart');
+                if (ahpCtx) {
+                    new Chart(ahpCtx, {
+                        type: 'radar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Skor Faktor (%)',
+                                data: ahpData,
+                                backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                                borderColor: 'rgba(79, 70, 229, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                                pointRadius: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    angleLines: {
+                                        display: true,
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 100,
+                                    ticks: {
+                                        stepSize: 20,
+                                        backdropColor: 'transparent'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.raw.toFixed(2) + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // WP Radar Chart
+                const wpCtx = document.getElementById('wpRadarChart');
+                if (wpCtx) {
+                    new Chart(wpCtx, {
+                        type: 'radar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Skor Faktor (%)',
+                                data: wpData,
+                                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                                pointRadius: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                r: {
+                                    angleLines: {
+                                        display: true,
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    },
+                                    suggestedMin: 0,
+                                    suggestedMax: 100,
+                                    ticks: {
+                                        stepSize: 20,
+                                        backdropColor: 'transparent'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return context.raw.toFixed(2) + '%';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            @endif
     });
 </script> 
+@endcomponent 
