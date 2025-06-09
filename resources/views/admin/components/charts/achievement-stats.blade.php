@@ -3,7 +3,7 @@
 <!-- Achievement Stat Cards -->
 @include('admin.components.charts.achievement-stat-cards', ['achievementStats' => $achievementStats])
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6">
     <div>
         <h4 class="text-md font-medium text-gray-700 mb-4">Prestasi Berdasarkan Jenis</h4>
         <div class="relative" style="height: 250px;">

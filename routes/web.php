@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ReportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -121,9 +122,13 @@ Route::middleware(['auth'])->group(function () {
 
         // Report Management Routes
         Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('/', function () {
-                return view('admin.reports.index');
-            })->name('index');
+            Route::get('/', [ReportController::class, 'index'])->name('index');
+            Route::get('/achievements', [ReportController::class, 'achievements'])->name('achievements');
+            Route::get('/programs', [ReportController::class, 'programs'])->name('programs');
+            Route::get('/trends', [ReportController::class, 'trends'])->name('trends');
+            Route::get('/periods', [ReportController::class, 'periods'])->name('periods');
+            Route::get('/export', [ReportController::class, 'export'])->name('export');
+            Route::post('/generate', [ReportController::class, 'generateReport'])->name('generate-report');
         });
 
         // Settings Management Routes
@@ -245,16 +250,11 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/interests', [App\Http\Controllers\dosen\ProfileController::class, 'updateInterests'])->name('interests.update');
         });
         
-        
         Route::prefix('recommendations')->name('recommendations.')->group(function () {
             Route::get('/', function () {
                 return view('Dosen.recommendations.index');
             })->name('index');
         });
-        
-        // Route::prefix('settings')->name('settings.')->group(function () {
-        //     Route::get('/', [App\Http\Controllers\dosen\ProfileController::class, 'index'])->name('index');
-        // });
 
         Route::prefix('akademik')->name('akademik.')->group(function () {
             Route::get('/', function () {

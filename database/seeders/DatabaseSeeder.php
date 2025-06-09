@@ -26,10 +26,12 @@ class DatabaseSeeder extends Seeder
             SubCompetitionSeeder::class,
             ActivitySeeder::class,
             AchievementSeeder::class,
+            PeriodAchievementSeeder::class,
             CompetitionParticipantSeeder::class,
             CompetitionFeedbackSeeder::class,
             FixMentorshipSeeder::class,
             RecommendationSeeder::class,
+            ActivityLogSeeder::class,
         ]);
         
         if (Schema::hasTable('lecturer_ratings')) {

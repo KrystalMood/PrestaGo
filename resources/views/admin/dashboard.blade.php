@@ -1,5 +1,5 @@
 @component('layouts.admin', ['title' => 'Dasbor Admin'])
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 mb-8">
         @foreach ($stats as $stat)
             <div class="bg-white rounded-lg shadow-custom p-6 flex items-start">
                 <div class="flex-shrink-0 mr-4">
@@ -15,13 +15,12 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-3 space-y-6">
             <div class="bg-white rounded-lg shadow-custom p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Statistik Prestasi</h2>
                 
                 @if(isset($achievementStats) && $achievementStats && !empty($achievementStats['byType']))
-                    <!-- Increased height for chart container -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
                         <div class="h-80">
                             <canvas id="achievementByTypeChart" class="w-full h-full"></canvas>
                         </div>
@@ -32,10 +31,8 @@
                     
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
-                            // Chart for achievement by type
                             const typeCtx = document.getElementById('achievementByTypeChart').getContext('2d');
                             
-                            // Prepare data for type chart
                             const typeData = {!! json_encode($achievementStats['byType']) !!};
                             const typeLabels = [];
                             const typeValues = [];
@@ -49,7 +46,6 @@
                                 'rgba(236, 72, 153, 0.7)'  // pink
                             ];
                             
-                            // Extract data from achievement stats
                             typeData.forEach((item, index) => {
                                 typeLabels.push(item.type);
                                 typeValues.push(item.total);
@@ -87,15 +83,12 @@
                                 }
                             });
                             
-                            // Chart for achievements by month
                             const monthCtx = document.getElementById('achievementByMonthChart').getContext('2d');
                             
-                            // Prepare data for month chart
                             const monthData = {!! json_encode($achievementStats['byMonth'] ?? []) !!};
                             const monthLabels = [];
                             const monthValues = [];
                             
-                            // Extract data from achievement stats
                             if (monthData && monthData.length) {
                                 monthData.forEach(item => {
                                     monthLabels.push(item.month);
@@ -162,7 +155,7 @@
 
             <div class="bg-white rounded-lg shadow-custom p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     @php
                     $actions = [
                         [
@@ -216,7 +209,6 @@
                 </div>
 
                 @php
-                    // Get pending verifications from actual database
                     $pendingAchievements = App\Models\AchievementModel::with('user')
                         ->where('status', 'pending')
                         ->orderBy('created_at', 'desc')
@@ -249,149 +241,6 @@
                             <p>Tidak ada pengajuan prestasi yang menunggu verifikasi saat ini.</p>
                         </div>
                     @endforelse
-                </div>
-            </div>
-        </div>
-
-        <div class="space-y-6">
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Aktivitas Terbaru</h2>
-
-                <div class="space-y-4">
-                    @forelse($activities as $activity)
-                        <div class="flex space-x-3">
-                            <div class="flex-shrink-0">
-                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-gray-50">
-                                    {!! $activity->icon_svg ?? '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>' !!}
-                                </div>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-700">{!! $activity->message !!}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ $activity->formatted_time ?? $activity->created_at->diffForHumans() }}</p>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="py-4 text-center text-gray-500">
-                            <p>Belum ada aktivitas terbaru</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Deadline Mendatang</h2>
-
-                @php
-                    // Get upcoming deadlines from actual database
-                    $upcomingDeadlines = App\Models\CompetitionModel::where('status', 'active')
-                        ->whereNotNull('registration_end')
-                        ->where('registration_end', '>=', now())
-                        ->orderBy('registration_end', 'asc')
-                        ->take(3)
-                        ->get();
-                @endphp
-
-                <div class="space-y-4">
-                    @forelse($upcomingDeadlines as $deadline)
-                        <div class="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50">
-                            <div class="flex-shrink-0">
-                                @php
-                                    $daysLeft = now()->diffInDays($deadline->registration_end, false);
-                                    $colorClass = $daysLeft < 3 ? 'bg-red-100 text-red-800' : ($daysLeft < 7 ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800');
-                                @endphp
-                                <div class="flex flex-col items-center justify-center h-12 w-12 rounded-lg {{ $colorClass }}">
-                                    <span class="text-lg font-bold leading-none">{{ $deadline->registration_end->format('d') }}</span>
-                                    <span class="text-xs">{{ $deadline->registration_end->format('M') }}</span>
-                                </div>
-                            </div>
-                            <div>
-                                <h3 class="font-medium text-gray-800">{{ $deadline->name }}</h3>
-                                <p class="text-xs text-gray-500">Pendaftaran ditutup</p>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="py-4 text-center text-gray-500">
-                            <p>Tidak ada deadline mendatang saat ini.</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-custom p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Status Sistem</h2>
-
-                @php
-                $metrics = [
-                    [
-                        'name' => 'Penggunaan Penyimpanan',
-                        'value' => 65,
-                        'color' => 'indigo'
-                    ],
-                    [
-                        'name' => 'Kapasitas Pengguna', 
-                        'value' => round((App\Models\UserModel::count() / 1000) * 100), // Assuming 1000 user capacity
-                        'color' => 'green'
-                    ],
-                    [
-                        'name' => 'Verifikasi Tertunda', 
-                        'value' => round((App\Models\AchievementModel::where('status', 'pending')->count() / max(1, App\Models\AchievementModel::count())) * 100),
-                        'color' => 'amber'
-                    ]
-                ];
-                @endphp
-
-                <div class="space-y-4">
-                    @foreach ($metrics as $metric)
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-sm font-medium text-gray-700">{{ $metric['name'] }}</span>
-                                <span class="text-sm font-medium text-gray-700">{{ $metric['value'] }}%</span>
-                            </div>
-                            <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-100">
-                                <div style="width: {{ $metric['value'] }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center {{ $metric['color'] === 'indigo' ? 'bg-indigo-500' : ($metric['color'] === 'green' ? 'bg-green-500' : 'bg-amber-500') }}">
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-
-                    <div class="border-t border-gray-100 pt-4 mt-4">
-                        <table class="min-w-full">
-                            <tbody>
-                                <tr>
-                                    <td class="py-1 text-sm">Basis Data</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Online
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1 text-sm">API</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Operasional
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1 text-sm">Pengguna Aktif</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            {{ App\Models\UserModel::count() }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="py-1 text-sm">Server</td>
-                                    <td class="py-1 text-right">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            Sehat
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>

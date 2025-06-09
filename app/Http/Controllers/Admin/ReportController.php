@@ -502,9 +502,105 @@ class ReportController extends Controller
         $request->validate([
             'report_format' => 'required|in:pdf,excel',
             'date_range' => 'required|in:current_year,current_semester,last_year,all_time',
+            'report_type' => 'required|in:comprehensive,summary',
         ]);
 
-        return redirect()->back()->with('success', 'Laporan berhasil dibuat dan diunduh.');
+        $userId = auth()->id();
+        \DB::table('activity_logs')->insert([
+            'activity_type' => 'report_export',
+            'user_id' => $userId,
+            'details' => json_encode([
+                'format' => $request->report_format,
+                'date_range' => $request->date_range,
+                'report_type' => $request->report_type,
+            ]),
+            'description' => "Exported {$request->report_type} report in {$request->report_format} format",
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $startDate = null;
+        $endDate = now();
+        
+        switch ($request->date_range) {
+            case 'current_year':
+                $startDate = now()->startOfYear();
+                break;
+            case 'current_semester':
+                if (now()->month <= 6) {
+                    $startDate = now()->startOfYear();
+                } else {
+                    $startDate = now()->setMonth(7)->startOfMonth();
+                }
+                break;
+            case 'last_year':
+                $startDate = now()->subYear()->startOfYear();
+                $endDate = now()->subYear()->endOfYear();
+                break;
+            case 'all_time':
+                $startDate = null;
+                break;
+        }
+
+        $query = \App\Models\AchievementModel::where('status', 'verified');
+        
+        if ($startDate) {
+            $query->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+        }
+        
+        $achievements = $query->with('user')->get();
+        
+        $dateStr = now()->format('Y-m-d');
+        $filename = "achievement-report-{$request->report_type}-{$dateStr}";
+        
+        if ($request->report_format === 'pdf') {
+            return $this->generatePdfReport($achievements, $request->report_type, $filename);
+        } else {
+            return $this->generateExcelReport($achievements, $request->report_type, $filename);
+        }
+    }
+    
+    private function generatePdfReport($achievements, $reportType, $filename)
+    {
+        $html = view('admin.reports.templates.pdf', [
+            'achievements' => $achievements,
+            'reportType' => $reportType,
+            'generatedAt' => now()->format('Y-m-d H:i:s'),
+        ])->render();
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'report');
+        file_put_contents($tempFile, $html);
+        
+        return response()->download($tempFile, $filename . '.pdf', [
+            'Content-Type' => 'application/pdf',
+        ])->deleteFileAfterSend(true);
+    }
+    
+    private function generateExcelReport($achievements, $reportType, $filename)
+    {
+        $tempFile = tempnam(sys_get_temp_dir(), 'report');
+        $file = fopen($tempFile, 'w');
+        
+        fputcsv($file, ['ID', 'Title', 'Student', 'Competition', 'Type', 'Level', 'Date', 'Status']);
+        
+        foreach ($achievements as $achievement) {
+            fputcsv($file, [
+                $achievement->id,
+                $achievement->title,
+                $achievement->user->name ?? 'Unknown',
+                $achievement->competition_name,
+                $achievement->type,
+                $achievement->level,
+                $achievement->date,
+                $achievement->status,
+            ]);
+        }
+        
+        fclose($file);
+        
+        return response()->download($tempFile, $filename . '.csv', [
+            'Content-Type' => 'text/csv',
+        ])->deleteFileAfterSend(true);
     }
 
     private function calculateChange($current, $previous)

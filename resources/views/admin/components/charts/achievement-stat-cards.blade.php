@@ -1,6 +1,6 @@
 @props(['achievementStats'])
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 mb-6">
     <!-- Total Achievements Card -->
     <div class="bg-white rounded-lg shadow-custom p-4">
         <div class="flex items-center">

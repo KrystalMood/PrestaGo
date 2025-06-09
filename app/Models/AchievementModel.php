@@ -43,6 +43,11 @@ class AchievementModel extends Model
         return $this->belongsTo(UserModel::class, 'verified_by', 'id');
     }
 
+    public function competition()
+    {
+        return $this->belongsTo(CompetitionModel::class, 'competition_id', 'id');
+    }
+
     public function attachments()
     {
         return $this->hasMany(AttachmentModel::class, 'achievement_id', 'id');
