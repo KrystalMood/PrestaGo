@@ -357,12 +357,10 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Modal functions
         function showModal() {
             const modal = document.getElementById('confirmation-modal');
             modal.classList.remove('hidden');
             
-            // Setup close buttons
             const closeButtons = modal.querySelectorAll('.close-modal');
             closeButtons.forEach(button => {
                 button.onclick = function() {
@@ -376,7 +374,6 @@
             const toastContainer = document.getElementById('toast-container');
             const toast = document.createElement('div');
             
-            // Set toast class based on type
             let bgColor, textColor, borderColor;
             switch (type) {
                 case 'error':
@@ -422,17 +419,14 @@
             
             toastContainer.appendChild(toast);
             
-            // Animate in
             setTimeout(() => {
                 toast.classList.remove('opacity-0', 'translate-x-full');
             }, 10);
             
-            // Auto remove after 5 seconds
             const autoRemoveTimeout = setTimeout(() => {
                 removeToast(toast);
             }, 5000);
             
-            // Close button event
             toast.querySelector('button').addEventListener('click', () => {
                 clearTimeout(autoRemoveTimeout);
                 removeToast(toast);
@@ -446,7 +440,6 @@
             }, 500);
         }
         
-        // Set up delete all button event
         const deleteAllBtn = document.getElementById('delete-all-recommendations-btn');
         if (deleteAllBtn) {
             deleteAllBtn.addEventListener('click', function() {
@@ -454,14 +447,11 @@
             });
         }
         
-        // Set up confirm delete all button
         const confirmDeleteAllBtn = document.getElementById('confirm-delete-all');
         if (confirmDeleteAllBtn) {
             confirmDeleteAllBtn.addEventListener('click', function() {
-                // Hide the modal
                 document.getElementById('confirmation-modal').classList.add('hidden');
                 
-                // Show loading state
                 confirmDeleteAllBtn.disabled = true;
                 confirmDeleteAllBtn.innerHTML = `
                     <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -471,7 +461,6 @@
                     Menghapus...
                 `;
                 
-                // Make AJAX request to delete all recommendations
                 confirmDeleteAll();
             });
         }
@@ -488,20 +477,14 @@
             .then(data => {
                 hideDeleteAllModal();
                 if (data.success) {
-                    showToast('success', data.message);
-                    // Hapus semua baris dari tabel
-                    document.querySelector('.recommendation-table tbody').innerHTML = '';
-                    // Refresh halaman setelah 1.5 detik
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
+                    showToast('Rekomendasi berhasil dihapus!', 'success');
                 } else {
-                    showToast('error', data.message || 'Terjadi kesalahan saat menghapus rekomendasi');
+                    showToast('Gagal menghapus rekomendasi: ' + data.message, 'error');
                 }
             })
             .catch(error => {
                 hideDeleteAllModal();
-                showToast('error', 'Terjadi kesalahan saat menghapus rekomendasi');
+                showToast('Terjadi kesalahan saat menghapus rekomendasi', 'error');
                 console.error('Error:', error);
             });
         }

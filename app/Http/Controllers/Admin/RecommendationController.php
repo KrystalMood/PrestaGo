@@ -855,7 +855,7 @@ class RecommendationController extends Controller
             $vectorS_scores = $wpService->calculateVectorS($alternativesForS, $normalizedWeights);
             $vectorV_scores = $wpService->calculateVectorV($vectorS_scores);
 
-            arsort($vectorV_scores);ine rank
+            arsort($vectorV_scores);
             $rankedResults = [];
             $rank = 1;
             foreach ($vectorV_scores as $lecturerId => $vScore) {

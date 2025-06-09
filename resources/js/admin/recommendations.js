@@ -318,12 +318,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 if (typeof showToast === 'function') {
-                    showToast('Berhasil menghasilkan ' + data.count + ' rekomendasi. Memuat ulang halaman...', 'success');
+                    showToast('Berhasil menghasilkan ' + data.count + ' rekomendasi.', 'success');
                 }
-                
-                setTimeout(function() {
-                    window.location.reload();
-                }, 1000);
             })
             .catch(error => {
                 generateBtn.disabled = false;
@@ -457,12 +453,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         clearGeneratedRecommendations();
                         
                         if (typeof showToast === 'function') {
-                            showToast('Semua rekomendasi berhasil dihapus. Halaman akan disegarkan...', 'success');
+                            showToast('Semua rekomendasi berhasil dihapus.', 'success');
                         }
-                        
-                        setTimeout(function() {
-                            window.location.reload();
-                        }, 1500);
                     }
                 );
             } else {
@@ -474,12 +466,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     clearGeneratedRecommendations();
                     
                     if (typeof showToast === 'function') {
-                        showToast('Semua rekomendasi berhasil dihapus. Halaman akan disegarkan...', 'success');
+                        showToast('Semua rekomendasi berhasil dihapus.', 'success');
                     }
-                    
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
                 }
             }
         });
@@ -504,12 +492,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         clearGeneratedRecommendations();
                         
                         if (typeof showToast === 'function') {
-                            showToast('Semua rekomendasi berhasil dihapus. Halaman akan disegarkan...', 'success');
+                            showToast('Semua rekomendasi berhasil dihapus.', 'success');
                         }
-                        
-                        setTimeout(function() {
-                            window.location.reload();
-                        }, 1500);
                     }
                 );
             } else {
@@ -525,12 +509,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     clearGeneratedRecommendations();
                     
                     if (typeof showToast === 'function') {
-                        showToast('Semua rekomendasi berhasil dihapus. Halaman akan disegarkan...', 'success');
+                        showToast('Semua rekomendasi berhasil dihapus.', 'success');
                     }
-                    
-                    setTimeout(function() {
-                        window.location.reload();
-                    }, 1500);
                 }
             }
         });
