@@ -63,9 +63,19 @@ class AchievementController extends Controller
         ));
     }
 
+    /**
+     * Redirect to achievements index page with create modal parameter.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function redirectToAchievementsWithCreateModal()
+    {
+        return redirect()->route('student.achievements.index', ['create' => 'true']);
+    }
+
     public function create()
     {
-        return view('student.achievements.create');
+        return $this->redirectToAchievementsWithCreateModal();
     }
 
     public function store(Request $request)

@@ -73,7 +73,7 @@
                 @if($recentAchievements->isEmpty())
                     <div class="py-4 text-center text-gray-500">
                         <p>Anda belum memiliki prestasi. Mulailah dengan menambahkan prestasi pertama Anda!</p>
-                        <a href="{{ route('student.achievements.create') }}" class="mt-3 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-light">
+                        <a href="{{ route('student.achievements.index', ['create' => 'true']) }}" class="mt-3 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-light">
                             Tambah Prestasi Baru
                         </a>
                     </div>
@@ -185,7 +185,7 @@
             <div class="bg-white rounded-lg shadow-custom p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Aksi Cepat</h2>
                 <div class="grid grid-cols-1 gap-4">
-                    <a href="{{ route('student.achievements.create') }}" class="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 flex items-center transition-colors">
+                    <a href="{{ route('student.achievements.index', ['create' => 'true']) }}" class="bg-gray-50 hover:bg-gray-100 rounded-lg p-4 flex items-center transition-colors">
                         <div class="flex-shrink-0 mr-3">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

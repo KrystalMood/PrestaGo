@@ -52,7 +52,7 @@ Route::middleware(['auth'])->group(function () {
         
         Route::prefix('competitions')->name('competitions.')->group(function () {
             Route::get('/', [App\Http\Controllers\Admin\CompetitionController::class, 'index'])->name('index');
-            Route::get('/create', [App\Http\Controllers\Admin\CompetitionController::class, 'create'])->name('create');
+            Route::get('/create', [App\Http\Controllers\AuthController::class, 'redirectToCompetitionsWithCreateModal'])->name('create');
             Route::post('/', [App\Http\Controllers\Admin\CompetitionController::class, 'store'])->name('store');
             Route::get('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'show'])->name('show');
             Route::put('/{competition}', [App\Http\Controllers\Admin\CompetitionController::class, 'update'])->name('update');

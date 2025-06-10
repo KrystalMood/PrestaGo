@@ -193,4 +193,8 @@ class AuthController extends Controller
     {
         return view('auth.forgot-password');
     }
+    public function redirectToCompetitionsWithCreateModal()
+    {
+        return redirect()->route('admin.competitions.index', ['create' => 'true']);
+    }
 }

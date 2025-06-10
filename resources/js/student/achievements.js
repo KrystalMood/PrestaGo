@@ -8,6 +8,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     initializeEventListeners();
 
+    // Check for 'create' URL parameter and open the modal if present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('create') && urlParams.get('create') === 'true') {
+        const createModal = document.getElementById('create-achievement-modal');
+        if (createModal) {
+            createModal.classList.remove('hidden');
+            // Clean the URL
+            const newUrl = window.location.pathname + window.location.hash;
+            history.replaceState({}, document.title, newUrl);
+        }
+    }
+
     /**
      * Handles the submission of the delete achievement form.
      * @param {Event} event - The form submission event.

@@ -861,7 +861,7 @@ class ReportController extends Controller
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
-    
+
     private function calculateChange($current, $previous)
     {
         if ($previous == 0) {

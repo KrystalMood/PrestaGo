@@ -7,6 +7,16 @@ document.addEventListener('DOMContentLoaded', function() {
     autoUpdateCompetitionStatuses();
 
     attachPaginationHandlers();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('create') && urlParams.get('create') === 'true') {
+        const addModal = document.getElementById('add-competition-modal');
+        if (addModal) {
+            addModal.classList.remove('hidden');
+            const newUrl = window.location.pathname + window.location.hash;
+            history.replaceState({}, document.title, newUrl);
+        }
+    }
 
     // Function to automatically determine and update the competition status based on its start and end dates, and update the UI.
     function updateCompetitionStatus(formPrefix) {
