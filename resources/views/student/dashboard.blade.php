@@ -164,7 +164,7 @@
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Profil Saya</h2>
                 <div class="flex items-center space-x-4 mb-4">
                     <div class="flex-shrink-0">
-                        <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4338ca&color=fff" class="h-16 w-16 rounded-full" alt="{{ $user->name }}">
+                        <img src="{{ asset('storage/photos/' . $user->photo) }}?background=4338ca&color=fff" class="h-16 w-16 rounded-full" alt="{{ $user->name }}">
                     </div>
                     <div>
                         <h3 class="text-lg font-medium text-gray-900">{{ $user->name }}</h3>
@@ -176,7 +176,7 @@
                 </div>
                 
                 <div class="mt-6">
-                    <a href="{{ route('student.profile.index') }}" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand hover:bg-brand-dark">
+                    <a href="{{ route('student.profile.index') }}" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200">
                         Edit Profil
                     </a>
                 </div>
