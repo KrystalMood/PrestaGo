@@ -74,9 +74,6 @@
                                 @php
                                     $pendingRegistrations = $subCompetition->participants ? $subCompetition->participants->where('status', 'pending')->count() : 0;
                                 @endphp
-                                @if($pendingRegistrations > 0)
-                                    <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{{ $pendingRegistrations }}</span>
-                                @endif
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

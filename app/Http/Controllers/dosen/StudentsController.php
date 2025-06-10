@@ -28,6 +28,7 @@ class StudentsController extends Controller
                     'id' => $item->id ?? '-',
                     'name' => $item->user->name ?? '-',
                     'nim' => $item->user->nim ?? '-',
+                    'team_name' => !empty($item->team_name) ? $item->team_name : ($item->user->name . ' Team'),
                     'program_studi' => $item->user->programStudi->name ?? '-', // ganti 'nama' jadi 'name'
                     'competition' => $item->subCompetition->name ?? '-',         // ganti 'nama' jadi 'name'
                     'jenis' => 'Sub Kompetisi',
@@ -45,6 +46,7 @@ class StudentsController extends Controller
                     'id' => $item->id ?? '-',
                     'name' => $item->user->name ?? '-',
                     'nim' => $item->user->nim ?? '-',
+                    'team_name' => !empty($item->team_name) ? $item->team_name : ($item->user->name . ' Team'),
                     'program_studi' => $item->user->programStudi->name ?? '-', // ganti 'nama' jadi 'name'
                     'competition' => $item->competition->name ?? '-',            // ganti 'nama' jadi 'name'
                     'jenis' => 'Kompetisi',
@@ -143,61 +145,71 @@ class StudentsController extends Controller
     public function show(Request $request, $id)
     {
         $jenis = $request->query('jenis'); // Ambil dari query string
+        $user = Auth::user();
 
-        if ($jenis == 'Kompetisi') {
-            // Ambil dari CompetitionParticipantModel
-            $student = CompetitionParticipantModel::with(['user.programStudi', 'competition'])
-                ->where('id', $id)
-                ->first();
-            $teamMembersData = []; // Kompetisi biasanya tidak punya team_members
-        } else {
-            // Ambil dari SubCompetitionParticipantModel
-            $student = SubCompetitionParticipantModel::with(['user.programStudi', 'subCompetition.competition', 'subCompetition.category'])
-                ->where('id', $id)
-                ->first();
+        try {
+            if ($jenis == 'Kompetisi') {
+                // Ambil dari CompetitionParticipantModel
+                $student = CompetitionParticipantModel::with(['user.programStudi', 'competition'])
+                    ->where('id', $id)
+                    ->where('mentor_id', $user->id)
+                    ->first();
+                $teamMembersData = []; // Kompetisi biasanya tidak punya team_members
+            } else {
+                // Ambil dari SubCompetitionParticipantModel
+                $student = SubCompetitionParticipantModel::with(['user.programStudi', 'subCompetition.competition', 'subCompetition.category'])
+                    ->where('id', $id)
+                    ->where('mentor_id', $user->id)
+                    ->first();
 
-            // Ambil data team_members jika ada
-            $teamMemberIds = is_array($student->team_members) ? $student->team_members : json_decode($student->team_members, true);
-            $teamMembersData = [];
-            if ($teamMemberIds && is_array($teamMemberIds)) {
-                $teamMembers = \App\Models\UserModel::whereIn('id', $teamMemberIds)->get(['id', 'name', 'nim']);
-                $teamMembersData = $teamMembers->map(function($user) {
-                    return [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'nim' => $user->nim,
-                    ];
-                })->toArray();
+                // Ambil data team_members jika ada
+                $teamMembersData = [];
+                if ($student) {
+                    $teamMemberIds = is_array($student->team_members) ? $student->team_members : json_decode($student->team_members, true);
+                    if ($teamMemberIds && is_array($teamMemberIds)) {
+                        $teamMembers = \App\Models\UserModel::whereIn('id', $teamMemberIds)->get(['id', 'name', 'nim']);
+                        $teamMembersData = $teamMembers->map(function($user) {
+                            return [
+                                'id' => $user->id,
+                                'name' => $user->name,
+                                'nim' => $user->nim,
+                            ];
+                        })->toArray();
+                    }
+                }
             }
+
+            // Lakukan pengecekan dan return response sesuai kebutuhan (misal JSON)
+            if (!$student) {
+                return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
+            }
+
+            $data = [
+                'id' => $student->id,
+                'nama' => $student->user->name ?? '-',
+                'nim' => $student->user->nim ?? '-',
+                'team_name' => $student->team_name ?? ($student->user->name . ' Team'),
+                'level' => $jenis == 'Kompetisi'
+                    ? ($student->competition->level ?? '-')
+                    : ($student->subCompetition->competition->level ?? '-'), // <-- akses level dari competition
+                'kompetisi' => $jenis == 'Kompetisi'
+                    ? ($student->competition->name ?? '-')
+                    : ($student->subCompetition->name ?? '-'),
+                'status' => $student->status ?? '-',
+                'status_mentor' => $student->status_mentor ?? '-',
+                'team_members' => $teamMembersData,
+                'advisor' => $jenis == 'Sub Kompetisi'
+                    ? ($student->advisor_name ?? '-')
+                    : '-',
+                'notes' => $jenis == 'Kompetisi'
+                    ? ($student->notes ?? '-')
+                    : '-',
+                ];
+
+            return response()->json(['success' => true, 'student' => $data]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
-
-        // Lakukan pengecekan dan return response sesuai kebutuhan (misal JSON)
-        if (!$student) {
-            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
-        }
-
-        // Mapping data sesuai kebutuhan frontend
-        $data = [
-            'id' => $student->id,
-            'nama' => $student->user->name ?? '-',
-            'nim' => $student->user->nim ?? '-',
-            'level' => $jenis == 'Kompetisi'
-                ? ($student->competition->level ?? '-')
-                : ($student->subCompetition->competition->level ?? '-'), // <-- akses level dari competition
-            'kompetisi' => $jenis == 'Kompetisi'
-                ? ($student->competition->name ?? '-')
-                : ($student->subCompetition->name ?? '-'),
-            'status' => $student->status ?? '-',
-            'team_members' => $teamMembersData,
-            'advisor' => $jenis == 'Sub Kompetisi'
-                ? ($student->advisor_name ?? '-')
-                : '-',
-            'notes' => $jenis == 'Kompetisi'
-                ? ($student->notes ?? '-')
-                : '-',
-            ];
-
-        return response()->json(['success' => true, 'student' => $data]);
     }
 
     public function approve(Request $request, $id)
@@ -219,6 +231,52 @@ class StudentsController extends Controller
         $student->save();
 
         return redirect()->route('lecturer.students.index')->with('success', 'Status mahasiswa berhasil diperbarui');
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $jenis = $request->query('jenis');
+        $user = Auth::user();
+
+        try {
+            if ($jenis == 'Kompetisi') {
+                $student = CompetitionParticipantModel::where('id', $id)
+                    ->where('mentor_id', $user->id)
+                    ->first();
+            } else {
+                $student = SubCompetitionParticipantModel::where('id', $id)
+                    ->where('mentor_id', $user->id)
+                    ->first();
+            }
+
+            if (!$student) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data mahasiswa tidak ditemukan atau Anda tidak memiliki akses'
+                    ], 404);
+                }
+                return redirect()->route('lecturer.students.index')->with('error', 'Data mahasiswa tidak ditemukan atau Anda tidak memiliki akses');
+            }
+
+            $student->delete();
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data mahasiswa bimbingan berhasil dihapus'
+                ]);
+            }
+            return redirect()->route('lecturer.students.index')->with('success', 'Data mahasiswa bimbingan berhasil dihapus');
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->route('lecturer.students.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
 }

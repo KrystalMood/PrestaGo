@@ -69,14 +69,25 @@
             <div class="bg-white rounded-lg shadow-custom p-6">
                 <h2 class="text-lg font-semibold text-gray-800 mb-4">Mahasiswa Bimbingan</h2>
                 @php
-                    $supervisedStudents = [
-                        ['id' => 1, 'name' => 'Fajar Nugroho', 'nim' => '21510001', 'program_studi' => 'Teknik Informatika', 'competition' => 'Lomba Desain UI/UX', 'status' => 'registered'],
-                        ['id' => 2, 'name' => 'Siti Aisyah', 'nim' => '21510002', 'program_studi' => 'Sistem Informasi', 'competition' => 'Kompetisi Robotika', 'status' => 'on going'],
-                        ['id' => 3, 'name' => 'Budi Santoso', 'nim' => '21510003', 'program_studi' => 'Ilmu Komputer', 'competition' => 'Hackathon Inovasi', 'status' => 'pending'],
-                        ['id' => 4, 'name' => 'Dewi Lestari', 'nim' => '21510004', 'program_studi' => 'Teknik Komputer', 'competition' => 'Olimpiade Sains Data', 'status' => 'rejected'],
-                        ['id' => 5, 'name' => 'Rizky Pratama', 'nim' => '21510005', 'program_studi' => 'Teknik Informatika', 'competition' => 'Lomba Karya Tulis Ilmiah', 'status' => 'registered'],
-                    ];
-                    $students = collect($supervisedStudents);
+                    // Fetch real supervised students data from the database
+                    // Get students who are mentored by this lecturer in competitions
+                    $supervisedStudents = App\Models\SubCompetitionParticipantModel::with(['user', 'subCompetition.competition'])
+                        ->whereHas('subCompetition.competition.mentorships', function($query) use ($user) {
+                            $query->where('dosen_id', $user->id);
+                        })
+                        ->get();
+                    
+                    // Transform the data to match the expected format
+                    $students = $supervisedStudents->map(function($participant) {
+                        return [
+                            'id' => $participant->id,
+                            'name' => $participant->user->name ?? 'Nama tidak tersedia',
+                            'nim' => $participant->user->nim ?? 'NIM tidak tersedia',
+                            'program_studi' => $participant->user->program_studi ?? 'Program Studi tidak tersedia',
+                            'competition' => $participant->subCompetition->competition->name ?? 'Kompetisi tidak tersedia',
+                            'status' => $participant->status ?? 'registered'
+                        ];
+                    });
                 @endphp
 
                 <div class="bg-white rounded-lg shadow-custom overflow-hidden mb-6">

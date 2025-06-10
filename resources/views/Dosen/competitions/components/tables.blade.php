@@ -90,9 +90,6 @@
                             <div class="ml-4">
                                 <div class="text-sm font-medium text-gray-900 flex items-center">
                                     {{ $competition->name }}
-                                    @if($pendingRegistrations > 0)
-                                        <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{{ $pendingRegistrations }}</span>
-                                    @endif
                                 </div>
                                 <div class="text-sm text-gray-500">
                                     {{ ucfirst($competition->level ?? 'Umum') }}

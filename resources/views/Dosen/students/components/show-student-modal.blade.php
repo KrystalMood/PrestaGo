@@ -3,7 +3,7 @@
     <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="p-6">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-gray-900">Detail Prestasi</h3>
+                <h3 class="text-xl font-bold text-gray-900">Detail Mahasiswa</h3>
                 <button type="button" id="close-show-modal" class="text-gray-400 hover:text-gray-500 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -89,8 +89,9 @@
                 <!-- Student Status -->
                 <div class="bg-gray-50 rounded-lg p-4">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" id="show-student-status">-</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-medium text-gray-500">Status:</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" id="show-student-status">-</span>
                         </div>
                         <div>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" id="show-student-level">-</span>
@@ -103,6 +104,11 @@
                     <div id="show-student-nim-container">
                         <h5 class="text-sm font-medium text-gray-500">NIM Mahasiswa</h5>
                         <p class="mt-1 text-sm text-gray-900" id="show-student-nim"></p>
+                    </div>
+                    
+                    <div id="show-student-team-name-container" class="hidden">
+                        <h5 class="text-sm font-medium text-gray-500">Nama Tim</h5>
+                        <p class="mt-1 text-sm text-gray-900" id="show-student-team-name">-</p>
                     </div>
                     
                     <div id="show-student-members-container">
