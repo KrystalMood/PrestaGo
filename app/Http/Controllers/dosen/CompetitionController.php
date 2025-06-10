@@ -9,6 +9,7 @@ use App\Models\PeriodModel;
 use App\Models\UserModel;
 use App\Models\CategoryModel;
 use App\Models\SubCompetitionModel;
+use App\Models\RecommendationModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +62,27 @@ class CompetitionController extends Controller
         $skills = SkillModel::all();
         $periods = PeriodModel::all();
         
+        $recommendedCompetitions = 0;
+        $recommendations = collect();
+        
+        if (Auth::check()) {
+            $userId = Auth::id();
+            
+            $recommendations = RecommendationModel::with('competition')
+                ->where('user_id', $userId)
+                ->where('for_lecturer', true)
+                ->whereNotIn('status', ['pending', 'rejected'])
+                ->orderBy('match_score', 'desc')
+                ->get();
+                
+            $recommendedCompetitions = $recommendations->count();
+            
+            \Log::info('Lecturer ID: ' . $userId . ', Found ' . $recommendedCompetitions . ' recommendations');
+            if ($recommendedCompetitions > 0) {
+                \Log::info('First lecturer recommendation status: ' . $recommendations->first()->status);
+            }
+        }
+        
         $statuses = [
             ['value' => 'upcoming', 'label' => 'Akan Datang'],
             ['value' => 'active', 'label' => 'Aktif'],
@@ -90,6 +112,7 @@ class CompetitionController extends Controller
                     'activeCompetitions' => $activeCompetitions,
                     'completedCompetitions' => $completedCompetitions,
                     'registeredParticipants' => $registeredParticipants,
+                    'recommendedCompetitions' => $recommendedCompetitions
                 ],
             ]);
         }
@@ -104,7 +127,9 @@ class CompetitionController extends Controller
             'levels',
             'categories',
             'skills',
-            'periods'
+            'periods',
+            'recommendations',
+            'recommendedCompetitions'
         ));
     }
 

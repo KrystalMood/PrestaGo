@@ -141,75 +141,15 @@
                                         @if(isset($recommendation->ahpResult->calculation_details) && is_array(json_decode($recommendation->ahpResult->calculation_details, true)))
                                             <div class="mt-2">
                                                 <button class="text-xs text-indigo-600 hover:text-indigo-800 flex items-center" 
-                                                        onclick="document.getElementById('ahp-details').classList.toggle('hidden')">
+                                                        onclick="this.nextElementSibling.classList.toggle('hidden')">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                     Lihat Detail Perhitungan
                                                 </button>
                                                 
-                                                <div id="ahp-details" class="hidden mt-2 bg-white p-2 rounded border border-gray-200 text-xs">
-                                                    <div class="mb-2">
-                                                        <h6 class="font-medium text-gray-700 mb-1">Detail Perhitungan AHP</h6>
-                                                        
-                                                        @php
-                                                            $ahpDetails = json_decode($recommendation->ahpResult->calculation_details, true);
-                                                        @endphp
-                                                        
-                                                        @if(isset($ahpDetails['criteria_weights']))
-                                                            <div class="mb-2">
-                                                                <h6 class="text-xs font-medium text-gray-600">Bobot Kriteria:</h6>
-                                                                <div class="grid grid-cols-2 gap-1 mt-1">
-                                                                    @foreach($ahpDetails['criteria_weights'] as $criterion => $weight)
-                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
-                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $criterion)) }}:</span>
-                                                                            <span class="font-medium text-indigo-600">{{ number_format($weight, 4) }}</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        @if(isset($ahpDetails['factor_scores']))
-                                                            <div class="mb-2">
-                                                                <h6 class="text-xs font-medium text-gray-600">Skor Faktor:</h6>
-                                                                <div class="grid grid-cols-2 gap-1 mt-1">
-                                                                    @foreach($ahpDetails['factor_scores'] as $factor => $score)
-                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
-                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
-                                                                            <span class="font-medium text-indigo-600">{{ number_format($score, 2) }}%</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        @if(isset($ahpDetails['weighted_scores']))
-                                                            <div class="mb-2">
-                                                                <h6 class="text-xs font-medium text-gray-600">Skor Tertimbang:</h6>
-                                                                <div class="grid grid-cols-2 gap-1 mt-1">
-                                                                    @foreach($ahpDetails['weighted_scores'] as $factor => $score)
-                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
-                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
-                                                                            <span class="font-medium text-indigo-600">{{ number_format($score, 2) }}%</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        <div class="mt-2 pt-2 border-t border-gray-200">
-                                                            <div class="flex justify-between">
-                                                                <span class="text-xs font-medium text-gray-600">Skor Final:</span>
-                                                                <span class="text-xs font-bold text-indigo-700">{{ number_format($recommendation->ahpResult->final_score * 100, 2) }}%</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <details class="mt-2">
-                                                        <summary class="text-xs text-gray-500 cursor-pointer">Lihat JSON Lengkap</summary>
-                                                        <pre class="whitespace-pre-wrap text-xs text-gray-600 mt-1 p-2 bg-gray-50 rounded">{{ json_encode($ahpDetails, JSON_PRETTY_PRINT) }}</pre>
-                                                    </details>
+                                                <div class="hidden mt-2 -mx-3 -mb-3">
+                                                    @include('admin.components.calculations.ahp-detailed-steps', ['ahpResult' => $recommendation->ahpResult])
                                                 </div>
                                             </div>
                                         @endif
@@ -267,97 +207,15 @@
                                         @if(isset($recommendation->wpResult->calculation_details) && is_array(json_decode($recommendation->wpResult->calculation_details, true)))
                                             <div class="mt-2">
                                                 <button class="text-xs text-green-600 hover:text-green-800 flex items-center" 
-                                                        onclick="document.getElementById('wp-details').classList.toggle('hidden')">
+                                                        onclick="this.nextElementSibling.classList.toggle('hidden')">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                     Lihat Detail Perhitungan
                                                 </button>
                                                 
-                                                <div id="wp-details" class="hidden mt-2 bg-white p-2 rounded border border-gray-200 text-xs">
-                                                    <div class="mb-2">
-                                                        <h6 class="font-medium text-gray-700 mb-1">Detail Perhitungan WP</h6>
-                                                        
-                                                        @php
-                                                            $wpDetails = json_decode($recommendation->wpResult->calculation_details, true);
-                                                        @endphp
-                                                        
-                                                        @if(isset($wpDetails['criteria_weights']))
-                                                            <div class="mb-2">
-                                                                <h6 class="text-xs font-medium text-gray-600">Bobot Kriteria:</h6>
-                                                                <div class="grid grid-cols-2 gap-1 mt-1">
-                                                                    @foreach($wpDetails['criteria_weights'] as $criterion => $weight)
-                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
-                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $criterion)) }}:</span>
-                                                                            <span class="font-medium text-green-600">{{ number_format($weight, 4) }}</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        @if(isset($wpDetails['normalized_values']))
-                                                            <div class="mb-2">
-                                                                <h6 class="text-xs font-medium text-gray-600">Nilai Ternormalisasi:</h6>
-                                                                <div class="grid grid-cols-2 gap-1 mt-1">
-                                                                    @foreach($wpDetails['normalized_values'] as $criterion => $value)
-                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
-                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $criterion)) }}:</span>
-                                                                            <span class="font-medium text-green-600">{{ number_format($value, 4) }}</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        @if(isset($wpDetails['factor_scores']))
-                                                            <div class="mb-2">
-                                                                <h6 class="text-xs font-medium text-gray-600">Skor Faktor:</h6>
-                                                                <div class="grid grid-cols-2 gap-1 mt-1">
-                                                                    @foreach($wpDetails['factor_scores'] as $factor => $score)
-                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
-                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
-                                                                            <span class="font-medium text-green-600">{{ number_format($score, 2) }}%</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        @if(isset($wpDetails['weighted_scores']))
-                                                            <div class="mb-2">
-                                                                <h6 class="text-xs font-medium text-gray-600">Skor Tertimbang:</h6>
-                                                                <div class="grid grid-cols-2 gap-1 mt-1">
-                                                                    @foreach($wpDetails['weighted_scores'] as $factor => $score)
-                                                                        <div class="flex justify-between px-2 py-1 bg-gray-50 rounded">
-                                                                            <span class="text-gray-700">{{ ucfirst(str_replace('_', ' ', $factor)) }}:</span>
-                                                                            <span class="font-medium text-green-600">{{ number_format($score * 100, 2) }}%</span>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                        
-                                                        <div class="mt-2 pt-2 border-t border-gray-200">
-                                                            <div class="flex justify-between mb-1">
-                                                                <span class="text-xs font-medium text-gray-600">Vector S:</span>
-                                                                <span class="text-xs font-medium text-green-700">{{ number_format($recommendation->wpResult->vector_s, 4) }}</span>
-                                                            </div>
-                                                            <div class="flex justify-between mb-1">
-                                                                <span class="text-xs font-medium text-gray-600">Vector V:</span>
-                                                                <span class="text-xs font-medium text-green-700">{{ number_format($recommendation->wpResult->vector_v, 4) }}</span>
-                                                            </div>
-                                                            <div class="flex justify-between">
-                                                                <span class="text-xs font-medium text-gray-600">Skor Akhir:</span>
-                                                                <span class="text-xs font-bold text-green-700">{{ number_format($recommendation->wpResult->final_score * 100, 2) }}%</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <details class="mt-2">
-                                                        <summary class="text-xs text-gray-500 cursor-pointer">Lihat JSON Lengkap</summary>
-                                                        <pre class="whitespace-pre-wrap text-xs text-gray-600 mt-1 p-2 bg-gray-50 rounded">{{ json_encode($wpDetails, JSON_PRETTY_PRINT) }}</pre>
-                                                    </details>
+                                                <div class="hidden mt-2 -mx-3 -mb-3">
+                                                    @include('admin.components.calculations.wp-detailed-steps', ['wpResult' => $recommendation->wpResult])
                                                 </div>
                                             </div>
                                         @endif

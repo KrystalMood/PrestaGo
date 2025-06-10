@@ -68,11 +68,13 @@
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">Format & Periode</h3>
                                 <div class="space-y-4">
                                     <div>
-                                        <label for="report_format" class="block text-sm font-medium text-gray-700">Format Laporan</label>
-                                        <select id="report_format" name="report_format" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                            <option value="pdf">PDF Document</option>
-                                            <option value="excel">Excel Spreadsheet</option>
-                                        </select>
+                                        <input type="hidden" name="report_format" value="excel">
+                                        <div class="flex items-center mb-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            <span class="text-sm font-medium text-gray-700">Format: Excel Spreadsheet (Multiple Sheets)</span>
+                                        </div>
                                     </div>
                                     <div>
                                         <label for="date_range" class="block text-sm font-medium text-gray-700">Periode Waktu</label>

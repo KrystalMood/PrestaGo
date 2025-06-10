@@ -11,6 +11,12 @@ use App\Models\CategoryModel;
 use App\Models\CompetitionModel;
 use Illuminate\Support\Facades\DB;
 use App\Models\PeriodModel;
+use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ReportController extends Controller
 {
@@ -500,7 +506,7 @@ class ReportController extends Controller
     public function generateReport(Request $request)
     {
         $request->validate([
-            'report_format' => 'required|in:pdf,excel',
+            'report_format' => 'required|in:excel',
             'date_range' => 'required|in:current_year,current_semester,last_year,all_time',
             'report_type' => 'required|in:comprehensive,summary',
         ]);
@@ -520,22 +526,31 @@ class ReportController extends Controller
         ]);
 
         $startDate = null;
-        $endDate = now();
+        $endDate = Carbon::now();
         
         switch ($request->date_range) {
             case 'current_year':
-                $startDate = now()->startOfYear();
+                $startDate = Carbon::now()->startOfYear();
                 break;
             case 'current_semester':
-                if (now()->month <= 6) {
-                    $startDate = now()->startOfYear();
+                $currentPeriod = PeriodModel::where('start_date', '<=', Carbon::now())
+                    ->where('end_date', '>=', Carbon::now())
+                    ->first();
+                
+                if ($currentPeriod) {
+                    $startDate = Carbon::parse($currentPeriod->start_date);
+                    $endDate = Carbon::parse($currentPeriod->end_date);
                 } else {
-                    $startDate = now()->setMonth(7)->startOfMonth();
+                    if (Carbon::now()->month <= 6) {
+                        $startDate = Carbon::now()->startOfYear();
+                    } else {
+                        $startDate = Carbon::now()->setMonth(7)->startOfMonth();
+                    }
                 }
                 break;
             case 'last_year':
-                $startDate = now()->subYear()->startOfYear();
-                $endDate = now()->subYear()->endOfYear();
+                $startDate = Carbon::now()->subYear()->startOfYear();
+                $endDate = Carbon::now()->subYear()->endOfYear();
                 break;
             case 'all_time':
                 $startDate = null;
@@ -548,61 +563,305 @@ class ReportController extends Controller
             $query->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
         }
         
-        $achievements = $query->with('user')->get();
+        $achievements = $query->with(['user', 'competition'])->get();
         
-        $dateStr = now()->format('Y-m-d');
+        $studyPrograms = StudyProgramModel::all();
+        $programStats = [];
+        foreach ($studyPrograms as $program) {
+            $totalStudents = UserModel::where('program_studi_id', $program->id)
+                ->where('role', 'MHS')
+                ->count();
+                
+            $programAchievements = AchievementModel::join('users', 'achievements.user_id', '=', 'users.id')
+                ->where('users.program_studi_id', $program->id)
+                ->where('users.role', 'MHS')
+                ->where('achievements.status', 'verified');
+                
+            if ($startDate) {
+                $programAchievements->whereBetween('achievements.date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+            }
+            
+            $achievementCount = $programAchievements->count();
+                
+            $studentsWithAchievements = clone $programAchievements;
+            $studentsWithAchievements = $studentsWithAchievements->distinct('achievements.user_id')
+                ->count('achievements.user_id');
+                
+            $participationRate = $totalStudents > 0 
+                ? ($studentsWithAchievements / $totalStudents) * 100 
+                : 0;
+                
+            $successRate = $studentsWithAchievements > 0 
+                ? ($achievementCount / $studentsWithAchievements) * 100 
+                : 0;
+                
+            $programStats[] = [
+                'name' => $program->name,
+                'students' => $totalStudents,
+                'achievements' => $achievementCount,
+                'participation_rate' => round($participationRate, 1),
+                'success_rate' => round($successRate, 1)
+            ];
+        }
+        
+        $categories = CategoryModel::all();
+        $categoryAchievements = [];
+        
+        foreach ($categories as $category) {
+            $competitionIds = CompetitionModel::where('category_id', $category->id)->pluck('id')->toArray();
+            
+            $achievementCount = 0;
+            if (!empty($competitionIds)) {
+                $categoryQuery = AchievementModel::where('status', 'verified')
+                    ->whereIn('competition_id', $competitionIds);
+                
+                if ($startDate) {
+                    $categoryQuery->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+                }
+                
+                $achievementCount = $categoryQuery->count();
+            }
+            
+            $categoryAchievements[] = [
+                'name' => $category->name,
+                'count' => $achievementCount
+            ];
+        }
+        
+        usort($categoryAchievements, function($a, $b) {
+            return $b['count'] - $a['count'];
+        });
+        
+        $dateStr = Carbon::now()->format('Y-m-d');
         $filename = "achievement-report-{$request->report_type}-{$dateStr}";
         
-        if ($request->report_format === 'pdf') {
-            return $this->generatePdfReport($achievements, $request->report_type, $filename);
-        } else {
-            return $this->generateExcelReport($achievements, $request->report_type, $filename);
+        return $this->generateExcelReport($achievements, $programStats, $categoryAchievements, $request->report_type, $filename);
+    }
+    
+    private function generateExcelReport($achievements, $programStats, $categoryAchievements, $reportType, $filename)
+    {
+        $spreadsheet = new Spreadsheet();
+        
+        $spreadsheet->getProperties()
+            ->setCreator('Achievement Management System')
+            ->setLastModifiedBy('Achievement Management System')
+            ->setTitle('Achievement Report')
+            ->setSubject('Achievement Report')
+            ->setDescription('Achievement report generated on ' . Carbon::now()->format('Y-m-d H:i:s'))
+            ->setKeywords('achievement report')
+            ->setCategory('Report');
+        
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Prestasi');
+        
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4338CA'],
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                ],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ];
+        
+        $headers = ['ID', 'Judul', 'Mahasiswa', 'NIM', 'Kompetisi', 'Tipe', 'Tingkat', 'Tanggal', 'Status'];
+        $sheet->fromArray([$headers], NULL, 'A1');
+        $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
+        
+        foreach(range('A', 'I') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
         }
-    }
-    
-    private function generatePdfReport($achievements, $reportType, $filename)
-    {
-        $html = view('admin.reports.templates.pdf', [
-            'achievements' => $achievements,
-            'reportType' => $reportType,
-            'generatedAt' => now()->format('Y-m-d H:i:s'),
-        ])->render();
         
-        $tempFile = tempnam(sys_get_temp_dir(), 'report');
-        file_put_contents($tempFile, $html);
-        
-        return response()->download($tempFile, $filename . '.pdf', [
-            'Content-Type' => 'application/pdf',
-        ])->deleteFileAfterSend(true);
-    }
-    
-    private function generateExcelReport($achievements, $reportType, $filename)
-    {
-        $tempFile = tempnam(sys_get_temp_dir(), 'report');
-        $file = fopen($tempFile, 'w');
-        
-        fputcsv($file, ['ID', 'Title', 'Student', 'Competition', 'Type', 'Level', 'Date', 'Status']);
-        
+        $row = 2;
         foreach ($achievements as $achievement) {
-            fputcsv($file, [
-                $achievement->id,
-                $achievement->title,
-                $achievement->user->name ?? 'Unknown',
-                $achievement->competition_name,
-                $achievement->type,
-                $achievement->level,
-                $achievement->date,
-                $achievement->status,
-            ]);
+            $sheet->setCellValue('A' . $row, $achievement->id);
+            $sheet->setCellValue('B' . $row, $achievement->title);
+            $sheet->setCellValue('C' . $row, $achievement->user->name ?? 'Unknown');
+            $sheet->setCellValue('D' . $row, $achievement->user->nim ?? '-');
+            $sheet->setCellValue('E' . $row, $achievement->competition_name ?? ($achievement->competition->name ?? '-'));
+            $sheet->setCellValue('F' . $row, $achievement->type);
+            $sheet->setCellValue('G' . $row, $achievement->level);
+            $sheet->setCellValue('H' . $row, $achievement->date);
+            $sheet->setCellValue('I' . $row, $achievement->status);
+            $row++;
         }
         
-        fclose($file);
+        $dataRange = 'A2:I' . ($row - 1);
+        $sheet->getStyle($dataRange)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                ],
+            ],
+        ]);
         
-        return response()->download($tempFile, $filename . '.csv', [
-            'Content-Type' => 'text/csv',
+        for ($i = 2; $i < $row; $i++) {
+            if ($i % 2 == 0) {
+                $sheet->getStyle('A' . $i . ':I' . $i)->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'F3F4F6'],
+                    ],
+                ]);
+            }
+        }
+        
+        if ($reportType === 'summary') {
+            $summarySheet = $spreadsheet->createSheet();
+            $summarySheet->setTitle('Ringkasan');
+            
+            $summarySheet->setCellValue('A1', 'RINGKASAN PRESTASI');
+            $summarySheet->mergeCells('A1:B1');
+            $summarySheet->getStyle('A1:B1')->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'size' => 14,
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '4338CA'],
+                ],
+                'font' => [
+                    'color' => ['rgb' => 'FFFFFF'],
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                ],
+            ]);
+            
+            $summarySheet->setCellValue('A2', 'Total Prestasi:');
+            $summarySheet->setCellValue('B2', $achievements->count());
+            
+            $summarySheet->setCellValue('A3', 'Tingkat Internasional:');
+            $summarySheet->setCellValue('B3', $achievements->where('level', 'Internasional')->count());
+            
+            $summarySheet->setCellValue('A4', 'Tingkat Nasional:');
+            $summarySheet->setCellValue('B4', $achievements->where('level', 'Nasional')->count());
+            
+            $summarySheet->setCellValue('A5', 'Tingkat Regional:');
+            $summarySheet->setCellValue('B5', $achievements->where('level', 'Regional')->count());
+            
+            $summarySheet->setCellValue('A6', 'Tingkat Provinsi:');
+            $summarySheet->setCellValue('B6', $achievements->where('level', 'Provinsi')->count());
+
+            $summarySheet->setCellValue('A7', 'Tingkat Lokal:');
+            $summarySheet->setCellValue('B7', $achievements->where('level', 'Lokal')->count());
+            
+            $summarySheet->getStyle('A2:B7')->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                    ],
+                ],
+            ]);
+            
+            $summarySheet->getColumnDimension('A')->setAutoSize(true);
+            $summarySheet->getColumnDimension('B')->setAutoSize(true);
+        }
+        
+        $programSheet = $spreadsheet->createSheet();
+        $programSheet->setTitle('Program Studi');
+        
+        $programSheet->setCellValue('A1', 'Program Studi');
+        $programSheet->setCellValue('B1', 'Jumlah Mahasiswa');
+        $programSheet->setCellValue('C1', 'Prestasi');
+        $programSheet->setCellValue('D1', 'Tingkat Partisipasi (%)');
+        $programSheet->setCellValue('E1', 'Tingkat Keberhasilan (%)');
+        
+        $programSheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+        
+        $row = 2;
+        foreach ($programStats as $program) {
+            $programSheet->setCellValue('A' . $row, $program['name']);
+            $programSheet->setCellValue('B' . $row, $program['students']);
+            $programSheet->setCellValue('C' . $row, $program['achievements']);
+            $programSheet->setCellValue('D' . $row, $program['participation_rate']);
+            $programSheet->setCellValue('E' . $row, $program['success_rate']);
+            $row++;
+        }
+        
+        $dataRange = 'A2:E' . ($row - 1);
+        $programSheet->getStyle($dataRange)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                ],
+            ],
+        ]);
+        
+        for ($i = 2; $i < $row; $i++) {
+            if ($i % 2 == 0) {
+                $programSheet->getStyle('A' . $i . ':E' . $i)->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'F3F4F6'],
+                    ],
+                ]);
+            }
+        }
+        
+        foreach(range('A', 'E') as $col) {
+            $programSheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        $categorySheet = $spreadsheet->createSheet();
+        $categorySheet->setTitle('Kategori');
+        
+        $categorySheet->setCellValue('A1', 'Kategori');
+        $categorySheet->setCellValue('B1', 'Jumlah Prestasi');
+        
+        $categorySheet->getStyle('A1:B1')->applyFromArray($headerStyle);
+        
+        $row = 2;
+        foreach ($categoryAchievements as $category) {
+            $categorySheet->setCellValue('A' . $row, $category['name']);
+            $categorySheet->setCellValue('B' . $row, $category['count']);
+            $row++;
+        }
+        
+        $dataRange = 'A2:B' . ($row - 1);
+        $categorySheet->getStyle($dataRange)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                ],
+            ],
+        ]);
+        
+        for ($i = 2; $i < $row; $i++) {
+            if ($i % 2 == 0) {
+                $categorySheet->getStyle('A' . $i . ':B' . $i)->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'F3F4F6'],
+                    ],
+                ]);
+            }
+        }
+        
+        foreach(range('A', 'B') as $col) {
+            $categorySheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'excel');
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($tempFile);
+        
+        return response()->download($tempFile, $filename . '.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);
     }
-
+    
     private function calculateChange($current, $previous)
     {
         if ($previous == 0) {
