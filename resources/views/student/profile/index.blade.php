@@ -37,7 +37,7 @@
                             <div class="flex flex-col items-center">
                                 <div class="mb-4 relative">
                                     <div class="h-36 w-36 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
-                                        <img id="preview-photo" src="{{ $user->photo ? asset('storage/' . $user->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=4338ca&color=fff&size=150' }}" 
+                                        <img id="preview-photo" src="{{ $user->photo ? asset('storage/photos/' . $user->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=4338ca&color=fff&size=150' }}" 
                                             class="h-full w-full object-cover" alt="{{ $user->name }}">
                                     </div>
                                     <button type="button" id="upload-photo-btn" class="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full shadow-md hover:bg-blue-700 transition-colors">

@@ -77,7 +77,7 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 @if($verification->user && $verification->user->photo)
-                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $verification->user->photo) }}" alt="{{ $verification->user->name }}" loading="lazy">
+                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/photos/' . $verification->user->photo) }}" alt="{{ $verification->user->name }}" loading="lazy">
                                 @else
                                     <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($verification->user ? $verification->user->name : 'User') }}&background=4338ca&color=fff" alt="{{ $verification->user ? $verification->user->name : 'User' }}" loading="lazy">
                                 @endif

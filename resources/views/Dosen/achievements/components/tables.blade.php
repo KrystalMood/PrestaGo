@@ -51,7 +51,7 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 @if($achievement->user && $achievement->user->photo)
-                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $achievement->user->photo) }}" alt="{{ $achievement->user->name }}" loading="lazy">
+                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/photos/' . $achievement->user->photo) }}" alt="{{ $achievement->user->name }}" loading="lazy">
                                 @else
                                     <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($achievement->user ? $achievement->user->name : 'User') }}&background=4338ca&color=fff" alt="{{ $achievement->user ? $achievement->user->name : 'User' }}" loading="lazy">
                                 @endif

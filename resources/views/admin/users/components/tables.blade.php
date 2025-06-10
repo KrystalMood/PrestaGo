@@ -46,7 +46,7 @@
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
                                 @if($user->photo)
-                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/' . $user->photo) }}" alt="{{ $user->name }}" loading="lazy">
+                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('storage/photos/' . $user->photo) }}" alt="{{ $user->name }}" loading="lazy">
                                 @else
                                     <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=4338ca&color=fff" alt="{{ $user->name }}" loading="lazy">
                                 @endif
