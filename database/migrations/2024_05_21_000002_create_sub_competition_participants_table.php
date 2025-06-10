@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('mentor_id')->nullable();
             $table->string('team_name')->nullable();
             $table->string('status', 20)->default('registered');
+            $table->string('status_mentor', 20)->default('pending'); // Status for mentor approval
             $table->timestamps();
             
             $table->foreign('sub_competition_id')->references('id')->on('sub_competitions')->onDelete('cascade');

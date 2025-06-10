@@ -215,7 +215,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::prefix('students')->name('students.')->group(function () {
             Route::get('/', [App\Http\Controllers\dosen\StudentsController::class, 'index'])->name('index');
-            Route::get('/{id}', [App\Http\Controllers\dosen\StudentsController::class, 'show'])->name('show');
+            Route::get('/{id}/details', [App\Http\Controllers\dosen\StudentsController::class, 'getDetails'])->name('details');
+            Route::post('/{id}/details/approve', [App\Http\Controllers\dosen\StudentsController::class, 'approve'])->name('approve');
         });
 
         Route::prefix('achievements')->name('achievements.')->group(function () {

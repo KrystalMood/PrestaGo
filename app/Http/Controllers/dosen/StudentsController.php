@@ -32,6 +32,7 @@ class StudentsController extends Controller
                     'competition' => $item->subCompetition->name ?? '-',         // ganti 'nama' jadi 'name'
                     'jenis' => 'Sub Kompetisi',
                     'status' => $item->status ?? '-',
+                    'status_mentor' => $item->status_mentor ?? '-',
                 ];
             });
 
@@ -48,6 +49,7 @@ class StudentsController extends Controller
                     'competition' => $item->competition->name ?? '-',            // ganti 'nama' jadi 'name'
                     'jenis' => 'Kompetisi',
                     'status' => $item->status ?? '-',
+                    'status_mentor' => $item->status_mentor ?? '-',
                 ];
             });
 
@@ -65,6 +67,77 @@ class StudentsController extends Controller
             'regristedStudents',
             'onGoingStudents'
         ));
+    }
+
+    public function getDetails(Request $request, $id)
+    {
+        $jenis = $request->query('jenis');
+
+        if ($jenis == 'Kompetisi') {
+            // Ambil dari CompetitionParticipantModel
+            $student = CompetitionParticipantModel::with(['user.programStudi', 'competition', 'mentor'])
+                ->where('id', $id)
+                ->first();
+            
+            if (!$student) {
+                return redirect()->route('dosen.students.index')->with('error', 'Data mahasiswa tidak ditemukan');
+            }
+
+            $team = (object)[
+                'id' => $student->id,
+                'name' => $student->team_name ?? $student->user->name,
+                'members' => [[
+                    'name' => $student->user->name,
+                    'nim' => $student->user->nim,
+                    'role' => 'Ketua'
+                ]]
+            ];
+            
+            $competition = $student->competition;
+            $adminStatus = $student->status;
+            
+        } else {
+            // Ambil dari SubCompetitionParticipantModel
+            $student = SubCompetitionParticipantModel::with(['user.programStudi', 'subCompetition.competition', 'mentor'])
+                ->where('id', $id)
+                ->first();
+            
+            if (!$student) {
+                return redirect()->route('dosen.students.index')->with('error', 'Data mahasiswa tidak ditemukan');
+            }
+
+            $team = (object)[
+                'id' => $student->id,
+                'name' => $student->team_name ?? $student->user->name,
+                'members' => [[
+                    'name' => $student->user->name,
+                    'photo' => $student->user->photo,
+                    'nim' => $student->user->nim,
+                    'role' => 'Ketua',
+                    'team_member' => json_decode($student->team_members ?? '[]', true)
+                ]]
+            ];
+
+            // Handle team members if they exist
+            // $teamMemberIds = is_array($student->team_members) ? $student->team_members : json_decode($student->team_members, true);
+            // if ($teamMemberIds && is_array($teamMemberIds)) {
+            //     $teamMembers = SubCompetitionParticipantModel::whereIn('id', $teamMemberIds)
+            //         ->with(['user'])
+            //         ->get(['id', 'user_id']);
+            //     foreach ($teamMembers as $member) {
+            //         $team->members[] = [
+            //             'name' => $member->name,
+            //             'nim' => $member->nim,
+            //             'role' => 'Anggota'
+            //         ];
+            //     }
+            // }
+
+            $competition = $student->subCompetition;
+            $adminStatus = $student->status;
+        }
+
+        return view('Dosen.students.components.show-student', compact('team', 'competition', 'adminStatus','id'));
     }
 
     public function show(Request $request, $id)
@@ -125,6 +198,27 @@ class StudentsController extends Controller
             ];
 
         return response()->json(['success' => true, 'student' => $data]);
+    }
+
+    public function approve(Request $request, $id)
+    {
+        $jenis = $request->query('jenis');
+
+        if ($jenis == 'Kompetisi') {
+            $student = CompetitionParticipantModel::find($id);
+        } else {
+            $student = SubCompetitionParticipantModel::find($id);
+        }
+
+        if (!$student) {
+            return redirect()->route('dosen.students.index')->with('error', 'Data mahasiswa tidak ditemukan');
+        }
+
+        // Update status
+        $student->status_mentor = $request['approval'];
+        $student->save();
+
+        return redirect()->route('lecturer.students.index')->with('success', 'Status mahasiswa berhasil diperbarui');
     }
 
 }
