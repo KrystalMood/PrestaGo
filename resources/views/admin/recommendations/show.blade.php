@@ -96,9 +96,9 @@
                     <div class="border-t border-gray-200 pt-4">
                         <h4 class="text-sm font-medium text-gray-500 mb-2">Hasil Perhitungan DSS</h4>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4">
                             <!-- AHP Result -->
-                            <div class="bg-gray-50 p-3 rounded-lg {{ $isForStudent ? 'ring-2 ring-indigo-200' : 'opacity-70' }}">
+                            <div class="bg-gray-50 p-3 rounded-lg {{ $isForStudent ? '' : 'hidden' }}">
                                 <div class="flex justify-between items-center mb-2">
                                     <h5 class="text-sm font-medium text-gray-700 flex items-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -161,7 +161,7 @@
                             </div>
                             
                             <!-- WP Result -->
-                            <div class="bg-gray-50 p-3 rounded-lg {{ !$isForStudent ? 'ring-2 ring-green-200' : 'opacity-70' }}">
+                            <div class="bg-gray-50 p-3 rounded-lg {{ !$isForStudent ? '' : 'hidden' }}">
                                 <div class="flex justify-between items-center mb-2">
                                     <h5 class="text-sm font-medium text-gray-700 flex items-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

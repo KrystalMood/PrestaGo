@@ -240,11 +240,14 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{competition}/sub-competitions/{sub_competition}/participants', [App\Http\Controllers\dosen\CompetitionController::class, 'storeParticipant'])->name('sub-competitions.participants.store');
             Route::put('/{competition}/sub-competitions/{sub_competition}/participants/{participant}/update-status', [App\Http\Controllers\dosen\CompetitionController::class, 'updateParticipantStatus'])->name('sub-competitions.participants.update-status');
             
+            Route::match(['get', 'post'], '/{competition}/sub-competitions/{sub_competition}/apply', [App\Http\Controllers\dosen\CompetitionController::class, 'applySubCompetition'])->name('sub-competitions.apply');
+            
             // Sub-competition skills routes
             Route::get('/{competition}/sub-competitions/{sub_competition}/skills', [App\Http\Controllers\dosen\CompetitionController::class, 'skills'])->name('sub-competitions.skills');
             Route::post('/{competition}/sub-competitions/{sub_competition}/skills', [App\Http\Controllers\dosen\CompetitionController::class, 'storeSkill'])->name('sub-competitions.skills.store');
             Route::put('/{competition}/sub-competitions/{sub_competition}/skills/{skill}', [App\Http\Controllers\dosen\CompetitionController::class, 'updateSkill'])->name('sub-competitions.skills.update');
             Route::delete('/{competition}/sub-competitions/{sub_competition}/skills/{skill}', [App\Http\Controllers\dosen\CompetitionController::class, 'destroySkill'])->name('sub-competitions.skills.destroy');
+            Route::put('/{competition}/sub-competitions/{sub_competition}', [App\Http\Controllers\dosen\CompetitionController::class, 'updateSubCompetition'])->name('sub-competitions.update');
         });
         
         Route::prefix('profile')->name('profile.')->group(function () {

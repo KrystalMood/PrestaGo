@@ -1,3 +1,174 @@
+<style>
+    /* Custom Select Styling */
+    .custom-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .custom-select:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        outline: none;
+    }
+    
+    .custom-select:hover:not(:focus) {
+        border-color: #a5b4fc;
+    }
+    
+    /* Dropdown container styling */
+    .select-container {
+        position: relative;
+    }
+    
+    /* Disabled state styling */
+    .custom-select:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+    
+    /* Custom Range Input Styling */
+    input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 5px;
+        background: #e5e7eb;
+        outline: none;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #6366f1;
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #6366f1;
+        cursor: pointer;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+        background: #4f46e5;
+        transform: scale(1.1);
+    }
+    
+    input[type="range"]::-moz-range-thumb:hover {
+        background: #4f46e5;
+        transform: scale(1.1);
+    }
+    
+    input[type="range"]:focus {
+        outline: none;
+    }
+    
+    input[type="range"]:focus::-webkit-slider-thumb {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    
+    input[type="range"]:focus::-moz-range-thumb {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    
+    /* Range value display */
+    .range-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 24px;
+        padding: 0 6px;
+        border-radius: 12px;
+        background-color: #f3f4f6;
+        color: #4b5563;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    /* Form section styling */
+    .form-section {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-section:focus-within {
+        border-color: #a5b4fc;
+        background-color: rgba(237, 233, 254, 0.1);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin: 1.5rem -1.5rem 1.5rem -1.5rem;
+    }
+    
+    .form-section-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 1rem;
+    }
+    
+    /* Radio button styling */
+    .form-radio {
+        width: 1rem;
+        height: 1rem;
+    }
+    
+    /* Form field styling */
+    .form-field {
+        margin-bottom: 1.5rem;
+        transition: all 0.2s ease;
+    }
+    
+    .form-field:last-child {
+        margin-bottom: 0;
+    }
+    
+    .form-field:focus-within {
+        transform: translateX(4px);
+    }
+    
+    .form-field-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Submit button styling */
+    .submit-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+</style>
+
 @component('layouts.admin', ['title' => 'Rekomendasi Otomatis'])
     @include('admin.components.ui.page-header', [
         'title' => 'Rekomendasi Otomatis',
@@ -24,14 +195,16 @@
                 <form id="recommendation-form" action="{{ route('admin.recommendations.generate') }}" method="POST">
                     @csrf
                     <div class="space-y-6">
-                        <div>
-                            <label for="competition" class="block text-sm font-medium text-gray-700 mb-1">Kompetisi</label>
-                            <select id="competition" name="competition_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">-- Pilih Kompetisi --</option>
-                                @foreach($competitions as $competition)
-                                    <option value="{{ $competition->id }}">{{ $competition->name }} ({{ ucfirst($competition->level) }})</option>
-                                @endforeach
-                            </select>
+                        <div class="form-field">
+                            <label for="competition" class="form-field-label">Kompetisi</label>
+                            <div class="select-container">
+                                <select id="competition" name="competition_id" class="custom-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">-- Pilih Kompetisi --</option>
+                                    @foreach($competitions as $competition)
+                                        <option value="{{ $competition->id }}">{{ $competition->name }} ({{ ucfirst($competition->level) }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <p class="mt-1 text-xs text-gray-500">
                                 Pilih kompetisi spesifik, atau biarkan kosong untuk menghasilkan rekomendasi untuk semua kompetisi aktif
                             </p>
@@ -39,9 +212,11 @@
                         
                         <div id="sub-competition-container">
                             <label for="sub_competition_id" class="block text-sm font-medium text-gray-700 mb-1">Sub Kompetisi</label>
-                            <select id="sub_competition_id" name="sub_competition_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">-- Semua Sub Kompetisi --</option>
-                            </select>
+                            <div class="select-container">
+                                <select id="sub_competition_id" name="sub_competition_id" class="custom-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">-- Semua Sub Kompetisi --</option>
+                                </select>
+                            </div>
                             <p class="mt-1 text-xs text-gray-500">
                                 Pilih sub kompetisi spesifik, atau biarkan kosong untuk semua sub kompetisi dari kompetisi yang dipilih
                             </p>
@@ -49,19 +224,21 @@
                         
                         <div>
                             <label for="program" class="block text-sm font-medium text-gray-700 mb-1">Program Studi</label>
-                            <select id="program" name="program_studi_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="">-- Semua Program Studi --</option>
-                                @foreach($programs as $program)
-                                    <option value="{{ $program->id }}">{{ $program->name }}</option>
-                                @endforeach
-                            </select>
+                            <div class="select-container">
+                                <select id="program" name="program_studi_id" class="custom-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="">-- Semua Program Studi --</option>
+                                    @foreach($programs as $program)
+                                        <option value="{{ $program->id }}">{{ $program->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         
                         <div>
                             <label for="threshold" class="block text-sm font-medium text-gray-700 mb-1">Batas Minimum Skor Kecocokan (%)</label>
                             <div class="flex items-center">
-                                <input type="range" id="threshold" name="threshold" min="0" max="100" value="60" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                                <span id="threshold-value" class="ml-2 text-sm text-gray-600 w-10">60%</span>
+                                <input type="range" id="threshold" name="threshold" min="0" max="100" value="60" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+                                <span id="threshold-value" class="ml-2 range-value">60%</span>
                             </div>
                             <p class="mt-1 text-xs text-gray-500">
                                 Hanya rekomendasikan mahasiswa dengan skor kecocokan di atas nilai ini
@@ -70,33 +247,35 @@
                         
                         <div>
                             <label for="max_recommendations" class="block text-sm font-medium text-gray-700 mb-1">Maksimum Rekomendasi per Mahasiswa</label>
-                            <select id="max_recommendations" name="max_recommendations" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                <option value="1">1 rekomendasi</option>
-                                <option value="2">2 rekomendasi</option>
-                                <option value="3" selected>3 rekomendasi</option>
-                                <option value="5">5 rekomendasi</option>
-                                <option value="10">10 rekomendasi</option>
-                            </select>
+                            <div class="select-container">
+                                <select id="max_recommendations" name="max_recommendations" class="custom-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="1">1 rekomendasi</option>
+                                    <option value="2">2 rekomendasi</option>
+                                    <option value="3" selected>3 rekomendasi</option>
+                                    <option value="5">5 rekomendasi</option>
+                                    <option value="10">10 rekomendasi</option>
+                                </select>
+                            </div>
                             <p class="mt-1 text-xs text-gray-500">
                                 Berapa banyak rekomendasi kompetisi yang dapat diterima oleh satu mahasiswa
                             </p>
                         </div>
                         
                         <div class="border-t border-gray-200 pt-4">
-                            <h3 class="text-sm font-medium text-gray-700 mb-3">Metode DSS</h3>
+                            <h3 class="text-sm font-medium text-gray-700 mb-3 form-section-title">Metode DSS</h3>
                             <div class="flex flex-col space-y-3">
                                 <label class="inline-flex items-center">
-                                    <input type="radio" class="form-radio" name="dss_method" value="ahp" checked>
+                                    <input type="radio" class="form-radio text-indigo-600 focus:ring-indigo-500" name="dss_method" value="ahp" checked>
                                     <span class="ml-2">AHP (Analytical Hierarchy Process)</span>
                                     <span class="ml-2 text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800">Untuk Mahasiswa</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="radio" class="form-radio" name="dss_method" value="wp">
+                                    <input type="radio" class="form-radio text-indigo-600 focus:ring-indigo-500" name="dss_method" value="wp">
                                     <span class="ml-2">WP (Weighted Product)</span>
                                     <span class="ml-2 text-xs px-2.5 py-0.5 rounded-full bg-green-100 text-green-800">Untuk Dosen</span>
                                 </label>
                                 <label class="inline-flex items-center">
-                                    <input type="radio" class="form-radio" name="dss_method" value="hybrid">
+                                    <input type="radio" class="form-radio text-indigo-600 focus:ring-indigo-500" name="dss_method" value="hybrid">
                                     <span class="ml-2">Hybrid (AHP + WP)</span>
                                     <span class="ml-2 text-xs px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800">Untuk Keduanya</span>
                                 </label>
@@ -107,14 +286,14 @@
                         </div>
 
                         <!-- AHP Configuration Section -->
-                        <div id="ahp-config" class="border-t border-gray-200 pt-4">
-                            <h3 class="text-sm font-medium text-gray-700 mb-3">Konfigurasi AHP (Untuk Rekomendasi Mahasiswa)</h3>
+                        <div id="ahp-config" class="form-section">
+                            <h3 class="form-section-title">Konfigurasi AHP (Untuk Rekomendasi Mahasiswa)</h3>
                             
                             <div class="mb-4">
                                 <label for="ahp_consistency_threshold" class="block text-sm font-medium text-gray-700 mb-1">Batas Rasio Konsistensi</label>
                                 <div class="flex items-center">
-                                    <input type="range" id="ahp_consistency_threshold" name="ahp_consistency_threshold" min="0" max="0.2" step="0.01" value="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                                    <span id="ahp_consistency_threshold_value" class="ml-2 text-sm text-gray-600 w-10">0.1</span>
+                                    <input type="range" id="ahp_consistency_threshold" name="ahp_consistency_threshold" min="0" max="0.2" step="0.01" value="0.1" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
+                                    <span id="ahp_consistency_threshold_value" class="ml-2 range-value">0.1</span>
                                 </div>
                                 <p class="mt-1 text-xs text-gray-500">
                                     Nilai maksimum rasio konsistensi yang diterima (standar: 0.1)
@@ -127,41 +306,41 @@
                                     <div>
                                         <label for="ahp_priority_skills" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Keterampilan</span>
-                                            <span id="ahp_priority_skills_value">5</span>
+                                            <span id="ahp_priority_skills_value" class="range-value">5</span>
                                         </label>
-                                        <input type="range" id="ahp_priority_skills" name="ahp_priority_skills" min="1" max="9" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_skills" name="ahp_priority_skills" min="1" max="9" value="5" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="ahp_priority_achievements" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Prestasi</span>
-                                            <span id="ahp_priority_achievements_value">4</span>
+                                            <span id="ahp_priority_achievements_value" class="range-value">4</span>
                                         </label>
-                                        <input type="range" id="ahp_priority_achievements" name="ahp_priority_achievements" min="1" max="9" value="4" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_achievements" name="ahp_priority_achievements" min="1" max="9" value="4" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="ahp_priority_interests" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Minat</span>
-                                            <span id="ahp_priority_interests_value">4</span>
+                                            <span id="ahp_priority_interests_value" class="range-value">4</span>
                                         </label>
-                                        <input type="range" id="ahp_priority_interests" name="ahp_priority_interests" min="1" max="9" value="4" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_interests" name="ahp_priority_interests" min="1" max="9" value="4" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="ahp_priority_deadline" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Tenggat Waktu</span>
-                                            <span id="ahp_priority_deadline_value">3</span>
+                                            <span id="ahp_priority_deadline_value" class="range-value">3</span>
                                         </label>
-                                        <input type="range" id="ahp_priority_deadline" name="ahp_priority_deadline" min="1" max="9" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_deadline" name="ahp_priority_deadline" min="1" max="9" value="3" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="ahp_priority_competition_level" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Tingkat Lomba</span>
-                                            <span id="ahp_priority_competition_level_value">6</span>
+                                            <span id="ahp_priority_competition_level_value" class="range-value">6</span>
                                         </label>
-                                        <input type="range" id="ahp_priority_competition_level" name="ahp_priority_competition_level" min="1" max="9" value="6" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="ahp_priority_competition_level" name="ahp_priority_competition_level" min="1" max="9" value="6" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                 </div>
                                 <p class="mt-1 text-xs text-gray-500">
@@ -171,49 +350,49 @@
                         </div>
                         
                         <!-- WP Configuration Section -->
-                        <div id="wp-config" class="border-t border-gray-200 pt-4 hidden">
-                            <h3 class="text-sm font-medium text-gray-700 mb-3">Konfigurasi Weighted Product</h3>
+                        <div id="wp-config" class="form-section hidden">
+                            <h3 class="form-section-title">Konfigurasi Weighted Product</h3>
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Bobot Kriteria WP</label>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                     <div>
                                         <label for="wp_weight_skills" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Keterampilan</span>
-                                            <span id="wp_weight_skills_value">0.3</span>
+                                            <span id="wp_weight_skills_value" class="range-value">0.3</span>
                                         </label>
-                                        <input type="range" id="wp_weight_skills" name="wp_weight_skills" min="0.1" max="1" step="0.1" value="0.3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="wp_weight_skills" name="wp_weight_skills" min="0.1" max="1" step="0.1" value="0.3" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="wp_weight_interests" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Minat</span>
-                                            <span id="wp_weight_interests_value">0.2</span>
+                                            <span id="wp_weight_interests_value" class="range-value">0.2</span>
                                         </label>
-                                        <input type="range" id="wp_weight_interests" name="wp_weight_interests" min="0.1" max="1" step="0.1" value="0.2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="wp_weight_interests" name="wp_weight_interests" min="0.1" max="1" step="0.1" value="0.2" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="wp_weight_competition_level" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Tingkat Lomba</span>
-                                            <span id="wp_weight_competition_level_value">0.2</span>
+                                            <span id="wp_weight_competition_level_value" class="range-value">0.2</span>
                                         </label>
-                                        <input type="range" id="wp_weight_competition_level" name="wp_weight_competition_level" min="0.1" max="1" step="0.1" value="0.2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="wp_weight_competition_level" name="wp_weight_competition_level" min="0.1" max="1" step="0.1" value="0.2" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="wp_weight_deadline" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Tenggat Waktu</span>
-                                            <span id="wp_weight_deadline_value">0.2</span>
+                                            <span id="wp_weight_deadline_value" class="range-value">0.2</span>
                                         </label>
-                                        <input type="range" id="wp_weight_deadline" name="wp_weight_deadline" min="0.1" max="1" step="0.1" value="0.2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="wp_weight_deadline" name="wp_weight_deadline" min="0.1" max="1" step="0.1" value="0.2" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                     
                                     <div>
                                         <label for="wp_weight_activity_rating" class="flex justify-between items-center text-sm text-gray-700">
                                             <span>Rating Dosen</span>
-                                            <span id="wp_weight_activity_rating_value">0.1</span>
+                                            <span id="wp_weight_activity_rating_value" class="range-value">0.1</span>
                                         </label>
-                                        <input type="range" id="wp_weight_activity_rating" name="wp_weight_activity_rating" min="0.1" max="1" step="0.1" value="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="range" id="wp_weight_activity_rating" name="wp_weight_activity_rating" min="0.1" max="1" step="0.1" value="0.1" class="w-full h-2 rounded-lg appearance-none cursor-pointer">
                                     </div>
                                 </div>
                                 <p class="mt-1 text-xs text-gray-500">
@@ -229,7 +408,7 @@
                         </div>
                         
                         <div class="flex justify-end">
-                            <button type="submit" id="generate-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button type="submit" id="generate-btn" class="submit-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:scale-105">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                 </svg>
@@ -402,7 +581,7 @@
             <div class="mb-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
                 <p class="text-sm text-blue-800">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                     </svg>
                     Rekomendasi ini baru dihasilkan dan belum disimpan dalam database. Gunakan tombol "Simpan" untuk menyimpan rekomendasi yang dipilih atau "Simpan Semua" untuk menyimpan semua rekomendasi.
                 </p>
@@ -516,7 +695,7 @@
                                             <input type="hidden" name="match_score" value="{{ $rec['match_score'] }}">
                                             <button type="submit" class="text-indigo-600 hover:text-indigo-900" title="Simpan Rekomendasi">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z" />
+                                                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                                 </svg>
                                             </button>
                                         </form>
@@ -536,6 +715,8 @@
                     </tbody>
                 </table>
             </div>
+            <!-- Pagination container for session recommendations -->
+            <div id="recommendation-pagination-session" class="mt-4 flex justify-center"></div>
             
             <div class="mt-4 flex justify-between">
                 <span class="text-sm text-gray-600" id="session-recommendations-count">{{ count(session('generated_recommendations')) }} rekomendasi dihasilkan</span>
@@ -619,85 +800,120 @@ document.addEventListener('DOMContentLoaded', function() {
     wpRadio.addEventListener('change', updateMethodConfig);
     hybridRadio.addEventListener('change', updateMethodConfig);
     
+    // Threshold slider
+    const thresholdSlider = document.getElementById('threshold');
+    const thresholdValue = document.getElementById('threshold-value');
+    
+    thresholdSlider.addEventListener('input', function() {
+        thresholdValue.textContent = this.value + '%';
+    });
+    
+    // AHP consistency threshold slider
+    const ahpConsistencySlider = document.getElementById('ahp_consistency_threshold');
+    const ahpConsistencyValue = document.getElementById('ahp_consistency_threshold_value');
+    
+    ahpConsistencySlider.addEventListener('input', function() {
+        ahpConsistencyValue.textContent = this.value;
+    });
+    
+    // AHP priority sliders
+    const ahpPrioritySliders = [
+        { slider: document.getElementById('ahp_priority_skills'), value: document.getElementById('ahp_priority_skills_value') },
+        { slider: document.getElementById('ahp_priority_achievements'), value: document.getElementById('ahp_priority_achievements_value') },
+        { slider: document.getElementById('ahp_priority_interests'), value: document.getElementById('ahp_priority_interests_value') },
+        { slider: document.getElementById('ahp_priority_deadline'), value: document.getElementById('ahp_priority_deadline_value') },
+        { slider: document.getElementById('ahp_priority_competition_level'), value: document.getElementById('ahp_priority_competition_level_value') }
+    ];
+    
+    ahpPrioritySliders.forEach(item => {
+        item.slider.addEventListener('input', function() {
+            item.value.textContent = this.value;
+        });
+    });
+    
     // WP weight sliders
     const wpWeightSkills = document.getElementById('wp_weight_skills');
     const wpWeightInterests = document.getElementById('wp_weight_interests');
     const wpWeightCompetitionLevel = document.getElementById('wp_weight_competition_level');
+    const wpWeightDeadline = document.getElementById('wp_weight_deadline');
+    const wpWeightActivityRating = document.getElementById('wp_weight_activity_rating');
     const wpWeightSkillsValue = document.getElementById('wp_weight_skills_value');
     const wpWeightInterestsValue = document.getElementById('wp_weight_interests_value');
     const wpWeightCompetitionLevelValue = document.getElementById('wp_weight_competition_level_value');
+    const wpWeightDeadlineValue = document.getElementById('wp_weight_deadline_value');
+    const wpWeightActivityRatingValue = document.getElementById('wp_weight_activity_rating_value');
     const wpTotalWeight = document.getElementById('wp_total_weight');
     
     function updateWPWeights() {
         const skillsWeight = parseFloat(wpWeightSkills.value);
         const interestsWeight = parseFloat(wpWeightInterests.value);
         const competitionLevelWeight = parseFloat(wpWeightCompetitionLevel.value);
+        const deadlineWeight = parseFloat(wpWeightDeadline.value);
+        const activityRatingWeight = parseFloat(wpWeightActivityRating.value);
         
         wpWeightSkillsValue.textContent = skillsWeight.toFixed(1);
         wpWeightInterestsValue.textContent = interestsWeight.toFixed(1);
         wpWeightCompetitionLevelValue.textContent = competitionLevelWeight.toFixed(1);
+        wpWeightDeadlineValue.textContent = deadlineWeight.toFixed(1);
+        wpWeightActivityRatingValue.textContent = activityRatingWeight.toFixed(1);
         
         // Ensure total is 1.0
-        const total = skillsWeight + interestsWeight + competitionLevelWeight;
+        const total = skillsWeight + interestsWeight + competitionLevelWeight + deadlineWeight + activityRatingWeight;
         wpTotalWeight.textContent = total.toFixed(1);
         
         // Update visual feedback on total
-        if (total === 1.0) {
+        if (Math.abs(total - 1.0) < 0.01) {
             wpTotalWeight.classList.remove('bg-red-100', 'text-red-800');
             wpTotalWeight.classList.add('bg-green-100', 'text-green-800');
         } else {
             wpTotalWeight.classList.remove('bg-green-100', 'text-green-800');
             wpTotalWeight.classList.add('bg-red-100', 'text-red-800');
         }
-        
-        if (total !== 1.0) {
-            const diff = 1.0 - total;
-            if (Math.abs(diff) <= 0.1) {
-                if (this === wpWeightSkills) {
-                    const newInterestsWeight = Math.max(0.1, Math.min(1.0, interestsWeight + diff/2));
-                    const newCompetitionLevelWeight = Math.max(0.1, Math.min(1.0, competitionLevelWeight + diff/2));
-                    
-                    wpWeightInterests.value = newInterestsWeight.toFixed(1);
-                    wpWeightCompetitionLevel.value = newCompetitionLevelWeight.toFixed(1);
-                    wpWeightInterestsValue.textContent = newInterestsWeight.toFixed(1);
-                    wpWeightCompetitionLevelValue.textContent = newCompetitionLevelWeight.toFixed(1);
-                } else if (this === wpWeightInterests) {
-                    const newSkillsWeight = Math.max(0.1, Math.min(1.0, skillsWeight + diff/2));
-                    const newCompetitionLevelWeight = Math.max(0.1, Math.min(1.0, competitionLevelWeight + diff/2));
-                    
-                    wpWeightSkills.value = newSkillsWeight.toFixed(1);
-                    wpWeightCompetitionLevel.value = newCompetitionLevelWeight.toFixed(1);
-                    wpWeightSkillsValue.textContent = newSkillsWeight.toFixed(1);
-                    wpWeightCompetitionLevelValue.textContent = newCompetitionLevelWeight.toFixed(1);
-                } else {
-                    const newSkillsWeight = Math.max(0.1, Math.min(1.0, skillsWeight + diff/2));
-                    const newInterestsWeight = Math.max(0.1, Math.min(1.0, interestsWeight + diff/2));
-                    
-                    wpWeightSkills.value = newSkillsWeight.toFixed(1);
-                    wpWeightInterests.value = newInterestsWeight.toFixed(1);
-                    wpWeightSkillsValue.textContent = newSkillsWeight.toFixed(1);
-                    wpWeightInterestsValue.textContent = newInterestsWeight.toFixed(1);
-                }
-                
-                // Update total again
-                const newTotal = parseFloat(wpWeightSkills.value) + parseFloat(wpWeightInterests.value) + parseFloat(wpWeightCompetitionLevel.value);
-                wpTotalWeight.textContent = newTotal.toFixed(1);
-                
-                if (newTotal === 1.0) {
-                    wpTotalWeight.classList.remove('bg-red-100', 'text-red-800');
-                    wpTotalWeight.classList.add('bg-green-100', 'text-green-800');
-                }
-            }
-        }
     }
     
     wpWeightSkills.addEventListener('input', updateWPWeights);
     wpWeightInterests.addEventListener('input', updateWPWeights);
     wpWeightCompetitionLevel.addEventListener('input', updateWPWeights);
+    wpWeightDeadline.addEventListener('input', updateWPWeights);
+    wpWeightActivityRating.addEventListener('input', updateWPWeights);
     
     // Initialize
     updateMethodConfig();
     updateWPWeights();
+    
+    // Competition dropdown change handler
+    const competitionDropdown = document.getElementById('competition');
+    const subCompetitionContainer = document.getElementById('sub-competition-container');
+    const subCompetitionDropdown = document.getElementById('sub_competition_id');
+    
+    competitionDropdown.addEventListener('change', function() {
+        const competitionId = this.value;
+        
+        if (competitionId) {
+            // Show sub-competition dropdown and fetch options via AJAX
+            subCompetitionContainer.classList.remove('hidden');
+            // Clear existing options
+            subCompetitionDropdown.innerHTML = '<option value="">-- Semua Sub Kompetisi --</option>';
+            
+            // Here you would typically fetch sub-competitions via AJAX
+            // For example:
+            /*
+            fetch(`/api/competitions/${competitionId}/sub-competitions`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(subComp => {
+                        const option = document.createElement('option');
+                        option.value = subComp.id;
+                        option.textContent = subComp.name;
+                        subCompetitionDropdown.appendChild(option);
+                    });
+                });
+            */
+        } else {
+            // Hide sub-competition dropdown if no competition selected
+            subCompetitionContainer.classList.add('hidden');
+        }
+    });
     
     // Form submission
     const form = document.getElementById('recommendation-form');
@@ -726,6 +942,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 showToast('Rekomendasi berhasil disimpan!', 'success');
+                // Reload page to show new recommendations
+                window.location.reload();
             } else {
                 showToast('Gagal menyimpan rekomendasi: ' + data.message, 'error');
             }
@@ -737,8 +955,6 @@ document.addEventListener('DOMContentLoaded', function() {
             showToast('Terjadi kesalahan saat menghasilkan rekomendasi.', 'error');
         });
     });
-    
-    // Existing code...
     
     // Modal functions
     function showModal(title, message, confirmCallback, buttonText = 'Ya, Hapus') {

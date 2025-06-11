@@ -297,12 +297,68 @@ class CompetitionController extends Controller
         ]);
     }
     
+    public function updateSubCompetition(Request $request, $competitionId, $subCompetitionId)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'category_id' => 'nullable|exists:categories,id',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'registration_start' => 'nullable|date',
+            'registration_end' => 'nullable|date|after_or_equal:registration_start',
+            'competition_date' => 'nullable|date',
+            'registration_link' => 'nullable|url|max:255',
+            'requirements' => 'nullable|string',
+            'status' => 'nullable|string|max:20',
+        ]);
+
+        $competition = CompetitionModel::findOrFail($competitionId);
+        $subCompetition = SubCompetitionModel::findOrFail($subCompetitionId);
+
+        if ($subCompetition->competition_id != $competition->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sub-kompetisi tidak ditemukan dalam kompetisi ini.'
+            ], 422);
+        }
+
+        $subCompetition->name = $request->name;
+        $subCompetition->description = $request->description;
+        $subCompetition->category_id = $request->category_id;
+        $subCompetition->start_date = $request->start_date;
+        $subCompetition->end_date = $request->end_date;
+        $subCompetition->registration_start = $request->registration_start;
+        $subCompetition->registration_end = $request->registration_end;
+        $subCompetition->competition_date = $request->competition_date;
+        $subCompetition->registration_link = $request->registration_link;
+        $subCompetition->requirements = $request->requirements;
+        $subCompetition->status = $request->status ?? $subCompetition->status;
+        $subCompetition->save();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Sub-kompetisi berhasil diperbarui.',
+                'data' => $subCompetition
+            ]);
+        }
+
+        return redirect()->route('lecturer.competitions.sub-competitions.index', $competitionId)
+            ->with('success', 'Sub-kompetisi berhasil diperbarui.');
+    }
+    
     public function participants($competition, $sub_competition)
     {
         $competition = CompetitionModel::findOrFail($competition);
         $subCompetition = SubCompetitionModel::findOrFail($sub_competition);
         $participants = $subCompetition->participants;
-        $students = UserModel::where('role', 'MHS')->get();
+        $students = UserModel::where(function($q) {
+                                $q->where('role', 'MHS')
+                                  ->orWhere('level_id', 3);
+                             })
+                             ->orderBy('name')
+                             ->get();
         
         return view('Dosen.competitions.sub-competitions.participants', compact('competition', 'subCompetition', 'participants', 'students'));
     }
@@ -541,5 +597,130 @@ class CompetitionController extends Controller
                 'message' => 'Terjadi kesalahan saat menghapus skill: ' . $e->getMessage()
             ], 500);
         }
+    }
+    
+    public function applySubCompetition(Request $request, $competitionId, $subCompetitionId)
+    {
+        $competition = CompetitionModel::where('id', $competitionId)
+            ->firstOrFail();
+        
+        $subCompetition = SubCompetitionModel::where('id', $subCompetitionId)
+            ->where('competition_id', $competitionId)
+            ->firstOrFail();
+            
+        $user = Auth::user();
+        $exists = $subCompetition->participants()
+            ->where('user_id', $user->id)
+            ->exists();
+            
+        if ($exists) {
+            return redirect()
+                ->route('lecturer.competitions.sub-competitions.index', $competitionId)
+                ->with('error', 'Anda sudah terdaftar pada kategori kompetisi ini.');
+        }
+        
+        $now = \Carbon\Carbon::now();
+        if ($subCompetition->registration_start && $subCompetition->registration_end) {
+            $startDate = \Carbon\Carbon::parse($subCompetition->registration_start);
+            $endDate = \Carbon\Carbon::parse($subCompetition->registration_end);
+            
+            if ($now->lt($startDate)) {
+                return redirect()
+                    ->route('lecturer.competitions.sub-competitions.index', $competitionId)
+                    ->with('error', 'Pendaftaran belum dibuka. Pendaftaran dimulai pada ' . $startDate->format('d M Y') . '.');
+            }
+            
+            if ($now->gt($endDate)) {
+                // Show toast/alert for registration period ended
+                return view('Dosen.competitions.sub-competitions.registration_closed', compact(
+                    'competition',
+                    'subCompetition',
+                    'endDate'
+                ));
+            }
+        } else {
+            return redirect()
+                ->route('lecturer.competitions.sub-competitions.index', $competitionId)
+                ->with('error', 'Periode pendaftaran belum ditentukan. Silahkan hubungi penyelenggara.');
+        }
+        
+        if (request()->isMethod('post')) {
+            $validated = request()->validate([
+                'team_name' => 'required|string|max:255',
+                'notes' => 'nullable|string',
+                'terms' => 'required',
+                'team_members' => 'required|array|min:1',
+                'team_members.0' => 'required|exists:users,id',
+                'team_members.1' => 'nullable|exists:users,id|different:team_members.0',
+                'team_members.2' => 'nullable|exists:users,id|different:team_members.0|different:team_members.1',
+            ], [
+                'team_members.required' => 'Minimal satu mahasiswa harus dipilih sebagai ketua tim.',
+                'team_members.0.required' => 'Ketua tim harus dipilih.',
+                'team_members.1.different' => 'Anggota tim harus berbeda dengan ketua tim.',
+                'team_members.2.different' => 'Anggota tim harus berbeda dengan anggota tim lainnya.',
+            ]);
+            
+            $teamMembers = array_filter($validated['team_members'] ?? [], function($value) {
+                return !empty($value);
+            });
+            
+            if (count($teamMembers) !== count(array_unique($teamMembers))) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->withErrors(['team_members' => 'Setiap anggota tim harus berbeda. Anda tidak dapat memilih mahasiswa yang sama lebih dari sekali.']);
+            }
+            
+            $participant = new \App\Models\SubCompetitionParticipantModel();
+            $participant->sub_competition_id = $subCompetition->id;
+            $participant->user_id = $teamMembers[0]; // First student is the team leader
+            $participant->team_name = $validated['team_name'];
+            $participant->mentor_id = $user->id; // Current lecturer is automatically the mentor
+            $participant->advisor_name = $user->name;
+            $participant->status = 'registered'; // Auto-approved
+            $participant->status_mentor = 'accept'; // Auto-approved by mentor (lecturer)
+            
+            if (!empty($teamMembers)) {
+                $processedTeamMembers = [];
+                $isFirst = true;
+                
+                foreach ($teamMembers as $memberId) {
+                    $memberUser = UserModel::find($memberId);
+                    if ($memberUser) {
+                        $processedTeamMembers[] = [
+                            'id' => $memberId,
+                            'name' => $memberUser->name,
+                            'nim' => $memberUser->nim ?? '',
+                            'email' => $memberUser->email,
+                            'role' => $isFirst ? 'ketua' : 'anggota'
+                        ];
+                        $isFirst = false;
+                    }
+                }
+                
+                if (!empty($processedTeamMembers)) {
+                    $participant->team_members = json_encode($processedTeamMembers);
+                }
+            }
+            
+            $participant->save();
+            
+            return redirect()
+                ->route('lecturer.competitions.sub-competitions.index', $competitionId)
+                ->with('success', 'Pendaftaran berhasil! Tim mahasiswa telah terdaftar untuk kompetisi ini dengan Anda sebagai dosen pembimbing.');
+        }
+        
+        $students = UserModel::where(function($q) {
+                                $q->where('role', 'MHS')
+                                  ->orWhere('level_id', 3);
+                             })
+                             ->orderBy('name')
+                             ->get();
+        
+        return view('Dosen.competitions.sub-competitions.apply', compact(
+            'competition', 
+            'subCompetition',
+            'students'
+        ));
     }
 } 

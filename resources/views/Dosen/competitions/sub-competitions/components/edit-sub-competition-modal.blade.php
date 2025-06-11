@@ -101,26 +101,40 @@
                                 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div class="form-group">
-                            <label for="edit_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Sub-Kompetisi <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" id="edit_name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Masukkan nama sub-kompetisi" required>
+                            <x-ui.form-input
+                                name="name"
+                                id="edit_name"
+                                label="Nama Sub-Kompetisi"
+                                required
+                                placeholder="Masukkan nama sub-kompetisi"
+                            />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-name-error"></p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="edit_category_id" class="block text-sm font-medium text-gray-700 mb-1">Kategori <span class="text-red-500">*</span></label>
-                            <select name="category_id" id="edit_category_id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
-                                <option value="">Pilih Kategori</option>
+                            <x-ui.form-select
+                                name="category_id"
+                                id="edit_category_id"
+                                label="Kategori"
+                                required
+                                placeholder="Pilih Kategori"
+                            >
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 @endforeach
-                            </select>
+                            </x-ui.form-select>
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-category-error"></p>
                         </div>
                         
                         <div class="md:col-span-2">
                             <div class="form-group">
-                                <label for="edit_description" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                                <textarea name="description" id="edit_description" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" placeholder="Masukkan deskripsi sub-kompetisi"></textarea>
+                                <x-ui.form-textarea
+                                    name="description"
+                                    id="edit_description"
+                                    label="Deskripsi"
+                                    placeholder="Masukkan deskripsi sub-kompetisi"
+                                    rows="3"
+                                />
                                 <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-description-error"></p>
                             </div>
                         </div>
@@ -131,66 +145,125 @@
                 <div id="edit-step-2-content" class="hidden transition-opacity duration-300">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div class="form-group">
-                            <label for="edit_start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai <span class="text-red-500">*</span></label>
-                            <input type="date" name="start_date" id="edit_start_date" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
+                            <x-ui.form-input
+                                type="date"
+                                name="start_date"
+                                id="edit_start_date"
+                                label="Tanggal Mulai"
+                                required
+                            />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-start-date-error"></p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="edit_end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai <span class="text-red-500">*</span></label>
-                            <input type="date" name="end_date" id="edit_end_date" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" required>
+                            <x-ui.form-input
+                                type="date"
+                                name="end_date"
+                                id="edit_end_date"
+                                label="Tanggal Selesai"
+                                required
+                            />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-end-date-error"></p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="edit_registration_start" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Pendaftaran</label>
-                            <input type="date" name="registration_start" id="edit_registration_start" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <x-ui.form-input
+                                type="date"
+                                name="registration_start"
+                                id="edit_registration_start"
+                                label="Tanggal Mulai Pendaftaran"
+                            />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-registration-start-error"></p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="edit_registration_end" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai Pendaftaran</label>
-                            <input type="date" name="registration_end" id="edit_registration_end" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <x-ui.form-input
+                                type="date"
+                                name="registration_end"
+                                id="edit_registration_end"
+                                label="Tanggal Selesai Pendaftaran"
+                            />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-registration-end-error"></p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="edit_competition_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Kompetisi</label>
-                            <input type="date" name="competition_date" id="edit_competition_date" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <x-ui.form-input
+                                type="date"
+                                name="competition_date"
+                                id="edit_competition_date"
+                                label="Tanggal Kompetisi"
+                            />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-competition-date-error"></p>
                         </div>
                         
                         <div class="form-group">
-                            <label for="edit_status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select name="status" id="edit_status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                                <option value="upcoming">Akan Datang</option>
-                                <option value="ongoing">Berlangsung</option>
-                                <option value="completed">Selesai</option>
-                                <option value="cancelled">Dibatalkan</option>
-                            </select>
+                            <x-ui.form-input
+                                type="text"
+                                name="registration_link"
+                                id="edit_registration_link"
+                                label="Link Pendaftaran"
+                                placeholder="Masukkan link pendaftaran (opsional)"
+                            />
+                            <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-registration-link-error"></p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <x-ui.form-select
+                                name="status"
+                                id="edit_status"
+                                label="Status"
+                                :options="[
+                                    'upcoming' => 'Akan Datang',
+                                    'ongoing' => 'Sedang Berlangsung',
+                                    'completed' => 'Selesai'
+                                ]"
+                                placeholder="Pilih Status"
+                            />
                             <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-status-error"></p>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <div class="form-group">
+                                <x-ui.form-textarea
+                                    name="requirements"
+                                    id="edit_requirements"
+                                    label="Persyaratan"
+                                    placeholder="Masukkan persyaratan. Pisahkan setiap persyaratan dengan baris baru."
+                                    rows="3"
+                                    helperText="Pisahkan setiap persyaratan dengan baris baru"
+                                />
+                                <p class="text-sm text-red-600 error-message hidden mt-1" id="edit-sub-requirements-error"></p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Form Buttons -->
-                <div class="flex justify-between mt-6 border-t border-gray-200 pt-6">
-                    <button type="button" id="cancel-edit-sub-competition" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            </form>
+            
+            <div class="flex justify-between mt-6">
+                <button type="button" id="edit-prev-step" class="hidden inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Kembali
+                </button>
+                <div>
+                    <button type="button" id="cancel-edit-sub-competition" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
                         Batal
                     </button>
-                    <div class="flex space-x-3">
-                        <button type="button" id="edit-prev-step" class="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hidden">
-                            Sebelumnya
-                        </button>
-                        <button type="button" id="edit-next-step" class="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Selanjutnya
-                        </button>
-                        <button type="button" id="submit-edit-sub-competition" class="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hidden">
-                            Simpan
-                        </button>
-                    </div>
+                    <button type="button" id="edit-next-step" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                        Lanjut
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button type="submit" id="submit-edit-sub-competition" class="hidden ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Simpan Perubahan
+                    </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div> 

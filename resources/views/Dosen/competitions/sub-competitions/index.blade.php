@@ -41,7 +41,8 @@
         store: "{{ route('lecturer.competitions.sub-competitions.store', $competition->id) }}",
         show: "{{ route('lecturer.competitions.sub-competitions.show', ['id' => $competition->id, 'sub_id' => '__id__']) }}",
         edit: "{{ route('lecturer.competitions.sub-competitions.show', ['id' => $competition->id, 'sub_id' => '__id__']) }}/edit",
-        skills: "{{ route('lecturer.competitions.sub-competitions.skills', ['competition' => $competition->id, 'sub_competition' => '__id__']) }}"
+        skills: "{{ route('lecturer.competitions.sub-competitions.skills', ['competition' => $competition->id, 'sub_competition' => '__id__']) }}",
+        update: "{{ route('lecturer.competitions.sub-competitions.update', ['competition' => $competition->id, 'sub_competition' => '__id__']) }}"
     };
     window.csrfToken = "{{ csrf_token() }}";
     window.competitionId = "{{ $competition->id }}";

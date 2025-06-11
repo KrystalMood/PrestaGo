@@ -308,6 +308,17 @@ class RecommendationController extends Controller
                 ];
             }
             
+            usort($formattedRecommendations, function ($a, $b) {
+                $groupA = $a['calculation_method'] === 'ahp' ? 0 : ($a['calculation_method'] === 'wp' ? 1 : 2);
+                $groupB = $b['calculation_method'] === 'ahp' ? 0 : ($b['calculation_method'] === 'wp' ? 1 : 2);
+
+                if ($groupA === $groupB) {
+                    return $b['match_score'] <=> $a['match_score'];
+                }
+
+                return $groupA <=> $groupB;
+            });
+            
             $request->session()->put('generated_recommendations', $formattedRecommendations);
             
             if ($request->ajax()) {
@@ -797,6 +808,21 @@ class RecommendationController extends Controller
                     $sanitizedFactors[$criterion] = min($factorScores[$criterion] ?? 0, 100);
                 }
 
+                try {
+                    $normalizedWeightsCalc = app(\App\Services\WPService::class)->calculateWeights($criteriaWeights);
+                    $vectorS = 1.0;
+                    foreach ($sanitizedFactors as $criterion => $rawVal) {
+                        if ($rawVal <= 0) {
+                            continue;
+                        }
+                        $normalizedVal = $rawVal / 100;
+                        $vectorS *= pow($normalizedVal, $normalizedWeightsCalc[$criterion]);
+                    }
+                } catch (\Exception $e) {
+                    $vectorS = null;
+                }
+                $vectorV = $vectorS !== null ? 1.0 : null;
+
                 $finalScore = 0;
                 foreach ($criteriaWeights as $criterion => $weight) {
                     $finalScore += ($sanitizedFactors[$criterion] / 100) * $weight;
@@ -806,6 +832,9 @@ class RecommendationController extends Controller
                     'message' => 'Calculated using simple weighted average as only one candidate was available for comparison.',
                     'criteria_weights' => $criteriaWeights,
                     'factor_scores' => $sanitizedFactors,
+                    'raw_values' => $sanitizedFactors,
+                    'normalized_values' => array_map(fn($v) => round($v / 100, 4), $sanitizedFactors),
+                    's_vector_product' => $vectorS,
                     'vector_s' => null,
                     'vector_v' => null,
                     'rank' => 1,
@@ -820,8 +849,8 @@ class RecommendationController extends Controller
                     ],
                     [
                         'final_score' => $finalScore,
-                        'vector_s' => null,
-                        'vector_v' => null,
+                        'vector_s' => $vectorS,
+                        'vector_v' => $vectorV,
                         'relative_preference' => null,
                         'rank' => 1,
                         'calculation_details' => json_encode($calculationDetails),
@@ -879,6 +908,8 @@ class RecommendationController extends Controller
             $calculationDetails = [
                 'criteria_weights' => $normalizedWeights,
                 'factor_scores' => $allFactorScores[$lecturer->id],
+                'raw_values' => $allFactorScores[$lecturer->id],
+                'normalized_values' => array_map(fn($v) => round($v / 100, 4), $allFactorScores[$lecturer->id]),
                 'vector_s' => $targetResult['vector_s'],
                 'vector_v' => $targetResult['vector_v'],
                 'rank' => $targetResult['rank'],

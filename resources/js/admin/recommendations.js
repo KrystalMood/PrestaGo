@@ -532,15 +532,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (!data.success && typeof showToast === 'function') {
-                showToast('Error removing recommendation: ' + data.message, 'error');
-            }
+            refreshPaginationIfNeeded();
         })
         .catch(error => {
-            console.error('Error:', error);
-            if (typeof showToast === 'function') {
-                showToast('Terjadi kesalahan saat menghapus rekomendasi', 'error');
-            }
+            console.error('Error removing recommendation:', error);
         });
     }
     
@@ -556,15 +551,100 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (!data.success && typeof showToast === 'function') {
-                showToast('Error clearing recommendations: ' + data.message, 'error');
-            }
+            refreshPaginationIfNeeded();
         })
         .catch(error => {
-            console.error('Error:', error);
-            if (typeof showToast === 'function') {
-                showToast('Terjadi kesalahan saat menghapus semua rekomendasi', 'error');
-            }
+            console.error('Error clearing recommendations:', error);
         });
+    }
+
+    // -----------------------------
+    // Pagination for Session Recommendations
+    // -----------------------------
+    function setupPagination(tableBodyElement, paginationContainer, pageSize = 10) {
+        if (!tableBodyElement || !paginationContainer) {
+            return;
+        }
+
+        let rows = Array.from(tableBodyElement.querySelectorAll('tr'));
+        let currentPage = 1;
+        let totalPages = Math.ceil(rows.length / pageSize);
+
+        if (rows.length <= pageSize) {
+            // No need for pagination if rows fit in single page
+            paginationContainer.innerHTML = '';
+            return;
+        }
+
+        function renderPage() {
+            // Show / hide rows
+            rows.forEach((row, idx) => {
+                const page = Math.floor(idx / pageSize) + 1;
+                row.style.display = page === currentPage ? '' : 'none';
+            });
+
+            // Render controls
+            paginationContainer.innerHTML = '';
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Prev';
+            prevBtn.className = 'px-2 py-1 mx-1 text-sm rounded-md border';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPage();
+                }
+            });
+            paginationContainer.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = `px-2 py-1 mx-1 text-sm rounded-md border ${i === currentPage ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700'}`;
+                pageBtn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderPage();
+                });
+                paginationContainer.appendChild(pageBtn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next';
+            nextBtn.className = 'px-2 py-1 mx-1 text-sm rounded-md border';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderPage();
+                }
+            });
+            paginationContainer.appendChild(nextBtn);
+        }
+
+        renderPage();
+
+        // Return refresh function in case rows change later
+        return function refresh() {
+            rows = Array.from(tableBodyElement.querySelectorAll('tr'));
+            totalPages = Math.ceil(rows.length / pageSize);
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+            renderPage();
+        };
+    }
+
+    // Initialize pagination if session recommendations exist
+    const sessionTableBody = document.getElementById('recommendation-table-body-session');
+    const sessionPaginationContainer = document.getElementById('recommendation-pagination-session');
+    let refreshSessionPagination = null;
+    if (sessionTableBody && sessionPaginationContainer) {
+        refreshSessionPagination = setupPagination(sessionTableBody, sessionPaginationContainer, 10);
+    }
+
+    // Update pagination after deleting rows
+    function refreshPaginationIfNeeded() {
+        if (typeof refreshSessionPagination === 'function') {
+            refreshSessionPagination();
+        }
     }
 }); 

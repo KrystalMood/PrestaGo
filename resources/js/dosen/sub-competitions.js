@@ -114,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const closeButtons = {
             'close-add-modal': 'add-sub-competition-modal',
+            'close-edit-modal': 'edit-sub-competition-modal',
             'close-show-sub-modal': 'show-sub-competition-modal'
         };
 
@@ -136,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const cancelButtons = {
             'cancel-add-sub-competition': 'add-sub-competition-modal',
+            'cancel-edit-sub-competition': 'edit-sub-competition-modal'
         };
         
         Object.entries(cancelButtons).forEach(([buttonId, modalId]) => {
@@ -157,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const submitButtons = {
             'submit-add-sub-competition': submitAddSubCompetition,
+            'submit-edit-sub-competition': submitEditSubCompetition
         };
 
         Object.entries(submitButtons).forEach(([buttonId, handler]) => {
@@ -171,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        const modals = ['add-sub-competition-modal'];
+        const modals = ['add-sub-competition-modal', 'edit-sub-competition-modal'];
         modals.forEach(modalId => {
             const modal = document.getElementById(modalId);
             if (modal) {
@@ -223,40 +226,94 @@ document.addEventListener('DOMContentLoaded', function() {
                 showStep(1);
             });
         }
+
+        const editNextButton = document.getElementById('edit-next-step');
+        const editPrevButton = document.getElementById('edit-prev-step');
+
+        if (editNextButton) {
+            editNextButton.addEventListener('click', function() {
+                showStep(2, 'edit');
+                window.updateSubCompetitionStatus('edit');
+                const statusEl = document.getElementById('edit_status');
+                if (statusEl) {
+                    statusEl.disabled = true;
+                    statusEl.classList.add('bg-gray-100', 'cursor-not-allowed', 'opacity-75');
+                }
+            });
+        }
+
+        if (editPrevButton) {
+            editPrevButton.addEventListener('click', function() {
+                showStep(1, 'edit');
+            });
+        }
     }
     
     // Function to show a specific step in the multi-step form.
     function showStep(stepNumber, prefix = 'add') {
-        const step1Content = document.getElementById('step-1-content');
-        const step2Content = document.getElementById('step-2-content');
-        const nextBtn = document.getElementById('next-step');
-        const prevBtn = document.getElementById('prev-step');
-        const submitBtn = document.getElementById('submit-add-sub-competition');
-        const stepItems = document.querySelectorAll('.step-item');
-        const stepLine = document.querySelector('.step-line');
-        
+        let step1Content, step2Content, nextBtn, prevBtn, submitBtn, modal;
+
+        if (prefix === 'add') {
+            step1Content = document.getElementById('step-1-content');
+            step2Content = document.getElementById('step-2-content');
+            nextBtn = document.getElementById('next-step');
+            prevBtn = document.getElementById('prev-step');
+            submitBtn = document.getElementById('submit-add-sub-competition');
+            modal = document.getElementById('add-sub-competition-modal');
+        } else {
+            step1Content = document.getElementById('edit-step-1-content');
+            step2Content = document.getElementById('edit-step-2-content');
+            nextBtn = document.getElementById('edit-next-step');
+            prevBtn = document.getElementById('edit-prev-step');
+            submitBtn = document.getElementById('submit-edit-sub-competition');
+            modal = document.getElementById('edit-sub-competition-modal');
+        }
+
+        if (!step1Content || !step2Content || !nextBtn || !prevBtn || !submitBtn || !modal) return;
+
+        // Use only step items inside content (exclude skeleton loaders)
+        const stepItems = Array.from(modal.querySelectorAll('.step-item')).filter(item => !item.closest('.edit-sub-competition-skeleton'));
+
+        // Find the step line that belongs to visible content
+        let stepLine = null;
+        for (const item of stepItems) {
+            const siblingLine = item.parentElement.querySelector('.step-line');
+            if (siblingLine && !siblingLine.closest('.edit-sub-competition-skeleton')) {
+                stepLine = siblingLine;
+                break;
+            }
+        }
+        if (!stepLine) {
+            // fallback to first matching element
+            stepLine = modal.querySelector('.step-line');
+        }
+
         if (stepNumber === 1) {
             step1Content.classList.remove('hidden');
             step2Content.classList.add('hidden');
             nextBtn.classList.remove('hidden');
             prevBtn.classList.add('hidden');
             submitBtn.classList.add('hidden');
-            
-            stepItems[1].classList.remove('active');
-            stepItems[1].querySelector('div').classList.add('bg-gray-200', 'text-gray-600');
-            stepItems[1].querySelector('div').classList.remove('bg-blue-600', 'text-white');
-            stepLine.classList.remove('bg-blue-600');
-        } else if (stepNumber === 2) {
+
+            if (stepItems[1]) {
+                stepItems[1].classList.remove('active');
+                stepItems[1].querySelector('div').classList.add('bg-gray-200', 'text-gray-600');
+                stepItems[1].querySelector('div').classList.remove('bg-blue-600', 'text-white');
+            }
+            if (stepLine) stepLine.classList.remove('bg-blue-600', 'active');
+        } else {
             step1Content.classList.add('hidden');
             step2Content.classList.remove('hidden');
             nextBtn.classList.add('hidden');
             prevBtn.classList.remove('hidden');
             submitBtn.classList.remove('hidden');
-            
-            stepItems[1].classList.add('active');
-            stepItems[1].querySelector('div').classList.remove('bg-gray-200', 'text-gray-600');
-            stepItems[1].querySelector('div').classList.add('bg-blue-600', 'text-white');
-            stepLine.classList.add('bg-blue-600');
+
+            if (stepItems[1]) {
+                stepItems[1].classList.add('active');
+                stepItems[1].querySelector('div').classList.remove('bg-gray-200', 'text-gray-600');
+                stepItems[1].querySelector('div').classList.add('bg-blue-600', 'text-white');
+            }
+            if (stepLine) stepLine.classList.add('bg-blue-600', 'active');
         }
     }
     
@@ -374,6 +431,126 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Helper to format date as YYYY-MM-DD for date inputs
+    function formatDateForInput(dateString) {
+        if (!dateString) return '';
+        // If already formatted
+        if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return dateString;
+        }
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    // Load sub-competition data for editing and open modal
+    window.editSubCompetition = function(id) {
+        const modal = document.getElementById('edit-sub-competition-modal');
+        if (!modal) return;
+
+        modal.classList.remove('hidden');
+
+        const skeletonEls = modal.querySelectorAll('.edit-sub-competition-skeleton');
+        const contentEls = modal.querySelectorAll('.edit-sub-competition-content');
+
+        skeletonEls.forEach(el => el.classList.remove('hidden'));
+        contentEls.forEach(el => el.classList.add('hidden'));
+
+        const url = window.subCompetitionRoutes.show.replace('__id__', id);
+
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) throw new Error('Gagal memuat data');
+
+            const sc = data.data;
+
+            document.getElementById('edit_id').value = sc.id;
+            document.getElementById('edit_name').value = sc.name ?? '';
+            if (document.getElementById('edit_category_id')) {
+                document.getElementById('edit_category_id').value = sc.category_id ?? '';
+            }
+            document.getElementById('edit_description').value = sc.description ?? '';
+            document.getElementById('edit_start_date').value = formatDateForInput(sc.start_date);
+            document.getElementById('edit_end_date').value = formatDateForInput(sc.end_date);
+            document.getElementById('edit_registration_start').value = formatDateForInput(sc.registration_start);
+            document.getElementById('edit_registration_end').value = formatDateForInput(sc.registration_end);
+            document.getElementById('edit_competition_date').value = formatDateForInput(sc.competition_date);
+            document.getElementById('edit_status').value = sc.status ?? 'upcoming';
+            document.getElementById('edit_registration_link').value = sc.registration_link || '';
+            document.getElementById('edit_requirements').value = sc.requirements || '';
+
+            // Hide skeleton, show content
+            skeletonEls.forEach(el => el.classList.add('hidden'));
+            contentEls.forEach(el => el.classList.remove('hidden'));
+
+            showStep(1, 'edit');
+            window.updateSubCompetitionStatus('edit');
+        })
+        .catch(err => {
+            console.error(err);
+            showNotification('Terjadi kesalahan saat memuat data', 'error');
+            modal.classList.add('hidden');
+        });
+    };
+
+    // Submit edit sub-competition via AJAX
+    function submitEditSubCompetition() {
+        const form = document.getElementById('edit-sub-competition-form');
+        if (!form) return;
+
+        const id = document.getElementById('edit_id').value;
+        if (!id) return;
+
+        const formData = new FormData(form);
+        formData.append('_method', 'PUT');
+
+        const submitBtn = document.getElementById('submit-edit-sub-competition');
+        const originalHtml = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<svg class="animate-spin h-4 w-4 mr-2 inline-block text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memproses...';
+
+        fetch(window.subCompetitionRoutes.update.replace('__id__', id), {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': window.csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+            if (data.success) {
+                document.getElementById('edit-sub-competition-modal').classList.add('hidden');
+                showNotification('Sub-kompetisi berhasil diperbarui', 'success');
+                window.location.reload();
+            } else {
+                throw data;
+            }
+        })
+        .catch(err => {
+            console.error('Update error', err);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHtml;
+            if (err && err.errors) {
+                displayValidationErrors(err.errors, 'edit-sub-competition-form');
+            } else {
+                showNotification('Terjadi kesalahan saat memperbarui data', 'error');
+            }
+        });
+    }
+    
     // Function to display validation errors on the form.
     function displayValidationErrors(errors, formId) {
         const form = document.getElementById(formId);
@@ -395,9 +572,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorList.appendChild(li);
                 count++;
                 
-                const inputId = formId === 'add-sub-competition-form' ? 
-                    `sub-${field.replace('_', '-')}-error` : 
-                    `${field.replace('_', '-')}-error`;
+                let inputId;
+                if (formId === 'add-sub-competition-form') {
+                    inputId = `sub-${field.replace('_', '-')}-error`;
+                } else if (formId === 'edit-sub-competition-form') {
+                    inputId = `edit-sub-${field.replace('_', '-')}-error`;
+                } else {
+                    inputId = `${field.replace('_', '-')}-error`;
+                }
                 
                 const fieldError = document.getElementById(inputId);
                 if (fieldError) {
@@ -591,13 +773,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.edit-sub-competition').forEach(button => {
             button.addEventListener('click', function() {
                 const subCompetitionId = this.dataset.subCompetitionId;
-                if (window.subCompetitionRoutes && window.subCompetitionRoutes.edit) {
-                    let editUrl = window.subCompetitionRoutes.edit.replace('__id__', subCompetitionId);
-                    window.location.href = editUrl;
-                } else {
-                    // If no specific edit route, use the show route and append /edit
-                    let showUrl = window.subCompetitionRoutes.show.replace('__id__', subCompetitionId);
-                    window.location.href = showUrl + '/edit';
+                if (subCompetitionId) {
+                    editSubCompetition(subCompetitionId);
                 }
             });
         });

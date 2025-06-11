@@ -321,10 +321,10 @@ class RecommendationService
         $lecturerInterests = $lecturer->interests()->get();
         $competitionInterests = $competition->interests()->get();
         
+        $interestMatches = 0;
+        $totalInterestImportance = 0;
+
         if ($competitionInterests->count() > 0) {
-            $interestMatches = 0;
-            $totalInterestImportance = 0;
-            
             foreach ($competitionInterests as $reqInterest) {
                 $totalInterestImportance += $reqInterest->pivot->importance_factor ?? 3;
                 
@@ -337,10 +337,63 @@ class RecommendationService
                     }
                 }
             }
-            
-            if ($totalInterestImportance > 0) {
-                $factors['interests'] = round(($interestMatches / $totalInterestImportance) * 100);
+        }
+        
+        $subCompetitions = \App\Models\SubCompetitionModel::where('competition_id', $competition->id)
+            ->with('category')
+            ->get();
+
+        $categoryNames = [];
+        foreach ($subCompetitions as $subComp) {
+            if ($subComp->category && $subComp->category->name) {
+                $categoryNames[] = $subComp->category->name;
             }
+        }
+        $categoryNames = array_unique($categoryNames);
+
+        if (!empty($categoryNames)) {
+            $categoryToInterestMap = [
+                'Programming' => ['Pengembangan Web', 'Pengembangan Mobile', 'Programming', 'DevOps', 'Pengembangan Aplikasi'],
+                'Pemrograman' => ['Pengembangan Web', 'Pengembangan Mobile', 'Programming', 'DevOps'],
+                'Desain UI/UX' => ['Desain UI/UX', 'Augmented/Virtual Reality'],
+                'Pengembangan Aplikasi' => ['Pengembangan Web', 'Pengembangan Mobile', 'Pengembangan Aplikasi'],
+                'Kecerdasan Buatan' => ['Kecerdasan Buatan', 'Data Science', 'Machine Learning'],
+                'IoT' => ['Pengembangan IoT', 'Jaringan Komputer'],
+                'Keamanan Siber' => ['Keamanan Informasi', 'Keamanan Siber'],
+                'Bisnis TI' => ['Entrepreneurship', 'Project Management', 'Bisnis TI'],
+                'Karya Tulis' => ['Research', 'Karya Tulis'],
+                'Research' => ['Research', 'Data Science', 'Kecerdasan Buatan'],
+            ];
+
+            $mappedInterests = [];
+            foreach ($categoryNames as $catName) {
+                if (isset($categoryToInterestMap[$catName])) {
+                    $mappedInterests = array_merge($mappedInterests, $categoryToInterestMap[$catName]);
+                }
+            }
+            $mappedInterests = array_unique($mappedInterests);
+
+            foreach ($lecturerInterests as $lecInterest) {
+                if (in_array($lecInterest->name, $mappedInterests)) {
+                    $alreadyMatched = false;
+                    foreach ($competitionInterests as $reqInterest) {
+                        if ($reqInterest->id === $lecInterest->id) {
+                            $alreadyMatched = true; break;
+                        }
+                    }
+                    if (!$alreadyMatched) {
+                        $interestLevel = $lecInterest->pivot->interest_level ?? 1;
+                        $defaultImportance = 1;
+                        $defaultRelevance = 1;
+                        $interestMatches += ($interestLevel * $defaultImportance * $defaultRelevance);
+                        $totalInterestImportance += (5 * $defaultImportance * $defaultRelevance);
+                    }
+                }
+            }
+        }
+        
+        if ($totalInterestImportance > 0) {
+            $factors['interests'] = round(($interestMatches / $totalInterestImportance) * 100);
         }
         
         $levelMatchPercentages = [
