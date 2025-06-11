@@ -25,7 +25,8 @@ export default defineConfig({
                 'resources/js/student/competitions.js',
                 'resources/js/dosen/competitions.js',
                 'resources/js/dosen/sub-competitions.js',
-                'resources/js/dosen/skills.js'
+                'resources/js/dosen/skills.js',
+		'resources/js/admin/recommendations.js'
             ],
             refresh: true,
         }),
