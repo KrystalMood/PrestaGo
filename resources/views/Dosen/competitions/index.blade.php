@@ -73,11 +73,10 @@
                             @if($recommendation->notes)
                                 <p class="text-sm text-gray-600 mb-3">{{ $recommendation->notes }}</p>
                             @endif
-                            <button type="button" 
-                                    onclick="showCompetitionDetails('{{ $recommendation->competition->id }}')" 
-                                    class="block w-full text-center border border-indigo-600 hover:bg-indigo-700 text-indigo-600 hover:text-white font-medium py-2 px-4 rounded transition-colors">
+                            <a href="{{ route('lecturer.competitions.sub-competitions.index', $recommendation->competition->id) }}" 
+                               class="block w-full text-center border border-indigo-600 hover:bg-indigo-700 text-indigo-600 hover:text-white font-medium py-2 px-4 rounded transition-colors">
                                 Lihat Detail
-                            </button>
+                            </a>
                         </div>
                     @endif
                 @endforeach

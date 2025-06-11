@@ -300,21 +300,69 @@ class RecommendationService
             $skillMatches = 0;
             $totalSkillImportance = 0;
             
+            $relatedSkillCategories = [
+                'Programming Language' => ['Web Technology', 'Backend', 'Frontend', 'Mobile Development'],
+                'Web Framework' => ['Web Technology', 'Frontend', 'Backend'],
+                'Web Technology' => ['Programming Language', 'Web Framework', 'Frontend', 'Backend'],
+                'Frontend' => ['Web Technology', 'Web Framework', 'Design'],
+                'Backend' => ['Web Technology', 'Web Framework', 'Programming Language', 'Database'],
+                'Mobile Development' => ['Programming Language', 'Frontend'],
+                'Design' => ['Frontend', 'UI/UX Design'],
+                'UI/UX Design' => ['Design', 'Frontend'],
+                'Database' => ['Backend', 'Data Science'],
+                'Machine Learning' => ['Data Science', 'AI', 'Programming Language'],
+                'Data Science' => ['Machine Learning', 'AI', 'Database', 'Programming Language'],
+                'DevOps' => ['Cloud Computing', 'Infrastructure as Code', 'CI/CD'],
+                'Security' => ['Network Security', 'Cybersecurity'],
+                'Testing' => ['QA', 'Development'],
+                'Cloud Computing' => ['DevOps', 'Infrastructure as Code'],
+                'Game Development' => ['Programming Language', '3D Modeling'],
+                'IoT' => ['Embedded Systems', 'Programming Language', 'Hardware'],
+            ];
+
             foreach ($competitionSkills as $reqSkill) {
-                $totalSkillImportance += $reqSkill->pivot->importance_level ?? 3;
-                
+                $importanceLevel = $reqSkill->pivot->importance_level ?? 3;
+                $totalSkillImportance += $importanceLevel;
+
+                $exactMatch = false;
+                $categoryMatch = false;
+                $relatedCategoryMatch = false;
+                $matchValue = 0;
+
                 foreach ($lecturerSkills as $lecturerSkill) {
                     if ($reqSkill->id === $lecturerSkill->id) {
                         $proficiencyPercentage = ($lecturerSkill->pivot->proficiency_level / 5) * 100;
-                        $importanceLevel = $reqSkill->pivot->importance_level ?? 3;
-                        $skillMatches += ($importanceLevel * $proficiencyPercentage) / 5;
+                        $matchValue = ($importanceLevel * $proficiencyPercentage) / 5;
+                        $exactMatch = true;
                         break;
                     }
+
+                    if (!$exactMatch && $reqSkill->category === $lecturerSkill->category) {
+                        $proficiencyPercentage = ($lecturerSkill->pivot->proficiency_level / 5) * 100 * 0.7; // lower weight
+                        $matchValue = max($matchValue, ($importanceLevel * $proficiencyPercentage) / 5);
+                        $categoryMatch = true;
+                    }
+
+                    if (!$exactMatch && !$categoryMatch) {
+                        $relatedCategories = $relatedSkillCategories[$reqSkill->category] ?? [];
+                        if (in_array($lecturerSkill->category, $relatedCategories)) {
+                            $proficiencyPercentage = ($lecturerSkill->pivot->proficiency_level / 5) * 100 * 0.4; // lowest weight
+                            $matchValue = max($matchValue, ($importanceLevel * $proficiencyPercentage) / 5);
+                            $relatedCategoryMatch = true;
+                        }
+                    }
+                }
+
+                if ($exactMatch || $categoryMatch || $relatedCategoryMatch) {
+                    $skillMatches += $matchValue;
                 }
             }
             
             if ($totalSkillImportance > 0) {
-                $factors['skills'] = round(($skillMatches / $totalSkillImportance) * 100);
+                $maxPossibleSkillScore = $totalSkillImportance * 20;
+                $normalizedSkillScore = ($skillMatches / $maxPossibleSkillScore) * 100;
+                $boostedSkillScore = min(round($normalizedSkillScore * 2.0), 100);
+                $factors['skills'] = $boostedSkillScore;
             }
         }
         
@@ -393,7 +441,9 @@ class RecommendationService
         }
         
         if ($totalInterestImportance > 0) {
-            $factors['interests'] = round(($interestMatches / $totalInterestImportance) * 100);
+            $normalizedInterestScore = ($interestMatches / $totalInterestImportance) * 100;
+            $boostedInterestScore = min(round($normalizedInterestScore * 2.0), 100);
+            $factors['interests'] = $boostedInterestScore;
         }
         
         $levelMatchPercentages = [
@@ -733,58 +783,48 @@ class RecommendationService
             }
             
             foreach ($competitionSkills as $reqSkill) {
-                Log::info("[FactorDebug] CompSkill ID {$reqSkill->id}, Name: {$reqSkill->name}, Category: {$reqSkill->category}, Importance: {$reqSkill->importance_level}");
-                $totalSkillImportance += $reqSkill->importance_level;
-                
+                $importanceLevel = $reqSkill->pivot->importance_level ?? 3;
+                $totalSkillImportance += $importanceLevel;
+
                 $exactMatch = false;
                 $categoryMatch = false;
                 $relatedCategoryMatch = false;
                 $matchValue = 0;
-                
+
                 foreach ($studentSkills as $studentSkill) {
+                    // Exact skill ID match
                     if ($reqSkill->id === $studentSkill->id) {
-                        Log::info("[FactorDebug] EXACT MATCH: CompSkill {$reqSkill->id} & StudentSkill {$studentSkill->id}");
-                        $proficiencyPercentage = ($studentSkill->pivot->proficiency_level / 5);
-                        $matchValue = ($reqSkill->importance_level * $proficiencyPercentage);
+                        $proficiencyPercentage = ($studentSkill->pivot->proficiency_level / 5) * 100;
+                        $matchValue = ($importanceLevel * $proficiencyPercentage) / 5;
                         $exactMatch = true;
                         break;
                     }
-                    
+
+                    // Same category match
                     if (!$exactMatch && $reqSkill->category === $studentSkill->category) {
-                        Log::info("[FactorDebug] CATEGORY MATCH: CompSkill {$reqSkill->name} category ({$reqSkill->category}) matches StudentSkill {$studentSkill->name} category");
-                        $proficiencyPercentage = ($studentSkill->pivot->proficiency_level / 5) * 0.7;
-                        $matchValueForCategory = ($reqSkill->importance_level * $proficiencyPercentage);
-                        
-                        if ($matchValueForCategory > $matchValue) {
-                            $matchValue = $matchValueForCategory;
-                            $categoryMatch = true;
-                        }
+                        $proficiencyPercentage = ($studentSkill->pivot->proficiency_level / 5) * 100 * 0.7; // lower weight
+                        $matchValue = max($matchValue, ($importanceLevel * $proficiencyPercentage) / 5);
+                        $categoryMatch = true;
                     }
-                    
+
+                    // Related category match
                     if (!$exactMatch && !$categoryMatch) {
                         $relatedCategories = $relatedSkillCategories[$reqSkill->category] ?? [];
-                        
                         if (in_array($studentSkill->category, $relatedCategories)) {
-                            Log::info("[FactorDebug] RELATED CATEGORY MATCH: CompSkill {$reqSkill->name} category ({$reqSkill->category}) is related to StudentSkill {$studentSkill->name} category ({$studentSkill->category})");
-                            $proficiencyPercentage = ($studentSkill->pivot->proficiency_level / 5) * 0.4;
-                            $matchValueForRelatedCategory = ($reqSkill->importance_level * $proficiencyPercentage);
-                            
-                            if ($matchValueForRelatedCategory > $matchValue) {
-                                $matchValue = $matchValueForRelatedCategory;
-                                $relatedCategoryMatch = true;
-                            }
+                            $proficiencyPercentage = ($studentSkill->pivot->proficiency_level / 5) * 100 * 0.4; // lowest weight
+                            $matchValue = max($matchValue, ($importanceLevel * $proficiencyPercentage) / 5);
+                            $relatedCategoryMatch = true;
                         }
                     }
                 }
-                
+
                 if ($exactMatch || $categoryMatch || $relatedCategoryMatch) {
                     $skillMatches += $matchValue;
-                    Log::info("[FactorDebug] Added match value: {$matchValue}, Total now: {$skillMatches}");
                 }
             }
             
             $maxPossibleSkillScore = $competitionSkills->sum(function($skill) {
-                return $skill->importance_level;
+                return $skill->pivot->importance_level ?? 3;
             });
 
             if ($maxPossibleSkillScore > 0) {
@@ -925,7 +965,9 @@ class RecommendationService
         }
 
         if ($maxPossibleInterestScore > 0) {
-            $factors['interests'] = round(($interestMatchScore / $maxPossibleInterestScore) * 100);
+            $normalizedInterestScore = ($interestMatchScore / $maxPossibleInterestScore) * 100;
+            $boostedInterestScore = min(round($normalizedInterestScore * 2.0), 100);
+            $factors['interests'] = $boostedInterestScore;
         }
         
         // Calculate deadline factor

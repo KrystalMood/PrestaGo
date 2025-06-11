@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
             CompetitionSeeder::class,
             MahasiswaSeeder::class,
             DosenSeeder::class,
+            UserSkillSeeder::class,
+            UserInterestSeeder::class,
             SubCompetitionSeeder::class,
             ActivitySeeder::class,
             AchievementSeeder::class,

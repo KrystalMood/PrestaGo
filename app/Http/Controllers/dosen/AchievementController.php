@@ -10,11 +10,58 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Auth;
+use App\Models\SubCompetitionParticipantModel;
+use App\Models\CompetitionParticipantModel;
+use Illuminate\Support\Facades\Schema;
 
 class AchievementController extends Controller
 {
     public function index(Request $request)
     {
+        $lecturer = Auth::user();
+
+        $subParticipants = SubCompetitionParticipantModel::where('mentor_id', $lecturer->id)
+                                    ->where('status_mentor', 'accept')
+                                    ->get(['user_id', 'team_members']);
+
+        $subCompetitionStudentIds = collect();
+        foreach ($subParticipants as $participant) {
+            $subCompetitionStudentIds->push($participant->user_id);
+
+            $members = $participant->team_members;
+            if (is_string($members)) {
+                $members = json_decode($members, true);
+            }
+            if (is_array($members)) {
+                foreach ($members as $member) {
+                    if (is_array($member) && isset($member['id'])) {
+                        $subCompetitionStudentIds->push($member['id']);
+                    } elseif (is_scalar($member)) {
+                        $subCompetitionStudentIds->push($member);
+                    }
+                }
+            }
+        }
+        $subCompetitionStudentIds = $subCompetitionStudentIds->unique();
+
+        $competitionParticipantsQuery = CompetitionParticipantModel::where('mentor_id', $lecturer->id);
+        if (Schema::hasColumn('competition_participants', 'status_mentor')) {
+            $competitionParticipantsQuery->where('status_mentor', 'accept');
+        }
+        $competitionStudentIds = $competitionParticipantsQuery->pluck('user_id');
+
+        $allowedStudentIds = $subCompetitionStudentIds->merge($competitionStudentIds)->unique()->toArray();
+
+        if (empty($allowedStudentIds)) {
+            return view('Dosen.achievements.index', [
+                'achievements' => collect(),
+                'totalAchievements' => 0,
+                'totalStudentsWithAchievements' => 0,
+                'verifiedAchievements' => 0,
+                'currentSort' => $request->input('sort', 'achievements_desc')
+            ]);
+        }
+
         $search = $request->input('search');
         
         $type = $request->input('type');
@@ -24,6 +71,7 @@ class AchievementController extends Controller
         $query = AchievementModel::select('user_id')
                     ->selectRaw('COUNT(*) as total_achievements')
                     ->with(['user'])
+                    ->whereIn('user_id', $allowedStudentIds)
                     ->when($search, function ($query, $search) {
                         return $query->whereHas('user', function ($q) use ($search) {
                             $q->where('name', 'LIKE', '%' . $search . '%')
@@ -55,9 +103,11 @@ class AchievementController extends Controller
         
         $Achievements = $query->paginate(10);
         
-        $totalAchievements = AchievementModel::count();
-        $totalStudentsWithAchievements = AchievementModel::distinct('user_id')->count('user_id');
-        $verifiedAchievements = AchievementModel::verified()->count();
+        $totalAchievements = AchievementModel::whereIn('user_id', $allowedStudentIds)->count();
+        $totalStudentsWithAchievements = AchievementModel::whereIn('user_id', $allowedStudentIds)
+                                            ->distinct('user_id')
+                                            ->count('user_id');
+        $verifiedAchievements = AchievementModel::whereIn('user_id', $allowedStudentIds)->verified()->count();
         
         return view('Dosen.achievements.index', [
             'achievements' => $Achievements,
@@ -179,6 +229,43 @@ class AchievementController extends Controller
     
     public function show($id, Request $request)
     {
+        $lecturer = Auth::user();
+
+        // Recompute with team members for show guard
+        $subParticipants = SubCompetitionParticipantModel::where('mentor_id', $lecturer->id)
+                                    ->where('status_mentor', 'accept')
+                                    ->get(['user_id', 'team_members']);
+        $subCompetitionStudentIds = collect();
+        foreach ($subParticipants as $participant) {
+            $subCompetitionStudentIds->push($participant->user_id);
+            $members = $participant->team_members;
+            if (is_string($members)) {
+                $members = json_decode($members, true);
+            }
+            if (is_array($members)) {
+                foreach ($members as $member) {
+                    if (is_array($member) && isset($member['id'])) {
+                        $subCompetitionStudentIds->push($member['id']);
+                    } elseif (is_scalar($member)) {
+                        $subCompetitionStudentIds->push($member);
+                    }
+                }
+            }
+        }
+        $subCompetitionStudentIds = $subCompetitionStudentIds->unique();
+
+        $competitionParticipantsQuery = CompetitionParticipantModel::where('mentor_id', $lecturer->id);
+        if (Schema::hasColumn('competition_participants', 'status_mentor')) {
+            $competitionParticipantsQuery->where('status_mentor', 'accept');
+        }
+        $competitionStudentIds = $competitionParticipantsQuery->pluck('user_id');
+
+        $allowedStudentIds = $subCompetitionStudentIds->merge($competitionStudentIds)->unique();
+
+        if (!$allowedStudentIds->contains($id)) {
+            abort(403, 'Anda tidak memiliki izin untuk melihat prestasi mahasiswa ini.');
+        }
+
         $user = UserModel::findOrFail($id);
 
         $query = AchievementModel::with(['user', 'verifier', 'attachments'])
