@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{id}/show', [UserController::class, 'show'])->name('show');
             Route::get('/{id}/details', [UserController::class, 'getDetails'])->name('details');
             Route::get('/export', [UserController::class, 'export'])->name('export');
+            Route::post('/import', [UserController::class, 'import'])->name('import');
+            Route::get('/import/template', [UserController::class, 'importTemplate'])->name('import.template');
         });
 
         // Competition Management Routes

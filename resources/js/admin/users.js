@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.addUserModal = document.getElementById('add-user-modal');
         window.editUserModal = document.getElementById('edit-user-modal');
         window.showUserModal = document.getElementById('show-user-modal');
+        window.importUserModal = document.getElementById('import-user-modal');
         
         const addUserBtn = document.getElementById('open-add-user-modal');
         if (addUserBtn) {
@@ -73,8 +74,36 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        const importUserBtn = document.getElementById('open-import-user-modal');
+        if (importUserBtn) {
+            importUserBtn.addEventListener('click', function() {
+                if (window.importUserModal) {
+                    window.importUserModal.classList.remove('hidden');
+                    resetFormErrors('import-user-form');
+                    document.getElementById('import-user-success').classList.add('hidden');
+                    document.getElementById('import-user-error').classList.add('hidden');
+                }
+            });
+        }
+        
+        const closeImportModalBtn = document.getElementById('close-import-modal');
+        const cancelImportUserBtn = document.getElementById('cancel-import-user');
+        [closeImportModalBtn, cancelImportUserBtn].forEach(button => {
+            if (button) {
+                button.addEventListener('click', function() {
+                    if (window.importUserModal) {
+                        window.importUserModal.classList.add('hidden');
+                        document.getElementById('import-user-form').reset();
+                        resetFormErrors('import-user-form');
+                        resetImportForm();
+                    }
+                });
+            }
+        });
+        
         setupAddUserForm();
         setupRoleFieldsVisibility();
+        setupImportUserForm();
         attachEditButtonListeners();
         attachShowButtonListeners();
     }
@@ -1310,6 +1339,276 @@ document.addEventListener('DOMContentLoaded', function() {
                     lecturerFields.forEach(field => field.style.display = 'block');
                 }
             });
+        }
+    }
+
+    // Sets up the import user form with enhanced UI and AJAX submission
+    function setupImportUserForm() {
+        const importForm = document.getElementById('import-user-form');
+        const importFile = document.getElementById('import-file');
+        const importDropzone = document.getElementById('import-dropzone');
+        const importDefaultState = document.getElementById('import-default-state');
+        const importSelectedState = document.getElementById('import-selected-state');
+        const importFileName = document.getElementById('import-file-name');
+        const importFileSize = document.getElementById('import-file-size');
+        const importChangeFile = document.getElementById('import-change-file');
+        
+        if (!importForm || !importFile || !importDropzone) return;
+        
+        importFile.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    showFileError('Hanya file CSV yang diperbolehkan');
+                    resetImportForm();
+                    return;
+                }
+                
+                if (file.size > 2 * 1024 * 1024) {
+                    showFileError('Ukuran file terlalu besar (maksimal 2MB)');
+                    resetImportForm();
+                    return;
+                }
+                
+                importFileName.textContent = file.name;
+                importFileSize.textContent = formatFileSize(file.size);
+                importDefaultState.classList.add('hidden');
+                importSelectedState.classList.remove('hidden');
+                importDropzone.classList.remove('border-red-500', 'bg-red-50');
+                importDropzone.classList.add('border-green-500', 'bg-green-50');
+                document.getElementById('file-error').classList.add('hidden');
+            }
+        });
+        
+        if (importChangeFile) {
+            importChangeFile.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                resetImportForm();
+                importFile.click();
+            });
+        }
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            importDropzone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            importDropzone.addEventListener(eventName, function() {
+                importDropzone.classList.add('border-blue-500', 'bg-blue-50');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            importDropzone.addEventListener(eventName, function() {
+                importDropzone.classList.remove('border-blue-500', 'bg-blue-50');
+            }, false);
+        });
+        
+        importDropzone.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                importFile.files = files;
+                
+                const event = new Event('change', { bubbles: true });
+                importFile.dispatchEvent(event);
+            }
+        }, false);
+        
+        importForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!importFile.files || !importFile.files[0]) {
+                showFileError('Pilih file CSV terlebih dahulu');
+                importDropzone.classList.add('border-red-500', 'bg-red-50');
+                return;
+            }
+            
+            document.getElementById('import-user-error').classList.add('hidden');
+            document.getElementById('import-user-success').classList.add('hidden');
+            
+            const submitButton = document.getElementById('submit-import-user');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Mengimpor...
+            `;
+            
+            const formData = new FormData(importForm);
+            
+            fetch(userRoutes.import, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                const originalResponse = response.clone();
+                return response.text().then(text => {
+                    try {
+                        return { 
+                            json: JSON.parse(text), 
+                            status: originalResponse.status,
+                            ok: originalResponse.ok
+                        };
+                    } catch (e) {
+                        if (text.includes('success') && text.includes('Berhasil mengimpor')) {
+                            return { 
+                                json: { 
+                                    success: true, 
+                                    message: 'Berhasil mengimpor pengguna',
+                                    html: true
+                                }, 
+                                status: 200,
+                                ok: true
+                            };
+                        } else if (text.includes('error') || text.includes('warning')) {
+                            return { 
+                                json: { 
+                                    success: false, 
+                                    message: 'Terjadi kesalahan saat mengimpor data',
+                                    html: true
+                                }, 
+                                status: 400,
+                                ok: false
+                            };
+                        }
+                        return { 
+                            json: { 
+                                success: false, 
+                                message: 'Respons tidak valid dari server',
+                                html: true
+                            }, 
+                            status: originalResponse.status,
+                            ok: false
+                        };
+                    }
+                });
+            })
+            .then(data => {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+                
+                if (!data.ok) {
+                    if (data.status === 422 && data.json.errors) {
+                        const errors = data.json.errors;
+                        displayImportErrors(errors);
+                    } else if (data.json.import_errors) {
+                        displayImportErrors({ file: data.json.import_errors });
+                    } else {
+                        showImportError(data.json.message || 'Terjadi kesalahan saat mengimpor data');
+                    }
+                    return;
+                }
+                
+                showImportSuccess(data.json.message || 'Berhasil mengimpor pengguna');
+                
+                importFile.value = '';
+                resetImportForm(false);
+                
+                refreshUsersTable();
+            })
+            .catch(error => {
+                console.error('Error importing users:', error);
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+                showImportError('Terjadi kesalahan saat mengimpor data. Silakan coba lagi.');
+            });
+        });
+        
+        function resetImportForm(hideMessages = true) {
+            importDefaultState.classList.remove('hidden');
+            importSelectedState.classList.add('hidden');
+            importDropzone.classList.remove(
+                'border-red-500', 'bg-red-50',
+                'border-green-500', 'bg-green-50',
+                'border-blue-500', 'bg-blue-50'
+            );
+            
+            if (hideMessages) {
+                document.getElementById('file-error').classList.add('hidden');
+                document.getElementById('import-user-error').classList.add('hidden');
+                document.getElementById('import-user-success').classList.add('hidden');
+            }
+        }
+        
+        function showFileError(message) {
+            const errorElement = document.getElementById('file-error');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+            }
+        }
+        
+        function showImportError(message) {
+            const errorContainer = document.getElementById('import-user-error');
+            errorContainer.classList.remove('hidden');
+            
+            const errorList = document.getElementById('import-user-error-list');
+            errorList.innerHTML = `<li>${message}</li>`;
+            document.getElementById('import-user-error-count').textContent = '1';
+            
+            errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function displayImportErrors(errors) {
+            const errorContainer = document.getElementById('import-user-error');
+            const errorList = document.getElementById('import-user-error-list');
+            let errorCount = 0;
+            
+            errorList.innerHTML = '';
+            
+            for (const field in errors) {
+                const messages = Array.isArray(errors[field]) ? errors[field] : [errors[field]];
+                
+                messages.forEach(message => {
+                    const li = document.createElement('li');
+                    li.textContent = message;
+                    errorList.appendChild(li);
+                    errorCount++;
+                });
+            }
+            
+            document.getElementById('import-user-error-count').textContent = errorCount;
+            errorContainer.classList.remove('hidden');
+            errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function showImportSuccess(message) {
+            const successContainer = document.getElementById('import-user-success');
+            const successMessage = document.getElementById('import-user-success-message');
+            
+            successMessage.textContent = message;
+            successContainer.classList.remove('hidden');
+            
+            document.getElementById('import-user-error').classList.add('hidden');
+            
+            successContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
     }
 

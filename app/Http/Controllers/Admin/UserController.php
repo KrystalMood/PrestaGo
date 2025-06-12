@@ -318,4 +318,126 @@ class UserController extends Controller
         
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Download CSV template for user import.
+     */
+    public function importTemplate()
+    {
+        $filename = 'users_import_template.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () {
+            $file = fopen('php://output', 'w');
+
+            // Header columns expected during import
+            fputcsv($file, [
+                'name',
+                'email',
+                'password',
+                'level_kode',
+                'nim',
+                'nip',
+                'program_studi_id',
+            ]);
+
+            // Example row
+            fputcsv($file, [
+                'John Doe',
+                'john.doe@example.com',
+                'password123',
+                'MHS',
+                '21081010001',
+                '',
+                '1',
+            ]);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Handle import of users from a CSV file.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        $path = $request->file('file')->getRealPath();
+
+        // Open CSV file
+        if (!$handle = fopen($path, 'r')) {
+            return back()->with('error', 'Tidak dapat membaca berkas yang diunggah.');
+        }
+
+        $header = fgetcsv($handle);
+
+        $requiredColumns = ['name', 'email', 'password', 'level_kode'];
+        foreach ($requiredColumns as $column) {
+            if (!in_array($column, $header)) {
+                fclose($handle);
+                return back()->with('error', "Kolom $column tidak ditemukan pada berkas.");
+            }
+        }
+
+        $row = 1; // considering header row as 0
+        $imported = 0;
+        $errors = [];
+
+        while (($data = fgetcsv($handle)) !== false) {
+            $row++;
+            $rowData = array_combine($header, $data);
+
+            if (empty($rowData['name']) || empty($rowData['email']) || empty($rowData['password']) || empty($rowData['level_kode'])) {
+                $errors[] = "Baris $row: data wajib tidak lengkap.";
+                continue;
+            }
+
+            // Check level kode validity
+            $level = LevelModel::where('level_kode', $rowData['level_kode'])->first();
+            if (!$level) {
+                $errors[] = "Baris $row: level_kode {$rowData['level_kode']} tidak valid.";
+                continue;
+            }
+
+            // Skip duplicate email
+            if (UserModel::where('email', $rowData['email'])->exists()) {
+                $errors[] = "Baris $row: email {$rowData['email']} sudah digunakan.";
+                continue;
+            }
+
+            try {
+                UserModel::create([
+                    'name' => $rowData['name'],
+                    'email' => $rowData['email'],
+                    'password' => Hash::make($rowData['password']),
+                    'level_id' => $level->id,
+                    'nim' => $rowData['nim'] ?? null,
+                    'nip' => $rowData['nip'] ?? null,
+                    'program_studi_id' => $rowData['program_studi_id'] ?? null,
+                ]);
+                $imported++;
+            } catch (\Exception $e) {
+                $errors[] = "Baris $row: gagal menambah pengguna. {$e->getMessage()}";
+            }
+        }
+
+        fclose($handle);
+
+        $message = "Berhasil mengimpor $imported pengguna.";
+        if (!empty($errors)) {
+            $message .= ' Beberapa baris gagal diimpor.';
+            return back()->with('warning', $message)->with('import_errors', $errors);
+        }
+
+        return back()->with('success', $message);
+    }
 }

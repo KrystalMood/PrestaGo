@@ -32,13 +32,12 @@
             </svg>
             Tambah Pengguna
         </button>
-        
-        <x-admin.buttons.action-button
-            route="{{ route('admin.users.export') }}"
-            text="Ekspor Data"
-            icon="download"
-            color="green"
-        />
+        <button type="button" id="open-import-user-modal" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M12 4v12m8-6H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Import Pengguna
+        </button>
     </div>
 
     @php
@@ -78,12 +77,15 @@
 @include('admin.users.components.edit-user-modal')
 @include('admin.users.components.show-user-modal')
 @include('admin.users.components.delete-user-modal')
+@include('admin.users.components.import-user-modal')
 
 <!-- JavaScript Variables and Setup -->
 <script>
     window.userRoutes = {
         index: "{{ route('admin.users.index') }}",
-        store: "{{ route('admin.users.store') }}"
+        store: "{{ route('admin.users.store') }}",
+        import: "{{ route('admin.users.import') }}",
+        importTemplate: "{{ route('admin.users.import.template') }}"
     };
     window.csrfToken = "{{ csrf_token() }}";
     window.defaultAvatarUrl = "{{ asset('images/avatar.png') }}";

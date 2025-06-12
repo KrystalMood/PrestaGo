@@ -47,13 +47,6 @@
                 </svg>
                 Tambah Kompetisi
             </button>
-            
-            <x-admin.buttons.action-button
-                route="#"
-                text="Ekspor Data"
-                icon="download"
-                color="green"
-            />
         </div>
 
         @component('admin.components.ui.search-and-filter', [
