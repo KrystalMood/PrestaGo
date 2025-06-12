@@ -17,6 +17,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf as PdfWriter;
 
 class ReportController extends Controller
 {
@@ -195,18 +196,15 @@ class ReportController extends Controller
         
         foreach ($programs as $program) {
             $totalStudents = UserModel::where('program_studi_id', $program->id)
-                ->where('role', 'MHS')
                 ->count();
                 
             $achievements = AchievementModel::join('users', 'achievements.user_id', '=', 'users.id')
                 ->where('users.program_studi_id', $program->id)
-                ->where('users.role', 'MHS')
                 ->where('achievements.status', 'verified')
                 ->count();
                 
             $studentsWithAchievements = AchievementModel::join('users', 'achievements.user_id', '=', 'users.id')
                 ->where('users.program_studi_id', $program->id)
-                ->where('users.role', 'MHS')
                 ->where('achievements.status', 'verified')
                 ->distinct('achievements.user_id')
                 ->count('achievements.user_id');
@@ -505,22 +503,20 @@ class ReportController extends Controller
 
     public function generateReport(Request $request)
     {
-        $request->validate([
-            'report_format' => 'required|in:excel',
-            'date_range' => 'required|in:current_year,current_semester,last_year,all_time',
-            'report_type' => 'required|in:comprehensive,summary',
-        ]);
+        $reportFormat = $request->input('report_format', 'excel');
+        $reportType = 'comprehensive';
+        $dateRange = 'all_time';
 
         $userId = auth()->id();
         \DB::table('activity_logs')->insert([
             'activity_type' => 'report_export',
             'user_id' => $userId,
             'details' => json_encode([
-                'format' => $request->report_format,
-                'date_range' => $request->date_range,
-                'report_type' => $request->report_type,
+                'format' => $reportFormat,
+                'date_range' => $dateRange,
+                'report_type' => $reportType,
             ]),
-            'description' => "Exported {$request->report_type} report in {$request->report_format} format",
+            'description' => "Exported comprehensive report in excel format",
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -528,7 +524,7 @@ class ReportController extends Controller
         $startDate = null;
         $endDate = Carbon::now();
         
-        switch ($request->date_range) {
+        switch ($dateRange) {
             case 'current_year':
                 $startDate = Carbon::now()->startOfYear();
                 break;
@@ -569,12 +565,10 @@ class ReportController extends Controller
         $programStats = [];
         foreach ($studyPrograms as $program) {
             $totalStudents = UserModel::where('program_studi_id', $program->id)
-                ->where('role', 'MHS')
                 ->count();
                 
             $programAchievements = AchievementModel::join('users', 'achievements.user_id', '=', 'users.id')
                 ->where('users.program_studi_id', $program->id)
-                ->where('users.role', 'MHS')
                 ->where('achievements.status', 'verified');
                 
             if ($startDate) {
@@ -633,12 +627,15 @@ class ReportController extends Controller
         });
         
         $dateStr = Carbon::now()->format('Y-m-d');
-        $filename = "achievement-report-{$request->report_type}-{$dateStr}";
+        $filename = "achievement-report-{$reportType}-{$dateStr}";
         
-        return $this->generateExcelReport($achievements, $programStats, $categoryAchievements, $request->report_type, $filename);
+        if ($reportFormat === 'pdf') {
+            return $this->generateExcelReport($achievements, $programStats, $categoryAchievements, $reportType, $filename, 'pdf');
+        }
+        return $this->generateExcelReport($achievements, $programStats, $categoryAchievements, $reportType, $filename, 'excel');
     }
     
-    private function generateExcelReport($achievements, $programStats, $categoryAchievements, $reportType, $filename)
+    private function generateExcelReport($achievements, $programStats, $categoryAchievements, $reportType, $filename, $outputFormat = 'excel')
     {
         $spreadsheet = new Spreadsheet();
         
@@ -853,10 +850,122 @@ class ReportController extends Controller
             $categorySheet->getColumnDimension($col)->setAutoSize(true);
         }
         
+        // NEW: Add Yearly Trend Sheet
+        $trendSheet = $spreadsheet->createSheet();
+        $trendSheet->setTitle('Tren Tahunan');
+        
+        // Prepare yearly data for the last 4 years
+        $currentYear = Carbon::now()->year;
+        $yearlyData = [];
+        for ($i = 0; $i < 4; $i++) {
+            $year = $currentYear - $i;
+            $yearAchievements = AchievementModel::where('status', 'verified')
+                ->whereYear('date', $year)
+                ->count();
+            $yearParticipants = AchievementModel::where('status', 'verified')
+                ->whereYear('date', $year)
+                ->distinct('user_id')
+                ->count('user_id');
+            $successRate = $yearParticipants > 0 ? round($yearAchievements / $yearParticipants, 2) : 0;
+            $prevAchievements = AchievementModel::where('status', 'verified')
+                ->whereYear('date', $year - 1)
+                ->count();
+            $change = $this->calculateChange($yearAchievements, $prevAchievements);
+            $yearlyData[] = [
+                'year' => $year,
+                'achievements' => $yearAchievements,
+                'participants' => $yearParticipants,
+                'success_rate' => $successRate,
+                'change' => $change,
+            ];
+        }
+        // Reverse to chronological order (oldest first)
+        $yearlyData = array_reverse($yearlyData);
+        
+        // Headers
+        $trendHeaders = ['Tahun', 'Prestasi', 'Partisipan', 'Tingkat Keberhasilan', '% Perubahan'];
+        $trendSheet->fromArray([$trendHeaders], NULL, 'A1');
+        $trendSheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+        
+        $row = 2;
+        foreach ($yearlyData as $data) {
+            $trendSheet->setCellValue('A' . $row, $data['year']);
+            $trendSheet->setCellValue('B' . $row, $data['achievements']);
+            $trendSheet->setCellValue('C' . $row, $data['participants']);
+            $trendSheet->setCellValue('D' . $row, $data['success_rate']);
+            $trendSheet->setCellValue('E' . $row, $data['change']);
+            $row++;
+        }
+        $trendDataRange = 'A2:E' . ($row - 1);
+        $trendSheet->getStyle($trendDataRange)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                ],
+            ],
+        ]);
+        foreach(range('A', 'E') as $col) {
+            $trendSheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        // NEW: Add Period Comparison Sheet when at least two periods exist
+        $currentPeriod = PeriodModel::orderBy('end_date', 'desc')->first();
+        $previousPeriod = PeriodModel::orderBy('end_date', 'desc')->skip(1)->first();
+        if ($currentPeriod && $previousPeriod) {
+            $periodSheet = $spreadsheet->createSheet();
+            $periodSheet->setTitle('Perbandingan');
+            
+            $periodHeaders = ['Metode', $currentPeriod->name, $previousPeriod->name, 'Growth (%)'];
+            $periodSheet->fromArray([$periodHeaders], NULL, 'A1');
+            $periodSheet->getStyle('A1:D1')->applyFromArray($headerStyle);
+            
+            // Calculate metrics
+            $metrics = [];
+            // Total Achievements
+            $currentAch = AchievementModel::where('status', 'verified')->where('period_id', $currentPeriod->id)->count();
+            $prevAch = AchievementModel::where('status', 'verified')->where('period_id', $previousPeriod->id)->count();
+            $metrics[] = ['Total Prestasi', $currentAch, $prevAch, $this->calculateChange($currentAch, $prevAch)];
+            // Participation
+            $currentPart = AchievementModel::where('status', 'verified')->where('period_id', $currentPeriod->id)->distinct('user_id')->count('user_id');
+            $prevPart = AchievementModel::where('status', 'verified')->where('period_id', $previousPeriod->id)->distinct('user_id')->count('user_id');
+            $metrics[] = ['Partisipasi', $currentPart, $prevPart, $this->calculateChange($currentPart, $prevPart)];
+            // International Achievements
+            $currentInt = AchievementModel::where('status', 'verified')->where('period_id', $currentPeriod->id)->where('level', 'Internasional')->count();
+            $prevInt = AchievementModel::where('status', 'verified')->where('period_id', $previousPeriod->id)->where('level', 'Internasional')->count();
+            $metrics[] = ['Internasional', $currentInt, $prevInt, $this->calculateChange($currentInt, $prevInt)];
+            // National Achievements
+            $currentNat = AchievementModel::where('status', 'verified')->where('period_id', $currentPeriod->id)->where('level', 'Nasional')->count();
+            $prevNat = AchievementModel::where('status', 'verified')->where('period_id', $previousPeriod->id)->where('level', 'Nasional')->count();
+            $metrics[] = ['Nasional', $currentNat, $prevNat, $this->calculateChange($currentNat, $prevNat)];
+            
+            $periodSheet->fromArray($metrics, NULL, 'A2');
+            $periodDataRange = 'A2:D' . (count($metrics) + 1);
+            $periodSheet->getStyle($periodDataRange)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                    ],
+                ],
+            ]);
+            foreach(range('A', 'D') as $col) {
+                $periodSheet->getColumnDimension($col)->setAutoSize(true);
+            }
+        }
+        
+        $spreadsheet->setActiveSheetIndex(0);
+        
+        if ($outputFormat === 'pdf') {
+            $tempFile = tempnam(sys_get_temp_dir(), 'pdf');
+            $writer = new PdfWriter($spreadsheet);
+            $writer->writeAllSheets();
+            $writer->save($tempFile);
+            return response()->download($tempFile, $filename . '.pdf', [
+                'Content-Type' => 'application/pdf',
+            ])->deleteFileAfterSend(true);
+        }
         $tempFile = tempnam(sys_get_temp_dir(), 'excel');
         $writer = new Xlsx($spreadsheet);
         $writer->save($tempFile);
-        
         return response()->download($tempFile, $filename . '.xlsx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ])->deleteFileAfterSend(true);

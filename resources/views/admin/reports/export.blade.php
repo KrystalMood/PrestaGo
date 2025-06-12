@@ -33,64 +33,59 @@
         <div class="lg:col-span-3">
             <!-- Export Form -->
             <div class="bg-white rounded-lg shadow-custom overflow-hidden mb-6">
-                <div class="p-4 border-b border-gray-200">
-                    <h2 class="font-semibold text-gray-800">Ekspor Laporan Prestasi</h2>
+                <div class="p-4 bg-indigo-50 border-b border-indigo-100">
+                    <h2 class="font-semibold text-indigo-800">Ekspor Laporan Prestasi</h2>
                 </div>
                 <div class="p-6">
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-800">
+                                    Laporan ini akan mencakup semua data prestasi terverifikasi, termasuk statistik program studi, kategori lomba, dan tren tahunan.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <form action="{{ route('admin.reports.generate-report') }}" method="POST" id="export-form">
                         @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
                             <div>
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Jenis Laporan</h3>
-                                <div class="space-y-4">
-                                    <div class="flex items-start">
-                                        <div class="flex items-center h-5">
-                                            <input id="report_type_comprehensive" name="report_type" value="comprehensive" type="radio" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" checked>
-                                        </div>
-                                        <div class="ml-3 text-sm">
-                                            <label for="report_type_comprehensive" class="font-medium text-gray-700">Laporan Komprehensif</label>
-                                            <p class="text-gray-500">Laporan lengkap prestasi mahasiswa</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-start">
-                                        <div class="flex items-center h-5">
-                                            <input id="report_type_summary" name="report_type" value="summary" type="radio" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
-                                        </div>
-                                        <div class="ml-3 text-sm">
-                                            <label for="report_type_summary" class="font-medium text-gray-700">Ringkasan Eksekutif</label>
-                                            <p class="text-gray-500">Ringkasan untuk keperluan manajemen</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Format & Periode</h3>
-                                <div class="space-y-4">
-                                    <div>
-                                        <input type="hidden" name="report_format" value="excel">
-                                        <div class="flex items-center mb-2">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Format Laporan</h3>
+                                <div class="bg-white p-4 border border-gray-200 rounded-lg">
+                                    <div class="space-y-4">
+                                        <div class="flex items-center p-3 rounded-md hover:bg-gray-50 transition">
+                                            <input id="format_excel" name="report_format" type="radio" value="excel" class="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500" checked>
+                                            <label for="format_excel" class="ml-3 flex flex-col">
+                                                <span class="text-sm font-medium text-gray-900">Excel (.xlsx)</span>
+                                                <span class="text-xs text-gray-500">Multiple sheets dengan format yang dapat diedit</span>
+                                            </label>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-auto h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            <span class="text-sm font-medium text-gray-700">Format: Excel Spreadsheet (Multiple Sheets)</span>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label for="date_range" class="block text-sm font-medium text-gray-700">Periode Waktu</label>
-                                        <select id="date_range" name="date_range" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                            <option value="current_year">Tahun Berjalan</option>
-                                            <option value="current_semester">Semester Berjalan</option>
-                                            <option value="last_year">Tahun Lalu</option>
-                                            <option value="all_time">Semua Waktu</option>
-                                        </select>
+                                        <div class="flex items-center p-3 rounded-md hover:bg-gray-50 transition">
+                                            <input id="format_pdf" name="report_format" type="radio" value="pdf" class="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                            <label for="format_pdf" class="ml-3 flex flex-col">
+                                                <span class="text-sm font-medium text-gray-900">PDF (.pdf)</span>
+                                                <span class="text-xs text-gray-500">Format dokumen yang siap cetak</span>
+                                            </label>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-auto h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="mt-8 flex justify-end">
-                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>

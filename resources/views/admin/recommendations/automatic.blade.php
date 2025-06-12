@@ -214,24 +214,12 @@
                             <label for="sub_competition_id" class="block text-sm font-medium text-gray-700 mb-1">Sub Kompetisi</label>
                             <div class="select-container">
                                 <select id="sub_competition_id" name="sub_competition_id" class="custom-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                    <option value="">-- Semua Sub Kompetisi --</option>
+                                    <option value="">-- Pilih Sub Kompetisi --</option>
                                 </select>
                             </div>
                             <p class="mt-1 text-xs text-gray-500">
                                 Pilih sub kompetisi spesifik, atau biarkan kosong untuk semua sub kompetisi dari kompetisi yang dipilih
                             </p>
-                        </div>
-                        
-                        <div>
-                            <label for="program" class="block text-sm font-medium text-gray-700 mb-1">Program Studi</label>
-                            <div class="select-container">
-                                <select id="program" name="program_studi_id" class="custom-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-2 border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                                    <option value="">-- Semua Program Studi --</option>
-                                    @foreach($programs as $program)
-                                        <option value="{{ $program->id }}">{{ $program->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
                         </div>
                         
                         <div>
@@ -893,7 +881,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show sub-competition dropdown and fetch options via AJAX
             subCompetitionContainer.classList.remove('hidden');
             // Clear existing options
-            subCompetitionDropdown.innerHTML = '<option value="">-- Semua Sub Kompetisi --</option>';
+            subCompetitionDropdown.innerHTML = '<option value="">-- Pilih Sub Kompetisi --</option>';
             
             // Here you would typically fetch sub-competitions via AJAX
             // For example:
