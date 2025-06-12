@@ -386,12 +386,12 @@
     window.allSkillsMasterList = @json($skills ?? []);
     
     // Debug skills data
-    console.log('Skills data loaded in page:');
-    console.log('Total skills:', window.allSkillsMasterList.length);
+    // console.log('Skills data loaded in page:');
+    // console.log('Total skills:', window.allSkillsMasterList.length);
     
     // If we don't have skills data, load it via AJAX before the main JS initializes
     if (!window.allSkillsMasterList || window.allSkillsMasterList.length === 0) {
-        console.log('No skills loaded from server. Fetching via AJAX before initializing JS...');
+        // console.log('No skills loaded from server. Fetching via AJAX before initializing JS...');
         
         // Create a promise for loading the JS
         window.skillsLoaded = new Promise((resolve, reject) => {
@@ -410,11 +410,11 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Skills fetched via AJAX:', data.count);
+                    // console.log('Skills fetched via AJAX:', data.count);
                     window.allSkillsMasterList = data.skills;
-                    console.log('First 5 skills:', window.allSkillsMasterList.slice(0, 5));
+                    // console.log('First 5 skills:', window.allSkillsMasterList.slice(0, 5));
                     if (window.allSkillsMasterList.length > 0) {
-                        console.log('First skill properties:', Object.keys(window.allSkillsMasterList[0]));
+                        // console.log('First skill properties:', Object.keys(window.allSkillsMasterList[0]));
                     }
                     resolve(data.skills);
                 })
@@ -426,9 +426,9 @@
     } else {
         // Skills already loaded, create a resolved promise
         window.skillsLoaded = Promise.resolve(window.allSkillsMasterList);
-        console.log('First 5 skills:', window.allSkillsMasterList.slice(0, 5));
+        // console.log('First 5 skills:', window.allSkillsMasterList.slice(0, 5));
         if (window.allSkillsMasterList.length > 0) {
-            console.log('First skill properties:', Object.keys(window.allSkillsMasterList[0]));
+            // console.log('First skill properties:', Object.keys(window.allSkillsMasterList[0]));
         }
     }
     
@@ -436,8 +436,8 @@
     window.allInterestsMasterList = @json($interests ?? []);
     
     // Debug interest areas data
-    console.log('Interest areas data loaded in page:');
-    console.log('Total interest areas:', window.allInterestsMasterList.length);
+    // console.log('Interest areas data loaded in page:');
+    // console.log('Total interest areas:', window.allInterestsMasterList.length);
     
 </script>
 @vite(['resources/js/dosen/profile.js'])

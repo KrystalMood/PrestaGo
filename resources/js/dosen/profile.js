@@ -3,7 +3,7 @@ function setupTabs() {
     const tabLinks = document.querySelectorAll('.tab-link');
     const tabContents = document.querySelectorAll('.tab-content');
     
-    console.log('Initializing tabs. Found links:', tabLinks.length, 'Found contents:', tabContents.length);
+    // console.log('Initializing tabs. Found links:', tabLinks.length, 'Found contents:', tabContents.length);
 
     if (tabLinks.length === 0 || tabContents.length === 0) {
         console.error('Tab links or contents not found. Aborting tab setup.');
@@ -19,11 +19,11 @@ function setupTabs() {
 
     tabContents.forEach(content => {
         if (content.id === firstTabTargetId) {
-            console.log('Initial show:', content.id);
+            // console.log('Initial show:', content.id);
             content.style.display = 'block'; 
             content.classList.remove('hidden');
         } else {
-            console.log('Initial hide:', content.id);
+            // console.log('Initial hide:', content.id);
             content.style.display = 'none'; 
             content.classList.add('hidden');
         }
@@ -32,7 +32,7 @@ function setupTabs() {
     tabLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('Tab clicked:', this.textContent.trim());
+            // console.log('Tab clicked:', this.textContent.trim());
             
             tabLinks.forEach(tabLink => {
                 tabLink.classList.remove('border-blue-600', 'text-blue-600');
@@ -43,20 +43,20 @@ function setupTabs() {
             this.classList.add('border-blue-600', 'text-blue-600');
             
             tabContents.forEach(content => {
-                console.log('Hiding content:', content.id);
+                // console.log('Hiding content:', content.id);
                 content.style.display = 'none';
                 content.classList.add('hidden'); 
             });
             
             const targetId = this.getAttribute('data-target');
-            console.log('Attempting to show content with ID:', targetId);
+            // console.log('Attempting to show content with ID:', targetId);
             const targetElement = document.getElementById(targetId);
             
             if (targetElement) {
-                console.log('Found target element:', targetElement);
+                // console.log('Found target element:', targetElement);
                 targetElement.style.display = 'block';
                 targetElement.classList.remove('hidden'); 
-                console.log('Set display to block for:', targetId);
+                // console.log('Set display to block for:', targetId);
             } else {
                 console.error('Target content element not found for ID:', targetId);
             }
@@ -443,7 +443,7 @@ function addInterestToUserList(interestId, interestName, interestDescription) {
 function saveInterestsToDatabase() {
     const interestsData = prepareInterestsData();
     
-    console.log("Saving interests data:", interestsData);
+    // console.log("Saving interests data:", interestsData);
     
     const form = document.getElementById('interests-form');
     if (!form) {
@@ -471,7 +471,7 @@ function saveInterestsToDatabase() {
     
     document.body.appendChild(savingIndicator);
     
-    console.log("Sending data to server:", dataToSend);
+    // console.log("Sending data to server:", dataToSend);
     
     fetch(form.action, {
         method: 'POST',
@@ -485,7 +485,7 @@ function saveInterestsToDatabase() {
     .then(response => {
         if (!response.ok) {
             if (response.status === 422 && interestsData.length === 0) {
-                console.log("Server rejected empty interests array, but this is expected. Interests successfully cleared.");
+                // console.log("Server rejected empty interests array, but this is expected. Interests successfully cleared.");
                 return { success: true, message: "Semua bidang minat berhasil dihapus" };
             }
             throw new Error(`Server responded with status: ${response.status}`);
@@ -497,10 +497,10 @@ function saveInterestsToDatabase() {
             savingIndicator.remove();
         }
         
-        console.log('Interests save response:', data);
+        // console.log('Interests save response:', data);
         
         if (data.success) {
-            console.log('Interests saved successfully');
+            // console.log('Interests saved successfully');
         } else {
             console.error('Error saving interests:', data.errors || data);
             showToast('Error: ' + (data.message || 'Gagal menyimpan bidang minat'), 'error');
@@ -514,7 +514,7 @@ function saveInterestsToDatabase() {
         console.error('Fetch error:', error);
         
         if (error.message && error.message.includes('422') && interestsData.length === 0) {
-            console.log("Server rejected empty interests array. This is expected behavior when removing all interests.");
+            // console.log("Server rejected empty interests array. This is expected behavior when removing all interests.");
         } else {
             showToast('Terjadi kesalahan saat menyimpan bidang minat', 'error');
         }
@@ -536,11 +536,11 @@ function handleRemoveInterest(event) {
     const interestName = interestItem.querySelector('h4').textContent;
     let userInterestsList = document.getElementById('user-interests-list');
     
-    console.log(`Attempting to remove interest: ${interestName} (ID: ${interestId})`);
+    // console.log(`Attempting to remove interest: ${interestName} (ID: ${interestId})`);
 
     const allInterestItems = document.querySelectorAll('.interest-item');
     if (allInterestItems.length === 1) {
-        console.log("Cannot remove the last interest - showing notification");
+        // console.log("Cannot remove the last interest - showing notification");
         showToast('Tidak dapat menghapus bidang minat terakhir. Anda harus memiliki minimal satu bidang minat.', 'warning');
         
         interestItem.classList.add('border-yellow-500');
@@ -561,14 +561,14 @@ function handleRemoveInterest(event) {
         try {
             if (interestItem.parentNode) {
                 interestItem.parentNode.removeChild(interestItem);
-                console.log('Interest element visually removed from DOM.');
+                // console.log('Interest element visually removed from DOM.');
             } else {
                 interestItem.remove(); 
-                console.log('Interest element visually removed from DOM via fallback.');
+                // console.log('Interest element visually removed from DOM via fallback.');
             }
 
             const remainingInterests = userInterestsList ? userInterestsList.querySelectorAll('.interest-item') : [];
-            console.log(`Remaining interests after visual removal: ${remainingInterests.length}`);
+            // console.log(`Remaining interests after visual removal: ${remainingInterests.length}`);
             
             saveInterestsToDatabase();
             showToast(`Bidang minat "${interestName}" telah dihapus`, 'info');
@@ -694,7 +694,7 @@ function initializeInterestComponents() {
     if (interestsForm) {
         interestsForm.onsubmit = function(event) {
             event.preventDefault();
-            console.log("Form submission prevented");
+            // console.log("Form submission prevented");
             return false;
         };
     }
@@ -713,21 +713,21 @@ function syncSkillsFromWindow() {
 
 // Main initialization function executed when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Profile page JS loaded');
+    // console.log('Profile page JS loaded');
 
     if (localStorage.getItem('student_skills_empty_state') === 'true') {
-        console.log("Found empty skills state in localStorage - checking if we need to sync");
+        // console.log("Found empty skills state in localStorage - checking if we need to sync");
         
         const noSkillsMessage = document.getElementById('no-skills-message');
         if (!noSkillsMessage) {
-            console.log("Server has skills but localStorage says we should have none - syncing");
+            // console.log("Server has skills but localStorage says we should have none - syncing");
             
             const container = document.getElementById('selected-skills-container');
             if (container) {
                 const skillItems = container.querySelectorAll('div[data-skill-id]');
                 
                 if (skillItems.length > 0) {
-                    console.log(`Removing ${skillItems.length} skills from UI based on localStorage state`);
+                    // console.log(`Removing ${skillItems.length} skills from UI based on localStorage state`);
                     
                     container.innerHTML = '';
                     
@@ -757,7 +757,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.skillsLoaded
         .then(() => {
-            console.log('Skills data loaded, initializing skill components');
+            // console.log('Skills data loaded, initializing skill components');
             syncSkillsFromWindow();
             initializeSkillComponents();
         })
@@ -774,7 +774,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success && data.interests) {
                     window.allInterestsMasterList = data.interests;
-                    console.log('Interests loaded via AJAX:', window.allInterestsMasterList.length);
+                    // console.log('Interests loaded via AJAX:', window.allInterestsMasterList.length);
                     initializeInterestComponents();
                 }
             })
@@ -782,7 +782,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error loading interests:', error);
             });
     } else {
-        console.log('Interests already loaded in page:', window.allInterestsMasterList?.length || 0);
+        // console.log('Interests already loaded in page:', window.allInterestsMasterList?.length || 0);
         initializeInterestComponents();
     }
     
@@ -798,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to initialize all skill-related components
 function initializeSkillComponents() {
-    console.log('Initializing skill components with', allSkillsMasterList.length, 'skills');
+    // console.log('Initializing skill components with', allSkillsMasterList.length, 'skills');
     
     const skillsContainer = document.getElementById('skills-container');
     if (skillsContainer) {
@@ -1008,10 +1008,10 @@ function openAddSkillModal() {
         return;
     }
     
-    console.log('Opening skill modal, skill data state:');
-    console.log('  - allSkillsMasterList exists:', typeof allSkillsMasterList !== 'undefined');
-    console.log('  - allSkillsMasterList length:', allSkillsMasterList ? allSkillsMasterList.length : 'N/A');
-    console.log('  - Sample of first 2 skills:', allSkillsMasterList ? allSkillsMasterList.slice(0, 2) : 'N/A');
+    // console.log('Opening skill modal, skill data state:');
+    // console.log('  - allSkillsMasterList exists:', typeof allSkillsMasterList !== 'undefined');
+    // console.log('  - allSkillsMasterList length:', allSkillsMasterList ? allSkillsMasterList.length : 'N/A');
+    // console.log('  - Sample of first 2 skills:', allSkillsMasterList ? allSkillsMasterList.slice(0, 2) : 'N/A');
     
     if (!allSkillsMasterList || allSkillsMasterList.length === 0) {
         console.error('No skills data available! This could indicate the $skills variable was not properly passed from the controller.');
@@ -1076,8 +1076,8 @@ function populateAllSkillsInModal(searchTerm = '') {
     const currentlySelectedSkillIds = Array.from(document.querySelectorAll('#selected-skills-container > div[data-skill-id]'))
                                           .map(div => div.getAttribute('data-skill-id'));
     
-    console.log('Filtering skills. Current search term:', searchTerm);
-    console.log('Currently selected skills:', currentlySelectedSkillIds.length, 'skills');
+    // console.log('Filtering skills. Current search term:', searchTerm);
+    // console.log('Currently selected skills:', currentlySelectedSkillIds.length, 'skills');
 
     try {
         const filteredSkills = allSkillsMasterList.filter(skill => {
@@ -1092,7 +1092,7 @@ function populateAllSkillsInModal(searchTerm = '') {
             return matchesSearch && notAlreadySelected;
         });
         
-        console.log('Filtered skills count:', filteredSkills.length);
+        // console.log('Filtered skills count:', filteredSkills.length);
 
         if (filteredSkills.length === 0) {
             modalSkillsList.innerHTML = `
@@ -1245,11 +1245,11 @@ function handleRemoveSkill(event) {
     const container = document.getElementById('selected-skills-container');
     const skillId = skillDiv.getAttribute('data-skill-id');
     
-    console.log(`Attempting to remove skill: ${skillName} (ID: ${skillId})`);
+    // console.log(`Attempting to remove skill: ${skillName} (ID: ${skillId})`);
     
     const isLastSkill = container.querySelectorAll('div[data-skill-id]').length === 1;
     if (isLastSkill) {
-        console.log("Cannot remove the last skill - showing notification");
+        // console.log("Cannot remove the last skill - showing notification");
         showToast('Tidak dapat menghapus keterampilan terakhir. Anda harus memiliki minimal satu keterampilan.', 'warning');
         
         skillDiv.classList.add('border-yellow-500');
@@ -1270,14 +1270,14 @@ function handleRemoveSkill(event) {
         try {
             if (skillDiv.parentNode) {
                 skillDiv.parentNode.removeChild(skillDiv);
-                console.log('Skill element visually removed from DOM.');
+                // console.log('Skill element visually removed from DOM.');
             } else {
                 skillDiv.remove(); 
-                console.log('Skill element visually removed from DOM via fallback.');
+                // console.log('Skill element visually removed from DOM via fallback.');
             }
 
             const remainingSkills = container ? container.querySelectorAll('div[data-skill-id]') : [];
-            console.log(`Remaining skills after visual removal: ${remainingSkills.length}`);
+            // console.log(`Remaining skills after visual removal: ${remainingSkills.length}`);
             
             saveSkillsToDatabase();
             showToast(`Keterampilan "${skillName}" telah dihapus`, 'info');
@@ -1292,7 +1292,7 @@ function handleRemoveSkill(event) {
 function saveSkillsToDatabase() {
     const skillsData = prepareSkillsData();
     
-    console.log("Saving skills data:", skillsData);
+    // console.log("Saving skills data:", skillsData);
     
     const form = document.getElementById('skills-form');
     if (!form) {
@@ -1321,12 +1321,12 @@ function saveSkillsToDatabase() {
     let dataToSend;
     if (skillsData.length === 0) {
         dataToSend = { is_empty: true };
-        console.log("Using is_empty flag for empty skills array");
+        // console.log("Using is_empty flag for empty skills array");
     } else {
         dataToSend = { skills: skillsData };
     }
     
-    console.log("Sending data to server:", dataToSend);
+    // console.log("Sending data to server:", dataToSend);
     
     fetch(form.action, {
         method: 'POST',
@@ -1338,7 +1338,7 @@ function saveSkillsToDatabase() {
         body: JSON.stringify(dataToSend)
     })
     .then(response => {
-        console.log("Server response status:", response.status, response.statusText);
+        // console.log("Server response status:", response.status, response.statusText);
         
         if (!response.ok) {
             throw new Error(`Server responded with status: ${response.status}`);
@@ -1351,10 +1351,10 @@ function saveSkillsToDatabase() {
             savingIndicator.remove();
         }
         
-        console.log('Skills save response:', data);
+        // console.log('Skills save response:', data);
         
         if (data.success) {
-            console.log('Skills saved successfully');
+            // console.log('Skills saved successfully');
         } else {
             console.error('Error saving skills:', data.errors || data);
             showToast('Error: ' + (data.message || 'Gagal menyimpan keterampilan'), 'error');
